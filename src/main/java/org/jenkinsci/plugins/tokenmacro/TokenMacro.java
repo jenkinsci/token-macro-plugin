@@ -57,6 +57,13 @@ import java.util.logging.Level;
  * ARG := NAME [ = 'value' ]
  * </pre>
  *
+ *
+ * <h2>Views</h2>
+ * <p>
+ * Implementation should have <tt>help.jelly</tt> that renders a DT tag that shows the syntax of the macro,
+ * followed by a DD tag that shows the details. See existing use of this extension point for the general
+ * guide line of the syntax.
+ *
  * @author Kohsuke Kawaguchi
  */
 public abstract class TokenMacro implements ExtensionPoint {

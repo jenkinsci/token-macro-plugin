@@ -1,0 +1,6 @@
+<j:jelly xmlns:j="jelly:core">
+  <dt>$${BUILD_NUMBER}</dt>
+  <dd>
+    Expands to the current build number, a sequential auto-incrementing unique number that identifies the build, such as "125"
+  </dd>
+</j:jelly>
