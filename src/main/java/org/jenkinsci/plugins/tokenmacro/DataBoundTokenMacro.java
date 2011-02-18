@@ -61,22 +61,38 @@ public abstract class DataBoundTokenMacro extends TokenMacro {
     @Retention(RUNTIME)
     @Target({FIELD,METHOD})
     public @interface Parameter {
-
+        /**
+         * Indicates that this parameter is required.
+         */
+        boolean required() default false;
     }
 
     private interface Setter {
+        /**
+         * Type of the value this field or the setter method expects.
+         */
         Class getType();
+
+        /**
+         * Adds a new value to this field or setter.
+         */
         void set(Object target, Object value);
+
+        boolean required();
     }
 
     private Map<String,Setter> setters;
 
+    /**
+     * Builds up the {@link #setters} map that encapsulates where/how to set the value.
+     */
     private synchronized void buildMap() {
         if (setters!=null)  return;
 
         setters = new HashMap<String, Setter>();
         for (final Field f : getClass().getFields()) {
-            if (f.getAnnotation(Parameter.class)!=null) {
+            final Parameter p = f.getAnnotation(Parameter.class);
+            if (p !=null) {
                 setters.put(f.getName(),new Setter() {
                     public Class getType() {
                         return f.getType();
@@ -89,12 +105,17 @@ public abstract class DataBoundTokenMacro extends TokenMacro {
                             throw (IllegalAccessError)new IllegalAccessError(e.getMessage()).initCause(e);
                         }
                     }
+
+                    public boolean required() {
+                        return p.required();
+                    }
                 });
             }
         }
 
         for (final Method m : getClass().getMethods()) {
-            if (m.getAnnotation(Parameter.class)!=null) {
+            final Parameter p = m.getAnnotation(Parameter.class);
+            if (p !=null) {
                 final Class<?>[] pt = m.getParameterTypes();
                 if (pt.length!=1)
                     throw new IllegalArgumentException("Expecting one-arg method for @Parameter but found "+m+" instead");
@@ -117,6 +138,10 @@ public abstract class DataBoundTokenMacro extends TokenMacro {
                         } catch (InvocationTargetException e) {
                             throw new Error(e);
                         }
+                    }
+
+                    public boolean required() {
+                        return p.required();
                     }
                 });
             }
@@ -142,6 +167,11 @@ public abstract class DataBoundTokenMacro extends TokenMacro {
                     v = ConvertUtils.convert(e.getValue(), s.getType());
 
                 s.set(copy, v);
+            }
+
+            for (Entry<String, Setter> e : setters.entrySet()) {
+                if (!arguments.containsKey(e.getKey()) && e.getValue().required())
+                    throw new MacroEvaluationException(MessageFormat.format("Parameter {0} in token {1} is required but was not specfified", e.getKey(), macroName));
             }
 
             return copy.evaluate(context,listener,macroName);
