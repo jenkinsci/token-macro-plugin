@@ -74,13 +74,18 @@ public abstract class TokenMacro implements ExtensionPoint {
      *      By convention we encourage all caps name.
      *
      * @return true
-     *      ... to claim the macro of the given name and have {@link #evaluate(AbstractBuild} called.
+     *      ... to claim the macro of the given name and have {@link #evaluate(AbstractBuild, TaskListener, String, Map, ListMultimap)} called.
      */
     public abstract boolean acceptsMacroName(String macroName);
 
     /**
      * Evaluates the macro and produces the token.
      *
+     *
+     * <h3>Locale</h3>
+     * <p>
+     * If the token is to produce a human readable text, it should do so by using the implicit locale associated
+     * with the calling thread &mdash; see {@code Functions.getCurrentLocale()}.
      *
      * @param context
      *      The build object for which this macro is evaluated.
