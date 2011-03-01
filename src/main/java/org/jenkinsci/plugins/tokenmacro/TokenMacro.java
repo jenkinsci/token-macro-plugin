@@ -64,6 +64,14 @@ import java.util.logging.Level;
  * followed by a DD tag that shows the details. See existing use of this extension point for the general
  * guide line of the syntax.
  *
+ * <p>
+ * Plugins interested in using the list of tags can use the "/lib/token-macro" taglib like the following,
+ * which expands to the HTML that lists all the tags and their usages:
+ *
+ * <pre>
+ * &lt;help xmlons="/lib/token-macro"/>
+ * </pre>
+ *
  * @author Kohsuke Kawaguchi
  */
 public abstract class TokenMacro implements ExtensionPoint {
