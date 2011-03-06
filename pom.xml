@@ -20,6 +20,20 @@
     </developer>
   </developers>
 
+    <build>
+        <plugins>
+             <plugin>
+            <groupId>org.jenkins-ci.tools</groupId>
+            <artifactId>maven-hpi-plugin</artifactId>
+            <version>1.65-SNAPSHOT</version>
+            <extensions>true</extensions>
+            <configuration>
+              <showDeprecation>true</showDeprecation>
+            </configuration>
+          </plugin>
+        </plugins>
+    </build>
+
   <!--
   <dependencies>
     <dependency>
