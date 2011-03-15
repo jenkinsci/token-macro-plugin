@@ -34,6 +34,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.google.common.collect.ListMultimap;
 
 /**
@@ -138,6 +140,7 @@ public abstract class TokenMacro implements ExtensionPoint {
      *      String that contains macro references in it, like "foo bar ${zot}".
      */
     public static String expand(AbstractBuild<?,?> context, TaskListener listener, String stringWithMacro) throws MacroEvaluationException, IOException, InterruptedException {
+        if ( StringUtils.isBlank( stringWithMacro ) ) return null;
         StringBuffer sb = new StringBuffer();
         Tokenizer tokenizer = new Tokenizer(stringWithMacro);
 
