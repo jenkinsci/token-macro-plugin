@@ -23,18 +23,18 @@
  */
 package org.jenkinsci.plugins.tokenmacro;
 
-import com.google.common.collect.ListMultimap;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.model.TaskListener;
 import hudson.model.AbstractBuild;
 import hudson.model.Hudson;
-import hudson.model.TaskListener;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.logging.Level;
+
+import com.google.common.collect.ListMultimap;
 
 /**
  * A macro that expands to text values in the context of a {@link AbstractBuild}.
