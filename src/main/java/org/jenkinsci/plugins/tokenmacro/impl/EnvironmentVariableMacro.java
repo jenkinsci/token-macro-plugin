@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.tokenmacro.impl;
 
+import hudson.Extension;
 import hudson.model.AbstractBuild;
 import hudson.model.TaskListener;
 import java.io.IOException;
@@ -10,6 +11,7 @@ import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 /**
  * Token that expands variables from the build environment.
  */
+@Extension
 public class EnvironmentVariableMacro extends DataBoundTokenMacro {
 
     @Parameter(required=true)
