@@ -1,5 +1,5 @@
 <j:jelly xmlns:j="jelly:core">
-  <dt>$${ENV,var=VARIABLENAME}</dt>
+  <dt>$${ENV,var="VARIABLENAME"}</dt>
   <dd>
     Expands to an environment variable (specified here as VARIABLENAME) from the build environment. Note that this does not include any variables set by the build scripts themselves, only those set by Jenkins and other plugins.
   </dd>

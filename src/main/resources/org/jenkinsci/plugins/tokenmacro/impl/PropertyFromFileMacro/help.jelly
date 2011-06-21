@@ -1,5 +1,5 @@
 <j:jelly xmlns:j="jelly:core">
-  <dt>$${PROPFILE,file=FILENAME,property=PROPERTYNAME}</dt>
+  <dt>$${PROPFILE,file="FILENAME",property="PROPERTYNAME"}</dt>
   <dd>
     Expands to the value of a property in a property file. The filename is relative to the build workspace root.
   </dd>
