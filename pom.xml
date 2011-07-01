@@ -9,6 +9,7 @@
   <artifactId>token-macro</artifactId>
   <version>1.4-SNAPSHOT</version>
   <packaging>hpi</packaging>
+  <name>Token Macro Plugin</name>
 
   <url>http://wiki.jenkins-ci.org/display/JENKINS/Token+Macro+Plugin</url>
 
