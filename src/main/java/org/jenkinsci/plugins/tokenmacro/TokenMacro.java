@@ -134,7 +134,7 @@ public abstract class TokenMacro implements ExtensionPoint {
     }
 
     /**
-     * Expands all the macro, and throws an exception if there's any problem found.
+     * Expands all the macros, and throws an exception if there's any problem found.
      *
      * @param stringWithMacro
      *      String that contains macro references in it, like "foo bar ${zot}".

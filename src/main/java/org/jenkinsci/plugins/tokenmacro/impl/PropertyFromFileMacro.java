@@ -2,14 +2,11 @@
 package org.jenkinsci.plugins.tokenmacro.impl;
 
 import hudson.Extension;
-import hudson.FilePath.FileCallable;
 import hudson.model.AbstractBuild;
 import hudson.model.TaskListener;
 import hudson.remoting.Callable;
-import hudson.remoting.VirtualChannel;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;

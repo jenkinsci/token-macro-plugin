@@ -44,7 +44,7 @@ import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.*;
 
 /**
- * Convenient base class for implementing {@link TokenMacro} that does parameter databiding to fields.
+ * Convenient base class for implementing {@link TokenMacro} that does parameter databinding to fields.
  *
  * <p>
  * When you define your token macro as a subtype of this class, a fresh instance is created for each
@@ -71,7 +71,7 @@ public abstract class DataBoundTokenMacro extends TokenMacro {
         /**
          * Type of the value this field or the setter method expects.
          */
-        Class getType();
+        Class<?> getType();
 
         /**
          * Adds a new value to this field or setter.
@@ -94,7 +94,7 @@ public abstract class DataBoundTokenMacro extends TokenMacro {
             final Parameter p = f.getAnnotation(Parameter.class);
             if (p !=null) {
                 setters.put(f.getName(),new Setter() {
-                    public Class getType() {
+                    public Class<?> getType() {
                         return f.getType();
                     }
 
@@ -126,7 +126,7 @@ public abstract class DataBoundTokenMacro extends TokenMacro {
                 }
 
                 setters.put(name,new Setter() {
-                    public Class getType() {
+                    public Class<?> getType() {
                         return pt[0];
                     }
 
