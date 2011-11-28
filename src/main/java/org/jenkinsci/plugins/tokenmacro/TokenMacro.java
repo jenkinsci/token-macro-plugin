@@ -25,6 +25,7 @@ package org.jenkinsci.plugins.tokenmacro;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.Util;
 import hudson.model.TaskListener;
 import hudson.model.AbstractBuild;
 import hudson.model.Hudson;
@@ -37,6 +38,7 @@ import java.util.Map.Entry;
 import org.apache.commons.lang.StringUtils;
 
 import com.google.common.collect.ListMultimap;
+import org.springframework.context.event.ContextStartedEvent;
 
 /**
  * A macro that expands to text values in the context of a {@link AbstractBuild}.
@@ -169,5 +171,26 @@ public abstract class TokenMacro implements ExtensionPoint {
         tokenizer.appendTail(sb);
 
         return sb.toString();
+    }
+
+    /**
+     * Expands everything that needs to be expanded.
+     *
+     * Expands all the macros, environment variables, and build variables.
+     * Throws an exception if there's any problem found.
+     *
+     * This should be more convenient than having plugins do all 3 separately.
+     *
+     * @param stringWithMacro
+     *      String that contains macro references in it, like "foo bar ${zot}".
+     */
+    public static String expandAll(AbstractBuild<?,?> context, TaskListener listener, String stringWithMacro) throws MacroEvaluationException, IOException, InterruptedException {
+        String s = expand(context,listener,stringWithMacro);
+        if (s==null || s.length()==0)   return s;
+
+        s = context.getEnvironment(listener).expand(s);
+        s = Util.replaceMacro(s,context.getBuildVariableResolver());
+
+        return s;
     }
 }
