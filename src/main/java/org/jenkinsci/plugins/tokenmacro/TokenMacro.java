@@ -38,7 +38,6 @@ import java.util.Map.Entry;
 import org.apache.commons.lang.StringUtils;
 
 import com.google.common.collect.ListMultimap;
-import org.springframework.context.event.ContextStartedEvent;
 
 /**
  * A macro that expands to text values in the context of a {@link AbstractBuild}.
