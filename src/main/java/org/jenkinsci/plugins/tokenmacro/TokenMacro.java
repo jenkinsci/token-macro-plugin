@@ -123,7 +123,17 @@ public abstract class TokenMacro implements ExtensionPoint {
      *      in an {@link InterruptedException}. Don't catch it, just propagate.
      */
     public abstract String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap)
-            throws MacroEvaluationException, IOException, InterruptedException;
+            throws MacroEvaluationException, IOException, InterruptedException;;
+
+    /**
+     * Returns true if this object allows for nested content replacements.
+     *
+     * @return true
+     *      ... to have the replaced text passed again to {@link #expand(AbstractBuild, TaskListener, String)} for additional expansion.
+     */
+    public boolean hasNestedContent() {
+        return false;
+    }
 
     /**
      * All registered extension points.
@@ -157,6 +167,9 @@ public abstract class TokenMacro implements ExtensionPoint {
             for (TokenMacro tm : all) {
                 if (tm.acceptsMacroName(tokenName)) {
                     replacement = tm.evaluate(context,listener,tokenName,map,args);
+                    if(tm.hasNestedContent()) {
+                        replacement = expand(context,listener,replacement);
+                    }
                     break;
                 }
             }
