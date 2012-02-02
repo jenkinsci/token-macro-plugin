@@ -1,4 +1,3 @@
-
 package org.jenkinsci.plugins.tokenmacro.impl;
 
 import hudson.Extension;
@@ -50,10 +49,13 @@ public class PropertyFromFileMacro extends DataBoundTokenMacro {
         
         public String call() throws IOException {
             Properties props = new Properties();
-            props.load(new BufferedReader(new FileReader(new File(root,filename))));
-
-            if(props.containsKey(propertyname)){
-                return props.getProperty(propertyname);
+            File file = new File(root, filename);
+            // the file wont exist until my script creates it, until then return ""
+            if (file.exists()) {
+                props.load(new BufferedReader(new FileReader(file)));
+                if(props.containsKey(propertyname)){
+                    return props.getProperty(propertyname);
+                }            
             }
             return "";
         }
