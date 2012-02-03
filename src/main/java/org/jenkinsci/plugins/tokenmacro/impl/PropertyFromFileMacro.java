@@ -50,14 +50,23 @@ public class PropertyFromFileMacro extends DataBoundTokenMacro {
         public String call() throws IOException {
             Properties props = new Properties();
             File file = new File(root, filename);
-            // the file wont exist until my script creates it, until then return ""
+            String propertyValue = "";
             if (file.exists()) {
-                props.load(new BufferedReader(new FileReader(file)));
-                if(props.containsKey(propertyname)){
-                    return props.getProperty(propertyname);
-                }            
+                try {
+                    props.load(new BufferedReader(new FileReader(file)));
+                    if(props.containsKey(propertyname)){
+                        propertyValue = props.getProperty(propertyname);
+                    } 
+                }
+                catch (IOException e) {
+                    propertyValue = "Error reading ".concat(filename);
+                }
             }
-            return "";
+            else {
+                propertyValue = filename.concat(" not found");
+            }
+            
+            return propertyValue;
         }
     }
 }
