@@ -53,19 +53,19 @@ public class TokenMacroTest extends HudsonTestCase {
 
     @TestExtension
     public static class NestedTestMacro extends TokenMacro {
-	@Override
-	public boolean acceptsMacroName(String macroName) {
-	    return macroName.equals("TEST_NESTED");
-	}
+        @Override
+        public boolean acceptsMacroName(String macroName) {
+            return macroName.equals("TEST_NESTED");
+        }
 
-	@Override
-	public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap) throws MacroEvaluationException, IOException, InterruptedException {
-	    return "${TEST,abc=\"def\",abc=\"ghi\",jkl=true}";
-	}
+        @Override
+        public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap) throws MacroEvaluationException, IOException, InterruptedException {
+            return "${TEST,abc=\"def\",abc=\"ghi\",jkl=true}";
+        }
 
-	@Override
-	public boolean hasNestedContent() {
+        @Override
+        public boolean hasNestedContent() {
             return true;
-	}
+        }
     }
 }
