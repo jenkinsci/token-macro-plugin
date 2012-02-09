@@ -123,7 +123,7 @@ public abstract class TokenMacro implements ExtensionPoint {
      *      in an {@link InterruptedException}. Don't catch it, just propagate.
      */
     public abstract String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap)
-            throws MacroEvaluationException, IOException, InterruptedException;;
+            throws MacroEvaluationException, IOException, InterruptedException;
 
     /**
      * Returns true if this object allows for nested content replacements.
