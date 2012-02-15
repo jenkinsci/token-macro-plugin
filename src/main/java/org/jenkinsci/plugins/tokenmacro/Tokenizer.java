@@ -61,7 +61,7 @@ class Tokenizer {
 
     private static final String delimitedTokenRegex = "\\{" + spaceRegex + "(" + tokenNameRegex + ")" + argsRegex + spaceRegex + "\\}";
 
-    private static final String tokenRegex = "\\$((" + tokenNameRegex + ")|(" + delimitedTokenRegex + "))";
+    private static final String tokenRegex = "(?<!\\\\)\\$((" + tokenNameRegex + ")|(" + delimitedTokenRegex + "))";
 
     private static final Pattern argPattern = Pattern.compile(argRegex);
 
