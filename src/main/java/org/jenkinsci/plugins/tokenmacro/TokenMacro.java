@@ -149,6 +149,18 @@ public abstract class TokenMacro implements ExtensionPoint {
      *      String that contains macro references in it, like "foo bar ${zot}".
      */
     public static String expand(AbstractBuild<?,?> context, TaskListener listener, String stringWithMacro) throws MacroEvaluationException, IOException, InterruptedException {
+        return expand(context,listener,stringWithMacro,true);
+    }
+    
+    /**
+     * Expands all the macros, and throws an exception if there's any problem found.
+     *
+     * @param stringWithMacro
+     *      String that contains macro references in it, like "foo bar ${zot}".
+     * @param throwOnUnrecognizedMacro
+     *      true to throw a MacroEvaluationException on unrecognized macros, false to ignore problems
+     */
+    public static String expand(AbstractBuild<?,?> context, TaskListener listener, String stringWithMacro, boolean throwOnUnrecognizedMacro) throws MacroEvaluationException,IOException, InterruptedException {
         if ( StringUtils.isBlank( stringWithMacro ) ) return stringWithMacro;
         StringBuffer sb = new StringBuffer();
         Tokenizer tokenizer = new Tokenizer(stringWithMacro);
@@ -168,13 +180,15 @@ public abstract class TokenMacro implements ExtensionPoint {
                 if (tm.acceptsMacroName(tokenName)) {
                     replacement = tm.evaluate(context,listener,tokenName,map,args);
                     if(tm.hasNestedContent()) {
-                        replacement = expand(context,listener,replacement);
+                        replacement = expand(context,listener,replacement,throwOnUnrecognizedMacro);
                     }
                     break;
                 }
             }
-            if (replacement==null)
+            if (replacement==null && throwOnUnrecognizedMacro)
                 throw new MacroEvaluationException(String.format("Unrecognized macro '%s' in '%s'", tokenName, stringWithMacro));
+            else if(replacement==null)
+                replacement = tokenizer.group(); // set to original text
 
             tokenizer.appendReplacement(sb, replacement);
         }
@@ -195,14 +209,30 @@ public abstract class TokenMacro implements ExtensionPoint {
      *      String that contains macro references in it, like "foo bar ${zot}".
      */
     public static String expandAll(AbstractBuild<?,?> context, TaskListener listener, String stringWithMacro) throws MacroEvaluationException, IOException, InterruptedException {
+        return expandAll(context,listener,stringWithMacro,true);
+    }
+
+    /**
+     * Expands everything that needs to be expanded.
+     *
+     * Expands all the macros, environment variables, and build variables.
+     *
+     * This should be more convenient than having plugins do all 3 separately.
+     *
+     * @param stringWithMacro
+     *      String that contains macro references in it, like "foo bar ${zot}".
+     * @param throwOnUnrecognizedMacro
+     *      true to throw a MacroEvaluationException on unrecognized macros, false to ignore problems
+     */
+    public static String expandAll(AbstractBuild<?,?> context, TaskListener listener, String stringWithMacro, boolean throwOnUnrecognizedMacro) throws MacroEvaluationException, IOException, InterruptedException {
         // Do nothing for an empty String
-        if (stringWithMacro==null || stringWithMacro.length()==0) return stringWithMacro;
+        if (StringUtils.isBlank(stringWithMacro)) return stringWithMacro;
         // Expand environment variables
         String s = context.getEnvironment(listener).expand(stringWithMacro);
         // Expand build variables
         s = Util.replaceMacro(s,context.getBuildVariableResolver());
         // Expand Macros
-        s = expand(context,listener,s);
+        s = expand(context,listener,s,throwOnUnrecognizedMacro);
         return s;
     }
 }

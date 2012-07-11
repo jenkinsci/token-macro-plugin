@@ -51,6 +51,36 @@ public class TokenMacroTest extends HudsonTestCase {
         assertEquals("{abc=[def, ghi], jkl=[true]}\\${TEST_NESTED}",TokenMacro.expand(b,listener,"$TEST_NESTED\\${TEST_NESTED}"));
     }
 
+    public void testThrowOnUnrecognizedMacro() throws Exception {
+        FreeStyleProject p = createFreeStyleProject("foo");
+        FreeStyleBuild b = p.scheduleBuild2(0).get();
+
+        listener = new StreamTaskListener(System.out);
+        try {
+            assertEquals("${UNKNOWN_MACRO}",TokenMacro.expand(b,listener,"${UNKNOWN_MACRO}"));
+            fail( "UNKNOWN_MACRO DID NOT cause MacroEvaluationException when it should have" );
+        } catch (MacroEvaluationException e) {
+        }
+        
+        try {
+            assertEquals("${UNKNOWN_MACRO,abc=1, jkl=true}",TokenMacro.expand(b,listener,"${UNKNOWN_MACRO,abc=1, jkl=true}"));
+            fail( "UNKNOWN_MACRO (with parameters) DID NOT cause MacroEvaluationException when it should have" );
+        } catch (MacroEvaluationException e) {
+        }
+
+        try {
+            assertEquals("${UNKNOWN_MACRO}",TokenMacro.expand(b,listener,"${UNKNOWN_MACRO}",false));
+        } catch (MacroEvaluationException e) {
+            fail( "UNKNOWN_MACRO caused MacroEvaluationException when it should NOT have" );
+        }
+        
+        try {
+            assertEquals("${UNKNOWN_MACRO,abc=1, jkl=true}",TokenMacro.expand(b,listener,"${UNKNOWN_MACRO,abc=1, jkl=true}",false));
+        } catch (MacroEvaluationException e) {
+            fail( "UNKNOWN_MACRO (with parameters) caused MacroEvaluationException when it should NOT have" );
+        }
+    }
+
     @TestExtension
     public static class TestMacro extends TokenMacro {
         @Override
