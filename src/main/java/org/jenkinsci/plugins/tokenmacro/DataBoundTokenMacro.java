@@ -183,4 +183,9 @@ public abstract class DataBoundTokenMacro extends TokenMacro {
     }
 
     public abstract String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName) throws MacroEvaluationException, IOException, InterruptedException;
+
+    @Override
+    public boolean hasNestedContent() {
+        return false;
+    }
 }
