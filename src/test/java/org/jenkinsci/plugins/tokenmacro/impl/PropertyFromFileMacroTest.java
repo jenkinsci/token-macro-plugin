@@ -1,37 +1,34 @@
 package org.jenkinsci.plugins.tokenmacro.impl;
 
-import org.jenkinsci.plugins.tokenmacro.*;
-import com.google.common.collect.ListMultimap;
+import hudson.Launcher;
 import hudson.model.AbstractBuild;
+import hudson.model.BuildListener;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.TaskListener;
 import hudson.util.StreamTaskListener;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import org.jvnet.hudson.test.HudsonTestCase;
-import org.jvnet.hudson.test.TestExtension;
-
 import java.io.IOException;
-import java.util.Map;
+import org.jenkinsci.plugins.tokenmacro.*;
+import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.TestBuilder;
 
 /**
  * @author Kohsuke Kawaguchi
  */
 public class PropertyFromFileMacroTest extends HudsonTestCase {
-    private StreamTaskListener listener;
+    private TaskListener listener;
 
     public void testPropertyFromFileExpansion() throws Exception {
-        FreeStyleProject p = createFreeStyleProject("foo");
-        FreeStyleBuild b = p.scheduleBuild2(0).get();
-        BufferedWriter out =
-                new BufferedWriter(
-                new FileWriter(
-                new File(b.getWorkspace().getRemote(),"test.properties")));
+        FreeStyleProject project = createFreeStyleProject("foo");
+        project.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                build.getWorkspace().child("test.properties").write("test.property=success","UTF-8");
+                return true;
+            }
+        });
+        FreeStyleBuild b = project.scheduleBuild2(0).get();
 
-        out.write("test.property=success");
-        out.close();
         listener = new StreamTaskListener(System.out);
         assertEquals("success",TokenMacro.expand(b, listener, "${PROPFILE,file=\"test.properties\",property=\"test.property\"}"));
     }
