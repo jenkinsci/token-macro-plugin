@@ -39,7 +39,32 @@ public class TokenMacroTest extends HudsonTestCase {
 
         assertEquals("{abc=[def, ghi], jkl=[true]}",TokenMacro.expand(b,listener,"${TEST_NESTED}"));
     }
-    
+
+    public void testVeryLongStringArg() throws Exception {
+        StringBuilder veryLongStringParam = new StringBuilder();
+        for (int i = 0 ; i < 500 ; ++i) {
+            veryLongStringParam.append("abc123 %_= ~");
+        }
+
+        FreeStyleProject p = createFreeStyleProject("foo");
+        FreeStyleBuild b = p.scheduleBuild2(0).get();
+
+        listener = new StreamTaskListener(System.out);
+
+        assertEquals("{arg=["+ veryLongStringParam + "]}",TokenMacro.expand(b,listener,"${TEST, arg=\"" + veryLongStringParam + "\"}"));
+    }
+
+    public void testMultilineStringArgs() throws Exception {
+        FreeStyleProject p = createFreeStyleProject("foo");
+        FreeStyleBuild b = p.scheduleBuild2(0).get();
+
+        listener = new StreamTaskListener(System.out);
+
+        assertEquals("{arg=[a \n b  \r\n c]}\n",TokenMacro.expand(b, listener, "${TEST, arg = \"a \\\n b  \\\r\n c\"}\n"));
+
+        assertEquals("${TEST, arg = \"a \n b  \r\n c\"}\n",TokenMacro.expand(b, listener, "${TEST, arg = \"a \n b  \r\n c\"}\n"));
+    }
+
     public void testEscaped() throws Exception {
         FreeStyleProject p = createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
