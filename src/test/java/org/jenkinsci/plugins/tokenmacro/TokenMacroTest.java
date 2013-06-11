@@ -6,6 +6,7 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.TaskListener;
 import hudson.util.StreamTaskListener;
+import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.TestExtension;
 
@@ -76,6 +77,18 @@ public class TokenMacroTest extends HudsonTestCase {
         assertEquals("\\${TEST_NESTED}{abc=[def, ghi], jkl=[true]}",TokenMacro.expand(b,listener,"\\${TEST_NESTED}$TEST_NESTED"));
         assertEquals("{abc=[def, ghi], jkl=[true]}\\$TEST_NESTED",TokenMacro.expand(b,listener,"$TEST_NESTED\\$TEST_NESTED"));
         assertEquals("{abc=[def, ghi], jkl=[true]}\\${TEST_NESTED}",TokenMacro.expand(b,listener,"$TEST_NESTED\\${TEST_NESTED}"));
+    }
+
+    @Bug(18014)
+    public void testEscapeCharEscaped() throws Exception {
+        FreeStyleProject p = createFreeStyleProject("foo");
+        FreeStyleBuild b = p.scheduleBuild2(0).get();
+
+        listener = new StreamTaskListener(System.out);
+        assertEquals("\\{abc=[def, ghi], jkl=[true]}",TokenMacro.expand(b,listener,"\\\\${TEST_NESTED}"));
+        assertEquals("\\{abc=[def, ghi], jkl=[true]}",TokenMacro.expand(b,listener,"\\\\$TEST_NESTED"));
+        assertEquals("{abc=[def, ghi], jkl=[true]}\\{abc=[def, ghi], jkl=[true]}",TokenMacro.expand(b,listener,"$TEST_NESTED\\\\$TEST_NESTED"));
+        assertEquals("{abc=[def, ghi], jkl=[true]}\\{abc=[def, ghi], jkl=[true]}",TokenMacro.expand(b,listener,"$TEST_NESTED\\\\${TEST_NESTED}"));
     }
 
     public void testPrivate() throws Exception {
