@@ -164,26 +164,31 @@ public abstract class TokenMacro implements ExtensionPoint {
         }
 
         while (tokenizer.find()) {
-            String tokenName = tokenizer.getTokenName();
-            ListMultimap<String,String> args = tokenizer.getArgs();
-            Map<String,String> map = new HashMap<String, String>();
-            for (Entry<String, String> e : args.entries()) {
-                map.put(e.getKey(),e.getValue());
-            }
-
             String replacement = null;
-            for (TokenMacro tm : all) {
-                if (tm.acceptsMacroName(tokenName)) {
-                    replacement = tm.evaluate(context,listener,tokenName,map,args);
-                    if(tm.hasNestedContent()) {
-                        replacement = expand(context,listener,replacement,throwException,privateTokens);
-                    }
-                    break;
+            if(tokenizer.isEscaped()) {
+                replacement = tokenizer.group().substring(1);                                
+            } else {            
+                String tokenName = tokenizer.getTokenName();
+                ListMultimap<String,String> args = tokenizer.getArgs();
+                Map<String,String> map = new HashMap<String, String>();
+                for (Entry<String, String> e : args.entries()) {
+                    map.put(e.getKey(),e.getValue());
                 }
+
+                for (TokenMacro tm : all) {
+                    if (tm.acceptsMacroName(tokenName)) {
+                        replacement = tm.evaluate(context,listener,tokenName,map,args);
+                        if(tm.hasNestedContent()) {
+                            replacement = expand(context,listener,replacement,throwException,privateTokens);
+                        }
+                        break;
+                    }
+                }
+                
+                if (replacement == null && throwException)
+                    throw new MacroEvaluationException(String.format("Unrecognized macro '%s' in '%s'", tokenName, stringWithMacro));
             }
-            if (replacement==null&&throwException)
-                throw new MacroEvaluationException(String.format("Unrecognized macro '%s' in '%s'", tokenName, stringWithMacro));
-            else if(replacement==null) // just put the token back in since we don't want to throw the exception
+            if (replacement == null && !throwException) // just put the token back in since we don't want to throw the exception
                 tokenizer.appendReplacement(sb, tokenizer.group());
             else
                 tokenizer.appendReplacement(sb, replacement);
