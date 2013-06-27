@@ -1,10 +1,11 @@
-
 package org.jenkinsci.plugins.tokenmacro.impl;
 
 import hudson.Extension;
 import hudson.model.AbstractBuild;
 import hudson.model.TaskListener;
 import hudson.remoting.Callable;
+import java.io.Closeable;
+import java.io.Reader;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -50,12 +51,31 @@ public class PropertyFromFileMacro extends DataBoundTokenMacro {
         
         public String call() throws IOException {
             Properties props = new Properties();
-            props.load(new BufferedReader(new FileReader(new File(root,filename))));
-
-            if(props.containsKey(propertyname)){
-                return props.getProperty(propertyname);
+            File file = new File(root, filename);
+            String propertyValue = "";
+            if (file.exists()) {
+                Reader reader = new FileReader(file);
+                Closeable resource = reader;    
+                try {
+                    BufferedReader bReader = new BufferedReader(reader);
+                    resource = bReader;
+                    props.load(bReader);
+                    if(props.containsKey(propertyname)){
+                        propertyValue = props.getProperty(propertyname);
+                    } 
+                }
+                catch (IOException e) {
+                    propertyValue = "Error reading ".concat(filename);
+                }
+                finally {
+                    resource.close();
+                }
             }
-            return "";
+            else {
+                propertyValue = filename.concat(" not found");
+            }
+            
+            return propertyValue;
         }
     }
 }
