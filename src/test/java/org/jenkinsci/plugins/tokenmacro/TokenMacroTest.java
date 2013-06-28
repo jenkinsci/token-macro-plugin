@@ -71,12 +71,12 @@ public class TokenMacroTest extends HudsonTestCase {
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
         listener = new StreamTaskListener(System.out);
-        assertEquals("\\${TEST_NESTED}",TokenMacro.expand(b,listener,"\\${TEST_NESTED}"));
-        assertEquals("\\$TEST_NESTED",TokenMacro.expand(b,listener,"\\$TEST_NESTED"));
-        assertEquals("\\$TEST_NESTED{abc=[def, ghi], jkl=[true]}",TokenMacro.expand(b,listener,"\\$TEST_NESTED$TEST_NESTED"));
-        assertEquals("\\${TEST_NESTED}{abc=[def, ghi], jkl=[true]}",TokenMacro.expand(b,listener,"\\${TEST_NESTED}$TEST_NESTED"));
-        assertEquals("{abc=[def, ghi], jkl=[true]}\\$TEST_NESTED",TokenMacro.expand(b,listener,"$TEST_NESTED\\$TEST_NESTED"));
-        assertEquals("{abc=[def, ghi], jkl=[true]}\\${TEST_NESTED}",TokenMacro.expand(b,listener,"$TEST_NESTED\\${TEST_NESTED}"));
+        assertEquals("${TEST_NESTED}",TokenMacro.expand(b,listener,"$${TEST_NESTED}"));
+        assertEquals("$TEST_NESTED",TokenMacro.expand(b,listener,"$$TEST_NESTED"));
+        assertEquals("$TEST_NESTED{abc=[def, ghi], jkl=[true]}",TokenMacro.expand(b,listener,"$$TEST_NESTED$TEST_NESTED"));
+        assertEquals("${TEST_NESTED}{abc=[def, ghi], jkl=[true]}",TokenMacro.expand(b,listener,"$${TEST_NESTED}$TEST_NESTED"));
+        assertEquals("{abc=[def, ghi], jkl=[true]}$TEST_NESTED",TokenMacro.expand(b,listener,"$TEST_NESTED$$TEST_NESTED"));
+        assertEquals("{abc=[def, ghi], jkl=[true]}${TEST_NESTED}",TokenMacro.expand(b,listener,"$TEST_NESTED$${TEST_NESTED}"));
     }
 
     @Bug(18014)
@@ -85,10 +85,10 @@ public class TokenMacroTest extends HudsonTestCase {
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
         listener = new StreamTaskListener(System.out);
-        assertEquals("\\{abc=[def, ghi], jkl=[true]}",TokenMacro.expand(b,listener,"\\\\${TEST_NESTED}"));
-        assertEquals("\\{abc=[def, ghi], jkl=[true]}",TokenMacro.expand(b,listener,"\\\\$TEST_NESTED"));
-        assertEquals("{abc=[def, ghi], jkl=[true]}\\{abc=[def, ghi], jkl=[true]}",TokenMacro.expand(b,listener,"$TEST_NESTED\\\\$TEST_NESTED"));
-        assertEquals("{abc=[def, ghi], jkl=[true]}\\{abc=[def, ghi], jkl=[true]}",TokenMacro.expand(b,listener,"$TEST_NESTED\\\\${TEST_NESTED}"));
+        assertEquals("\\\\{abc=[def, ghi], jkl=[true]}",TokenMacro.expand(b,listener,"\\\\${TEST_NESTED}"));
+        assertEquals("\\\\{abc=[def, ghi], jkl=[true]}",TokenMacro.expand(b,listener,"\\\\$TEST_NESTED"));
+        assertEquals("{abc=[def, ghi], jkl=[true]}\\\\{abc=[def, ghi], jkl=[true]}",TokenMacro.expand(b,listener,"$TEST_NESTED\\\\$TEST_NESTED"));
+        assertEquals("{abc=[def, ghi], jkl=[true]}\\\\{abc=[def, ghi], jkl=[true]}",TokenMacro.expand(b,listener,"$TEST_NESTED\\\\${TEST_NESTED}"));
     }
 
     public void testPrivate() throws Exception {
