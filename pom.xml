@@ -65,6 +65,16 @@
     <connection>scm:git:git://github.com/jenkinsci/token-macro-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:jenkinsci/token-macro-plugin.git</developerConnection>
   </scm>
+  
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.jenkins-ci.tools</groupId>
+        <artifactId>maven-hpi-plugin</artifactId>
+        <version>1.95</version>
+      </plugin>                     
+    </plugins>
+  </build>
 
   <repositories>
     <repository>
