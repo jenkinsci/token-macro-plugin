@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import static junit.framework.TestCase.assertEquals;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -70,13 +71,20 @@ public class TokenMacroTest extends HudsonTestCase {
         FreeStyleProject p = createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
-        listener = new StreamTaskListener(System.out);
-        assertEquals("${TEST_NESTED}",TokenMacro.expand(b,listener,"$${TEST_NESTED}"));
-        assertEquals("$TEST_NESTED",TokenMacro.expand(b,listener,"$$TEST_NESTED"));
-        assertEquals("$TEST_NESTED{abc=[def, ghi], jkl=[true]}",TokenMacro.expand(b,listener,"$$TEST_NESTED$TEST_NESTED"));
-        assertEquals("${TEST_NESTED}{abc=[def, ghi], jkl=[true]}",TokenMacro.expand(b,listener,"$${TEST_NESTED}$TEST_NESTED"));
-        assertEquals("{abc=[def, ghi], jkl=[true]}$TEST_NESTED",TokenMacro.expand(b,listener,"$TEST_NESTED$$TEST_NESTED"));
-        assertEquals("{abc=[def, ghi], jkl=[true]}${TEST_NESTED}",TokenMacro.expand(b,listener,"$TEST_NESTED$${TEST_NESTED}"));
+        assertEquals("${TEST_NESTED}",TokenMacro.expand(b,TaskListener.NULL,"$${TEST_NESTED}"));
+        assertEquals("$TEST_NESTED",TokenMacro.expand(b,TaskListener.NULL,"$$TEST_NESTED"));
+        assertEquals("$TEST_NESTED{abc=[def, ghi], jkl=[true]}",TokenMacro.expand(b,TaskListener.NULL,"$$TEST_NESTED$TEST_NESTED"));
+        assertEquals("${TEST_NESTED}{abc=[def, ghi], jkl=[true]}",TokenMacro.expand(b,TaskListener.NULL,"$${TEST_NESTED}$TEST_NESTED"));
+        assertEquals("{abc=[def, ghi], jkl=[true]}$TEST_NESTED",TokenMacro.expand(b,TaskListener.NULL,"$TEST_NESTED$$TEST_NESTED"));
+        assertEquals("{abc=[def, ghi], jkl=[true]}${TEST_NESTED}",TokenMacro.expand(b,TaskListener.NULL,"$TEST_NESTED$${TEST_NESTED}"));
+        
+    }
+    
+    public void testNumeric() throws Exception {
+        FreeStyleProject p = createFreeStyleProject("foo");
+        FreeStyleBuild b = p.scheduleBuild2(0).get();
+        
+        assertEquals("For only 10 easy payment of $69.99 , AWESOME-O 4000 can be yours!", TokenMacro.expand(b,TaskListener.NULL,"For only 10 easy payment of $69.99 , AWESOME-O 4000 can be yours!"));
     }
 
     @Bug(18014)

@@ -42,7 +42,7 @@ import java.util.regex.Pattern;
  */
 class Tokenizer {
 
-    private static final String tokenNameRegex = "[a-zA-Z0-9_]+";
+    private static final String tokenNameRegex = "[a-zA-Z_][a-zA-Z0-9_]*";
 
     private static final String numberRegex = "-?[0-9]+(\\.[0-9]*)?";
 
