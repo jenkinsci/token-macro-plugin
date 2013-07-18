@@ -33,6 +33,7 @@ import hudson.model.TaskListener;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -177,9 +178,17 @@ public abstract class TokenMacro implements ExtensionPoint {
 
                 for (TokenMacro tm : all) {
                     if (tm.acceptsMacroName(tokenName)) {
-                        replacement = tm.evaluate(context,listener,tokenName,map,args);
-                        if(tm.hasNestedContent()) {
-                            replacement = expand(context,listener,replacement,throwException,privateTokens);
+                        try {
+                            replacement = tm.evaluate(context,listener,tokenName,map,args);
+                            if(tm.hasNestedContent()) {
+                                replacement = expand(context,listener,replacement,throwException,privateTokens);
+                            }
+                        } catch(MacroEvaluationException e) {
+                            if(throwException) {
+                                throw e;
+                            } else {
+                                replacement = String.format("[Error replacing '%s' - %s]", tokenName, e.getMessage());
+                            }
                         }
                         break;
                     }

@@ -12,6 +12,7 @@ import org.jvnet.hudson.test.TestExtension;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import static junit.framework.TestCase.assertEquals;
@@ -76,8 +77,14 @@ public class TokenMacroTest extends HudsonTestCase {
         assertEquals("$TEST_NESTED{abc=[def, ghi], jkl=[true]}",TokenMacro.expand(b,TaskListener.NULL,"$$TEST_NESTED$TEST_NESTED"));
         assertEquals("${TEST_NESTED}{abc=[def, ghi], jkl=[true]}",TokenMacro.expand(b,TaskListener.NULL,"$${TEST_NESTED}$TEST_NESTED"));
         assertEquals("{abc=[def, ghi], jkl=[true]}$TEST_NESTED",TokenMacro.expand(b,TaskListener.NULL,"$TEST_NESTED$$TEST_NESTED"));
-        assertEquals("{abc=[def, ghi], jkl=[true]}${TEST_NESTED}",TokenMacro.expand(b,TaskListener.NULL,"$TEST_NESTED$${TEST_NESTED}"));
+        assertEquals("{abc=[def, ghi], jkl=[true]}${TEST_NESTED}",TokenMacro.expand(b,TaskListener.NULL,"$TEST_NESTED$${TEST_NESTED}"));        
+    }
+    
+    public void testInvalidNoException() throws Exception {
+        FreeStyleProject p = createFreeStyleProject("foo");
+        FreeStyleBuild b = p.scheduleBuild2(0).get();
         
+        assertEquals("[Error replacing 'ENV' - Undefined parameter Var in token ENV]", TokenMacro.expand(b, TaskListener.NULL, "${ENV, Var=\"HOSTNAME\"}", false, Collections.EMPTY_LIST));        
     }
     
     public void testNumeric() throws Exception {
@@ -113,7 +120,6 @@ public class TokenMacroTest extends HudsonTestCase {
     }
 
     public void testException() throws Exception {
-        boolean threwException = false;
         FreeStyleProject p = createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
@@ -127,8 +133,7 @@ public class TokenMacroTest extends HudsonTestCase {
         }
 
         assertEquals("${TEST_NESTEDX}", TokenMacro.expand(b,listener,"${TEST_NESTEDX}",false,null));
-        assertEquals("${TEST_NESTEDX,abc=\"def\",abc=\"ghi\",jkl=true}",
-            TokenMacro.expand(b,listener,"${TEST_NESTEDX,abc=\"def\",abc=\"ghi\",jkl=true}",false,null));
+        assertEquals("${TEST_NESTEDX,abc=\"def\",abc=\"ghi\",jkl=true}", TokenMacro.expand(b,listener,"${TEST_NESTEDX,abc=\"def\",abc=\"ghi\",jkl=true}",false,null));
     }
 
     public class PrivateTestMacro extends TokenMacro {
