@@ -34,6 +34,7 @@ import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -158,8 +159,8 @@ public abstract class TokenMacro implements ExtensionPoint {
         if ( StringUtils.isBlank( stringWithMacro ) ) return stringWithMacro;
         StringBuffer sb = new StringBuffer();
         Tokenizer tokenizer = new Tokenizer(stringWithMacro);
-
-        ExtensionList<TokenMacro> all = all();
+        
+        List<TokenMacro> all = new ArrayList<TokenMacro>(all());
         if(privateTokens!=null) {
             all.addAll( privateTokens );
         }
