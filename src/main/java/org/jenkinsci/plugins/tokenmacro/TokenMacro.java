@@ -28,17 +28,16 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.model.AbstractBuild;
-import hudson.model.Hudson;
 import hudson.model.TaskListener;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import jenkins.model.Jenkins;
 
 /**
  * A macro that expands to text values in the context of a {@link AbstractBuild}.
@@ -142,7 +141,7 @@ public abstract class TokenMacro implements ExtensionPoint {
      * All registered extension points.
      */
     public static ExtensionList<TokenMacro> all() {
-        return Hudson.getInstance().getExtensionList(TokenMacro.class);
+        return Jenkins.getInstance().getExtensionList(TokenMacro.class);
     }
 
     /**
