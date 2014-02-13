@@ -42,6 +42,7 @@ import java.util.Map.Entry;
 
 import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.*;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Convenient base class for implementing {@link TokenMacro} that does parameter databinding to fields.
@@ -65,6 +66,8 @@ public abstract class DataBoundTokenMacro extends TokenMacro {
          * Indicates that this parameter is required.
          */
         boolean required() default false;
+
+	String alias() default "";
     }
 
     private interface Setter {
@@ -93,7 +96,12 @@ public abstract class DataBoundTokenMacro extends TokenMacro {
         for (final Field f : getClass().getFields()) {
             final Parameter p = f.getAnnotation(Parameter.class);
             if (p !=null) {
-                setters.put(f.getName(),new Setter() {
+                String name = f.getName();
+                if (StringUtils.isNotEmpty(p.alias())) {
+                    name = p.alias();
+                }
+                
+                setters.put(name,new Setter() {
                     public Class<?> getType() {
                         return f.getType();
                     }
@@ -123,6 +131,10 @@ public abstract class DataBoundTokenMacro extends TokenMacro {
                 String name = m.getName();
                 if (name.startsWith("set")) {
                     name = Introspector.decapitalize(name.substring(3));
+                }
+                
+                if (StringUtils.isNotEmpty(p.alias())) {
+                    name = p.alias();
                 }
 
                 setters.put(name,new Setter() {

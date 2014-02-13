@@ -8,18 +8,25 @@ import hudson.model.FreeStyleProject;
 import hudson.model.TaskListener;
 import hudson.util.StreamTaskListener;
 import java.io.IOException;
+import static junit.framework.TestCase.assertEquals;
 import org.jenkinsci.plugins.tokenmacro.*;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class PropertyFromFileMacroTest extends HudsonTestCase {
+public class PropertyFromFileMacroTest {
     private TaskListener listener;
+    
+    @Rule
+    public final JenkinsRule j = new JenkinsRule();
 
+    @Test
     public void testPropertyFromFileExpansion() throws Exception {
-        FreeStyleProject project = createFreeStyleProject("foo");
+        FreeStyleProject project = j.createFreeStyleProject("foo");
         project.getBuildersList().add(new TestBuilder() {
             @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {

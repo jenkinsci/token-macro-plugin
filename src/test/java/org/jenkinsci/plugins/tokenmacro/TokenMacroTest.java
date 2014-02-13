@@ -7,7 +7,6 @@ import hudson.model.FreeStyleProject;
 import hudson.model.TaskListener;
 import hudson.util.StreamTaskListener;
 import org.jvnet.hudson.test.Bug;
-import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.TestExtension;
 
 import java.io.IOException;
@@ -15,41 +14,51 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import static junit.framework.Assert.fail;
 import static junit.framework.TestCase.assertEquals;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class TokenMacroTest extends HudsonTestCase {
+public class TokenMacroTest {
     private StreamTaskListener listener;
+    
+    @Rule
+    public final JenkinsRule j = new JenkinsRule();
 
+    @Test
     public void testBasics() throws Exception {
-        FreeStyleProject p = createFreeStyleProject("foo");
+        FreeStyleProject p = j.createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
-        listener = new StreamTaskListener(System.out);
-        assertEquals(hudson.getRootUrl()+"job/foo/1/",TokenMacro.expand(b, listener,"${BUILD_URL}"));
-        assertEquals(hudson.getRootUrl()+"job/foo/1/",TokenMacro.expand(b, listener,"$BUILD_URL"));
+        listener = StreamTaskListener.fromStdout();
+        assertEquals(j.jenkins.getRootUrl()+"job/foo/1/",TokenMacro.expand(b, listener,"${BUILD_URL}"));
+        assertEquals(j.jenkins.getRootUrl()+"job/foo/1/",TokenMacro.expand(b, listener,"$BUILD_URL"));
 
         assertEquals("{abc=[def, ghi], jkl=[true]}",TokenMacro.expand(b,listener,"${TEST,abc=\"def\",abc=\"ghi\",jkl=true}"));
     }
 
+    @Test
     public void testNested() throws Exception {
-        FreeStyleProject p = createFreeStyleProject("foo");
+        FreeStyleProject p = j.createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
-        listener = new StreamTaskListener(System.out);
+        listener = StreamTaskListener.fromStdout();
 
         assertEquals("{abc=[def, ghi], jkl=[true]}",TokenMacro.expand(b,listener,"${TEST_NESTED}"));
     }
 
+    @Test
     public void testVeryLongStringArg() throws Exception {
         StringBuilder veryLongStringParam = new StringBuilder();
         for (int i = 0 ; i < 500 ; ++i) {
             veryLongStringParam.append("abc123 %_= ~");
         }
 
-        FreeStyleProject p = createFreeStyleProject("foo");
+        FreeStyleProject p = j.createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
         listener = new StreamTaskListener(System.out);
@@ -57,8 +66,9 @@ public class TokenMacroTest extends HudsonTestCase {
         assertEquals("{arg=["+ veryLongStringParam + "]}",TokenMacro.expand(b,listener,"${TEST, arg=\"" + veryLongStringParam + "\"}"));
     }
 
+    @Test
     public void testMultilineStringArgs() throws Exception {
-        FreeStyleProject p = createFreeStyleProject("foo");
+        FreeStyleProject p = j.createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
         listener = new StreamTaskListener(System.out);
@@ -68,8 +78,9 @@ public class TokenMacroTest extends HudsonTestCase {
         assertEquals("${TEST, arg = \"a \n b  \r\n c\"}\n",TokenMacro.expand(b, listener, "${TEST, arg = \"a \n b  \r\n c\"}\n"));
     }
 
+    @Test
     public void testEscaped() throws Exception {
-        FreeStyleProject p = createFreeStyleProject("foo");
+        FreeStyleProject p = j.createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
         assertEquals("${TEST_NESTED}",TokenMacro.expand(b,TaskListener.NULL,"$${TEST_NESTED}"));
@@ -80,23 +91,26 @@ public class TokenMacroTest extends HudsonTestCase {
         assertEquals("{abc=[def, ghi], jkl=[true]}${TEST_NESTED}",TokenMacro.expand(b,TaskListener.NULL,"$TEST_NESTED$${TEST_NESTED}"));        
     }
     
+    @Test
     public void testInvalidNoException() throws Exception {
-        FreeStyleProject p = createFreeStyleProject("foo");
+        FreeStyleProject p = j.createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
         
         assertEquals("[Error replacing 'ENV' - Undefined parameter Var in token ENV]", TokenMacro.expand(b, TaskListener.NULL, "${ENV, Var=\"HOSTNAME\"}", false, Collections.EMPTY_LIST));        
     }
     
+    @Test
     public void testNumeric() throws Exception {
-        FreeStyleProject p = createFreeStyleProject("foo");
+        FreeStyleProject p = j.createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
         
         assertEquals("For only 10 easy payment of $69.99 , AWESOME-O 4000 can be yours!", TokenMacro.expand(b,TaskListener.NULL,"For only 10 easy payment of $69.99 , AWESOME-O 4000 can be yours!"));
     }
 
     @Bug(18014)
+    @Test
     public void testEscapeCharEscaped() throws Exception {
-        FreeStyleProject p = createFreeStyleProject("foo");
+        FreeStyleProject p = j.createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
         listener = new StreamTaskListener(System.out);
@@ -106,21 +120,23 @@ public class TokenMacroTest extends HudsonTestCase {
         assertEquals("{abc=[def, ghi], jkl=[true]}\\{abc=[def, ghi], jkl=[true]}",TokenMacro.expand(b,listener,"$TEST_NESTED\\${TEST_NESTED}"));
     }
 
+    @Test
     public void testPrivate() throws Exception {
         List<TokenMacro> privateMacros = new ArrayList<TokenMacro>();
         privateMacros.add(new PrivateTestMacro());
         privateMacros.add(new PrivateTestMacro2());
 
-        FreeStyleProject p = createFreeStyleProject("foo");
+        FreeStyleProject p = j.createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
         listener = new StreamTaskListener(System.out);
-        assertEquals("TEST_PRIVATE"+hudson.getRootUrl()+"job/foo/1/TEST2_PRIVATE", 
+        assertEquals("TEST_PRIVATE"+j.jenkins.getRootUrl()+"job/foo/1/TEST2_PRIVATE", 
             TokenMacro.expand(b,listener,"${TEST_PRIVATE}${BUILD_URL}${TEST2_PRIVATE}",true,privateMacros));
     }
 
+    @Test
     public void testException() throws Exception {
-        FreeStyleProject p = createFreeStyleProject("foo");
+        FreeStyleProject p = j.createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
         listener = new StreamTaskListener(System.out);
