@@ -1,8 +1,8 @@
-
 package org.jenkinsci.plugins.tokenmacro.impl;
 
 import hudson.Extension;
-import hudson.model.AbstractBuild;
+import hudson.FilePath;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 import java.io.BufferedReader;
 import java.io.File;
@@ -10,14 +10,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 
 /**
- * Uses a regular expression to find a single log entry and generates
- * a new output using the capture groups from it. This is partially
- * based on the description-setter plugin
+ * Uses a regular expression to find a single log entry and generates a new
+ * output using the capture groups from it. This is partially based on the
+ * description-setter plugin
  * (https://github.com/jenkinsci/description-setter-plugin).
  *
  */
@@ -37,12 +36,11 @@ public final class LogRegExMacro extends DataBoundTokenMacro {
     }
 
     @Override
-    public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName) throws MacroEvaluationException, IOException, InterruptedException {
+    public String evaluate(Run<?, ?> context, FilePath workspace, TaskListener listener, String macroName) throws MacroEvaluationException, IOException, InterruptedException {
         return readLogFile(context.getLogFile());
     }
 
-    public String readLogFile(File file) throws IOException
-    {
+    public String readLogFile(File file) throws IOException {
         if (regex == null) {
             return "";
         }
@@ -51,11 +49,9 @@ public final class LogRegExMacro extends DataBoundTokenMacro {
         String line;
         Pattern pattern = Pattern.compile(regex);
         BufferedReader reader = new BufferedReader(new FileReader(file));
-        while ((line = reader.readLine()) != null)
-        {
+        while ((line = reader.readLine()) != null) {
             Matcher matcher = pattern.matcher(line);
-            if (matcher.find())
-            {
+            if (matcher.find()) {
                 // Match only the top-most line
                 return getTranslatedDescription(matcher);
             }
@@ -64,26 +60,21 @@ public final class LogRegExMacro extends DataBoundTokenMacro {
         return "";
     }
 
-    private String getTranslatedDescription(Matcher matcher)
-    {
+    private String getTranslatedDescription(Matcher matcher) {
         String result = replacement;
         if (result == null) {
-            if (matcher.groupCount() == 0)
-            {
+            if (matcher.groupCount() == 0) {
                 result = "\\0";
-            }
-            else
-            {
+            } else {
                 result = "\\1";
             }
         }
 
         // Expand all groups: 1..Count, as well as 0 for the entire pattern
-        for (int i = matcher.groupCount(); i >= 0; i--)
-        {
+        for (int i = matcher.groupCount(); i >= 0; i--) {
             result = result.replace(
-                "\\" + i,
-                matcher.group(i) == null ? "" : matcher.group(i));
+                    "\\" + i,
+                    matcher.group(i) == null ? "" : matcher.group(i));
         }
 
         return result;

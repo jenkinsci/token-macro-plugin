@@ -1,18 +1,21 @@
 package org.jenkinsci.plugins.tokenmacro.impl;
 
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.model.AbstractBuild;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.remoting.Callable;
-import java.io.Closeable;
-import java.io.Reader;
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.util.Properties;
 import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
+import org.jenkinsci.remoting.RoleChecker;
 
 /**
  * Expands to a property from a property file relative to the workspace root.
@@ -32,9 +35,9 @@ public class PropertyFromFileMacro extends DataBoundTokenMacro {
     }
 
     @Override
-    public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName) throws MacroEvaluationException, IOException, InterruptedException {
-        String root = context.getWorkspace().getRemote();
-        return context.getWorkspace().act(new ReadProperty(root,file,property));
+    public String evaluate(Run<?, ?> context, FilePath workspace, TaskListener listener, String macroName) throws MacroEvaluationException, IOException, InterruptedException {
+        String root = workspace.getRemote();
+        return workspace.act(new ReadProperty(root,file,property));
     }
 
     private static class ReadProperty implements Callable<String,IOException> {
@@ -49,6 +52,7 @@ public class PropertyFromFileMacro extends DataBoundTokenMacro {
             this.propertyname=property;
         }
         
+        @Override
         public String call() throws IOException {
             Properties props = new Properties();
             File file = new File(root, filename);
@@ -76,6 +80,11 @@ public class PropertyFromFileMacro extends DataBoundTokenMacro {
             }
             
             return propertyValue;
+        }
+
+        @Override
+        public void checkRoles(RoleChecker rc) throws SecurityException {
+            //TODO: determine what to do here
         }
     }
 }

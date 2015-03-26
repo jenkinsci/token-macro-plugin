@@ -1,14 +1,13 @@
 package org.jenkinsci.plugins.tokenmacro;
 
 import com.google.common.collect.ListMultimap;
+import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.util.StreamTaskListener;
-import org.jvnet.hudson.test.Bug;
-import org.jvnet.hudson.test.TestExtension;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -18,7 +17,9 @@ import static junit.framework.Assert.fail;
 import static junit.framework.TestCase.assertEquals;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.TestExtension;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -159,7 +160,7 @@ public class TokenMacroTest {
         }
 
         @Override
-        public String evaluate(AbstractBuild<?,?> context, TaskListener listener, String macroName, Map<String,String> arguments, ListMultimap<String, String> argumentMultimap) throws MacroEvaluationException, IOException, InterruptedException {
+        public String evaluate(Run<?,?> context, FilePath workspace, TaskListener listener, String macroName, Map<String,String> arguments, ListMultimap<String, String> argumentMultimap) throws MacroEvaluationException, IOException, InterruptedException {
             return "TEST_PRIVATE";
         }
     }
@@ -171,7 +172,7 @@ public class TokenMacroTest {
         }
 
         @Override
-        public String evaluate(AbstractBuild<?,?> context, TaskListener listener, String macroName, Map<String,String> arguments, ListMultimap<String, String> argumentMultimap) throws MacroEvaluationException, IOException, InterruptedException {
+        public String evaluate(Run<?,?> context, FilePath workspace, TaskListener listener, String macroName, Map<String,String> arguments, ListMultimap<String, String> argumentMultimap) throws MacroEvaluationException, IOException, InterruptedException {
             return "TEST2_PRIVATE";
         }
     }
@@ -184,7 +185,7 @@ public class TokenMacroTest {
         }
 
         @Override
-        public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap) throws MacroEvaluationException, IOException, InterruptedException {
+        public String evaluate(Run<?, ?> context, FilePath workspace, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap) throws MacroEvaluationException, IOException, InterruptedException {
             return argumentMultimap.toString();
         }
     }
@@ -197,7 +198,7 @@ public class TokenMacroTest {
         }
 
         @Override
-        public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap) throws MacroEvaluationException, IOException, InterruptedException {
+        public String evaluate(Run<?, ?> context, FilePath workspace, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap) throws MacroEvaluationException, IOException, InterruptedException {
             return "${TEST,abc=\"def\",abc=\"ghi\",jkl=true}";
         }
 

@@ -24,7 +24,9 @@
 package org.jenkinsci.plugins.tokenmacro;
 
 import com.google.common.collect.ListMultimap;
+import hudson.FilePath;
 import hudson.model.AbstractBuild;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 import org.apache.commons.beanutils.ConvertUtils;
 
@@ -161,7 +163,8 @@ public abstract class DataBoundTokenMacro extends TokenMacro {
     }
 
     @Override
-    public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap) throws MacroEvaluationException, IOException, InterruptedException {
+    public String evaluate(Run<?, ?> context, FilePath workspace, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap) 
+            throws MacroEvaluationException, IOException, InterruptedException {
         try {
             DataBoundTokenMacro copy = getClass().newInstance();
 
@@ -186,15 +189,20 @@ public abstract class DataBoundTokenMacro extends TokenMacro {
                     throw new MacroEvaluationException(MessageFormat.format("Parameter {0} in token {1} is required but was not specfified", e.getKey(), macroName));
             }
 
-            return copy.evaluate(context,listener,macroName);
+            return copy.evaluate(context, workspace, listener, macroName);
         } catch (InstantiationException e) {
             throw new Error(e);
         } catch (IllegalAccessException e) {
             throw new Error(e);
         }
     }
-
-    public abstract String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName) throws MacroEvaluationException, IOException, InterruptedException;
+    
+    public abstract String evaluate(Run<?, ?> context, FilePath workspace, TaskListener listener, String macroName) throws MacroEvaluationException, IOException, InterruptedException;
+    
+    @Deprecated
+    public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName) throws MacroEvaluationException, IOException, InterruptedException {
+        return evaluate(context, context.getWorkspace(), listener, macroName);
+    }
 
     @Override
     public boolean hasNestedContent() {

@@ -8,7 +8,8 @@ package org.jenkinsci.plugins.tokenmacro.impl;
 
 import com.google.common.collect.ListMultimap;
 import hudson.Extension;
-import hudson.model.AbstractBuild;
+import hudson.FilePath;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 import java.io.IOException;
 import java.util.Map;
@@ -31,7 +32,8 @@ public class AdminEmailMacro extends TokenMacro {
     }
 
     @Override
-    public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap) throws MacroEvaluationException, IOException, InterruptedException {
+    public String evaluate(Run<?, ?> context, FilePath workspace, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap) 
+            throws MacroEvaluationException, IOException, InterruptedException{
         return JenkinsLocationConfiguration.get().getAdminAddress();
     }
     

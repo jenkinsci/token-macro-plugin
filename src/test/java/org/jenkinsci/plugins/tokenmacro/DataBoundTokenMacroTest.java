@@ -6,9 +6,11 @@
 
 package org.jenkinsci.plugins.tokenmacro;
 
+import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 import java.io.IOException;
 import static junit.framework.TestCase.assertEquals;
@@ -57,7 +59,7 @@ public class DataBoundTokenMacroTest {
         public String arg = "default";
 
         @Override
-        public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName) throws MacroEvaluationException, IOException, InterruptedException {
+        public String evaluate(Run<?, ?> context, FilePath workspace, TaskListener listener, String macroName) throws MacroEvaluationException, IOException, InterruptedException {
             return arg;
         }
 
@@ -81,7 +83,7 @@ public class DataBoundTokenMacroTest {
         }
         
         @Override
-        public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName) throws MacroEvaluationException, IOException, InterruptedException {
+        public String evaluate(Run<?, ?> context, FilePath workspace, TaskListener listener, String macroName) throws MacroEvaluationException, IOException, InterruptedException {
             return String.format("default = %s, arg2 = %d", arg, arg2);
         }
 

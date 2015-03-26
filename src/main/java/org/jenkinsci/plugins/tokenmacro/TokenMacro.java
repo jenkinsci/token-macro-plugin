@@ -26,11 +26,11 @@ package org.jenkinsci.plugins.tokenmacro;
 import com.google.common.collect.ListMultimap;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.FilePath;
 import hudson.Util;
 import hudson.model.AbstractBuild;
+import hudson.model.Run;
 import hudson.model.TaskListener;
-import org.apache.commons.lang.StringUtils;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import jenkins.model.Jenkins;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * A macro that expands to text values in the context of a {@link AbstractBuild}.
@@ -124,7 +125,13 @@ public abstract class TokenMacro implements ExtensionPoint {
      *      If the evaluation involves some remoting operation, user might cancel the build, which results
      *      in an {@link InterruptedException}. Don't catch it, just propagate.
      */
-    public abstract String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap)
+    @Deprecated
+    public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap)
+            throws MacroEvaluationException, IOException, InterruptedException {
+        return evaluate(context, context.getWorkspace(), listener, macroName, arguments, argumentMultimap);
+    }
+    
+    public abstract String evaluate(Run<?, ?> context, FilePath workspace, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap) 
             throws MacroEvaluationException, IOException, InterruptedException;
 
     /**
@@ -139,6 +146,7 @@ public abstract class TokenMacro implements ExtensionPoint {
 
     /**
      * All registered extension points.
+     * @return All TokenMacro's in the system
      */
     public static ExtensionList<TokenMacro> all() {
         return Jenkins.getInstance().getExtensionList(TokenMacro.class);
@@ -147,14 +155,27 @@ public abstract class TokenMacro implements ExtensionPoint {
     /**
      * Expands all the macros, and throws an exception if there's any problem found.
      *
+     * @param context The build to retrieve context information from
+     * @param listener A listener for logging
      * @param stringWithMacro
      *      String that contains macro references in it, like "foo bar ${zot}".
+     * @return The string replaced with the macro values
      */
+    @Deprecated
     public static String expand(AbstractBuild<?,?> context, TaskListener listener, String stringWithMacro) throws MacroEvaluationException, IOException, InterruptedException {
-        return expand(context, listener, stringWithMacro, true, null);
+        return expand(context, context.getWorkspace(), listener, stringWithMacro, true, null);
+    }
+    
+    public static String expand(Run<?,?> context, FilePath workspace, TaskListener listener, String stringWithMacro) throws MacroEvaluationException, IOException, InterruptedException {
+        return expand(context, workspace, listener, stringWithMacro, true, null);
     }
 
+    @Deprecated
     public static String expand(AbstractBuild<?,?> context, TaskListener listener, String stringWithMacro, boolean throwException, List<TokenMacro> privateTokens) throws MacroEvaluationException, IOException, InterruptedException {
+        return expand(context, context.getWorkspace(), listener, stringWithMacro, throwException, privateTokens);
+    }
+    
+    public static String expand(Run<?, ?> context, FilePath workspace, TaskListener listener, String stringWithMacro, boolean throwException, List<TokenMacro> privateTokens) throws MacroEvaluationException, IOException, InterruptedException {
         if ( StringUtils.isBlank( stringWithMacro ) ) return stringWithMacro;
         StringBuffer sb = new StringBuffer();
         Tokenizer tokenizer = new Tokenizer(stringWithMacro);
@@ -179,9 +200,9 @@ public abstract class TokenMacro implements ExtensionPoint {
                 for (TokenMacro tm : all) {
                     if (tm.acceptsMacroName(tokenName)) {
                         try {
-                            replacement = tm.evaluate(context,listener,tokenName,map,args);
+                            replacement = tm.evaluate(context,workspace,listener,tokenName,map,args);
                             if(tm.hasNestedContent()) {
-                                replacement = expand(context,listener,replacement,throwException,privateTokens);
+                                replacement = expand(context,workspace,listener,replacement,throwException,privateTokens);
                             }
                         } catch(MacroEvaluationException e) {
                             if(throwException) {
