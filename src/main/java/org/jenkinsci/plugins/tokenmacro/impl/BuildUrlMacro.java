@@ -25,8 +25,9 @@ package org.jenkinsci.plugins.tokenmacro.impl;
 
 import com.google.common.collect.ListMultimap;
 import hudson.Extension;
-import hudson.model.AbstractBuild;
-import hudson.model.Hudson;
+import hudson.FilePath;
+import jenkins.model.Jenkins;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.jenkinsci.plugins.tokenmacro.TokenMacro;
@@ -45,7 +46,7 @@ public class BuildUrlMacro extends TokenMacro {
     }
 
     @Override
-    public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap) throws MacroEvaluationException, IOException, InterruptedException {
-        return Hudson.getInstance().getRootUrl() + context.getUrl();
+    public String evaluate(Run<?, ?> context, FilePath workspace, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap) throws MacroEvaluationException, IOException, InterruptedException {
+        return Jenkins.getInstance().getRootUrl() + context.getUrl();
     }
 }
