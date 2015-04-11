@@ -33,7 +33,7 @@ public class LogRegExMacroTest {
         });
         FreeStyleBuild b = project.scheduleBuild2(0).get();
 
-        listener = new StreamTaskListener(System.out);
-        assertEquals("value 123",TokenMacro.expand(b, listener, "${LOG_REGEX,regex=\"Test Property (123)\",replacement=\"value \\\\1\"}"));
+        assertEquals("value 123",TokenMacro.expand(b, StreamTaskListener.fromStdout(),
+                "${LOG_REGEX,regex=\"Test Property (123)\",replacement=\"value \\\\1\"}"));
     }
 }

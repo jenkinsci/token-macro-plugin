@@ -35,8 +35,7 @@ public class PropertyFromFileMacroTest {
             }
         });
         FreeStyleBuild b = project.scheduleBuild2(0).get();
-
-        listener = new StreamTaskListener(System.out);
-        assertEquals("success",TokenMacro.expand(b, listener, "${PROPFILE,file=\"test.properties\",property=\"test.property\"}"));
+        assertEquals("success",TokenMacro.expand(b, StreamTaskListener.fromStdout(), 
+                "${PROPFILE,file=\"test.properties\",property=\"test.property\"}"));
     }
 }

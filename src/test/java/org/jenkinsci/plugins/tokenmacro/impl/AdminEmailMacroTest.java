@@ -21,7 +21,6 @@ import org.jvnet.hudson.test.JenkinsRule;
  * @author acearl
  */
 public class AdminEmailMacroTest {
-    
     @Rule
     public final JenkinsRule j = new JenkinsRule();
 
@@ -34,5 +33,4 @@ public class AdminEmailMacroTest {
         
         assertEquals("mickey@disney.com",TokenMacro.expand(b, StreamTaskListener.fromStdout(),"${ADMIN_EMAIL}"));
     }
-    
 }

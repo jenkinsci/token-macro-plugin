@@ -22,8 +22,6 @@ public class EnvironmentVariableMacroTest {
     public void testEnvironmentVariableExpansion() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
-        
-        listener = StreamTaskListener.fromStdout();
-        assertEquals("foo",TokenMacro.expand(b, listener,"${ENV,var=\"JOB_NAME\"}"));
+        assertEquals("foo",TokenMacro.expand(b, StreamTaskListener.fromStdout(),"${ENV,var=\"JOB_NAME\"}"));
     }
 }
