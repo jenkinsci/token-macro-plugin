@@ -1,13 +1,17 @@
 
 package org.jenkinsci.plugins.tokenmacro.impl;
 
+import com.google.common.io.Files;
 import hudson.Extension;
 import hudson.model.AbstractBuild;
 import hudson.model.TaskListener;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -50,15 +54,21 @@ public final class LogRegExMacro extends DataBoundTokenMacro {
         // Assume default encoding and text files
         String line;
         Pattern pattern = Pattern.compile(regex);
-        BufferedReader reader = new BufferedReader(new FileReader(file));
-        while ((line = reader.readLine()) != null)
-        {
-            Matcher matcher = pattern.matcher(line);
-            if (matcher.find())
+        
+        BufferedReader reader = new BufferedReader(
+                new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8));
+        try {
+            while ((line = reader.readLine()) != null)
             {
-                // Match only the top-most line
-                return getTranslatedDescription(matcher);
+                Matcher matcher = pattern.matcher(line);
+                if (matcher.find())
+                {
+                    // Match only the top-most line
+                    return getTranslatedDescription(matcher);
+                }
             }
+        } finally {
+            reader.close();
         }
 
         return "";
