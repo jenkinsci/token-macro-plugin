@@ -37,11 +37,19 @@ public class MacroEvaluationException extends Exception {
     private final @CheckForNull String macroName;
     
     public MacroEvaluationException(@Nonnull String message) {
-        this(message, null);
+        this(message, null, null);
+    }
+    
+    public MacroEvaluationException(@Nonnull String message, @CheckForNull Throwable cause) {
+        this(message, null, cause);
     }
 
     public MacroEvaluationException(@CheckForNull String message, @Nonnull String macroName) {
-        super(message);
+        this(message, macroName, null);
+    }
+    
+    public MacroEvaluationException(@CheckForNull String message, @CheckForNull String macroName, @CheckForNull Throwable cause) {
+        super(message, cause);
         this.macroName = macroName;
     }
 
@@ -52,7 +60,7 @@ public class MacroEvaluationException extends Exception {
 
     @Override
     public String getMessage() {
-        final String prefix = macroName != null ? "In "+macroName + ": " :  "";
-        return  prefix +  super.getMessage();
+        final String prefix = macroName != null ? "In " + macroName + ": " : "";
+        return prefix + super.getMessage();
     }
 }
