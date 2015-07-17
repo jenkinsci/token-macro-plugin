@@ -11,7 +11,9 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -34,6 +36,13 @@ public final class LogRegExMacro extends DataBoundTokenMacro {
 
     @Parameter(required=true)
     public String replacement = null;
+    
+    /**
+     * Charset to be used in order to read logs from the file.
+     * @since TODO
+     */
+    @Parameter(required = false)
+    public String charset = null;
 
     @Override
     public boolean acceptsMacroName(String macroName) {
@@ -51,12 +60,22 @@ public final class LogRegExMacro extends DataBoundTokenMacro {
             return "";
         }
 
-        // Assume default encoding and text files
+        // Prepare patterns and encodings
         String line;
         Pattern pattern = Pattern.compile(regex);
-        
+        Charset logCharset = Charset.defaultCharset();
+        if (charset != null) {
+            try {
+                logCharset = Charset.forName(charset);
+            } catch (IllegalCharsetNameException ex) {
+                throw new IOException("Charset " + charset + " is illegal", ex);
+            } catch (UnsupportedCharsetException ex) {
+                throw new IOException("Charset " + charset + " is not supported", ex);
+            }
+        }
+                
         BufferedReader reader = new BufferedReader(
-                new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8));
+                new InputStreamReader(new FileInputStream(file), logCharset));
         try {
             while ((line = reader.readLine()) != null)
             {
