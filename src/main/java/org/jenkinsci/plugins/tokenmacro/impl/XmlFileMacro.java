@@ -1,6 +1,7 @@
 package org.jenkinsci.plugins.tokenmacro.impl;
 
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.model.TaskListener;
 import hudson.remoting.Callable;
@@ -10,6 +11,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.w3c.dom.*;
 import javax.xml.xpath.*;
 import javax.xml.parsers.*;
@@ -24,6 +27,8 @@ import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 @Extension
 public class XmlFileMacro extends DataBoundTokenMacro {
 
+    public static final Logger LOGGER = Logger.getLogger(XmlFileMacro.class.getName());
+    
     @Parameter(required=true)
     public String file = null;
 
@@ -37,8 +42,9 @@ public class XmlFileMacro extends DataBoundTokenMacro {
 
     @Override
     public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName) throws MacroEvaluationException, IOException, InterruptedException {
-        String root = context.getWorkspace().getRemote();
-        return context.getWorkspace().act(new ReadXML(root,file,xpath));
+        FilePath workspace = getWorkspace(context, macroName);
+        String root = workspace.getRemote();
+        return workspace.act(new ReadXML(root,file,xpath));
     }
 
     private static class ReadXML implements Callable<String,IOException> {
@@ -67,7 +73,7 @@ public class XmlFileMacro extends DataBoundTokenMacro {
                     Object res = expr.evaluate(doc, XPathConstants.NODESET);
                     NodeList nodes = (NodeList) res;
                     for (int i = 0; i < nodes.getLength(); i++) {
-                        result = result.concat(nodes.item(i).getNodeValue().toString()).concat(";");
+                        result = result.concat(nodes.item(i).getNodeValue()).concat(";");
                     }
 
                     result = result.substring(0, result.length() - 1); // trim the last ';'
@@ -78,7 +84,8 @@ public class XmlFileMacro extends DataBoundTokenMacro {
                 catch (SAXException e) {
                     result = "Error: ".concat(filename).concat(" - XML not well formed.");
                 }
-                catch (Exception e) {
+                catch (Throwable e) {
+                    LOGGER.log(Level.WARNING, "Unhandled exception during the macro evaluation", e);
                     result = "Error: ".concat(filename).concat(" - '").concat(xpathexpression).concat("' invalid syntax or path maybe?");
                 }
             }

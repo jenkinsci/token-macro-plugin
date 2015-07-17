@@ -25,6 +25,7 @@ package org.jenkinsci.plugins.tokenmacro.impl;
 
 import hudson.EnvVars;
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.model.TaskListener;
 import java.io.IOException;
@@ -57,12 +58,13 @@ public class WorkspaceFileMacro extends DataBoundTokenMacro  {
             listener.error("Error retrieving environment: %s", e.getMessage());
         }
         
-        if(!context.getWorkspace().child(path).exists()) {
+        final FilePath workspace = getWorkspace(context, macroName);
+        if(!workspace.child(path).exists()) {
             return String.format(fileNotFoundMessage, path);
         }
 
         try {
-            return context.getWorkspace().child(path).readToString();
+            return workspace.child(path).readToString();
         } catch (IOException e) {
             return "ERROR: File '" + path + "' could not be read";
         }

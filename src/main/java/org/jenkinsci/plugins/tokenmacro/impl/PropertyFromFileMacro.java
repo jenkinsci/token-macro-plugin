@@ -1,6 +1,7 @@
 package org.jenkinsci.plugins.tokenmacro.impl;
 
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.model.TaskListener;
 import hudson.remoting.Callable;
@@ -8,8 +9,11 @@ import java.io.Closeable;
 import java.io.Reader;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
@@ -33,8 +37,9 @@ public class PropertyFromFileMacro extends DataBoundTokenMacro {
 
     @Override
     public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName) throws MacroEvaluationException, IOException, InterruptedException {
-        String root = context.getWorkspace().getRemote();
-        return context.getWorkspace().act(new ReadProperty(root,file,property));
+        final FilePath workspace = getWorkspace(context, macroName);
+        String root = workspace.getRemote();
+        return workspace.act(new ReadProperty(root,file,property));
     }
 
     private static class ReadProperty implements Callable<String,IOException> {
@@ -54,7 +59,7 @@ public class PropertyFromFileMacro extends DataBoundTokenMacro {
             File file = new File(root, filename);
             String propertyValue = "";
             if (file.exists()) {
-                Reader reader = new FileReader(file);
+                Reader reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8);
                 Closeable resource = reader;    
                 try {
                     BufferedReader bReader = new BufferedReader(reader);

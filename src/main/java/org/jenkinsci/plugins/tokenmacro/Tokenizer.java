@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.annotation.Nonnull;
 
 /**
  * Parses strings with macro references.
@@ -149,7 +150,7 @@ class Tokenizer {
         }
     }
 
-    void appendReplacement(StringBuffer sb, String replacement) {
+    void appendReplacement(@Nonnull StringBuffer sb, @Nonnull String replacement) {
         tokenMatcher.appendReplacement(sb, Matcher.quoteReplacement(replacement));
     }
 
