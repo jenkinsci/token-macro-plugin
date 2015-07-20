@@ -1,0 +1,6 @@
+<j:jelly xmlns:j="jelly:core">
+  <dt>$${FILE,path="PATH"}</dt>
+  <dd>
+    Expands to the contents of a file. The file path is relative to the build workspace root.
+  </dd>
+</j:jelly>

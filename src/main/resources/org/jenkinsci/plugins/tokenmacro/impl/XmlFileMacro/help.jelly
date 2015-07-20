@@ -1,0 +1,8 @@
+<j:jelly xmlns:j="jelly:core">
+  <dt>$${XML,file="FILE",xpath="XPATH"}</dt>
+  <dd>
+    Expands to the result(s) of an XPath expression run against the given XML file.<br/>
+    If the XPath evaluates to more than one value, then a semicolon-separated string is returned.<br/>
+    The file path is relative to the build workspace root.
+  </dd>
+</j:jelly>
