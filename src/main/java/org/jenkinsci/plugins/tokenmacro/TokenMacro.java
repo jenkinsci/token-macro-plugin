@@ -26,6 +26,7 @@ package org.jenkinsci.plugins.tokenmacro;
 import com.google.common.collect.ListMultimap;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.FilePath;
 import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.TaskListener;
@@ -37,6 +38,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 
 /**
@@ -141,7 +144,12 @@ public abstract class TokenMacro implements ExtensionPoint {
      * All registered extension points.
      */
     public static ExtensionList<TokenMacro> all() {
-        return Jenkins.getInstance().getExtensionList(TokenMacro.class);
+        final Jenkins jenkins = Jenkins.getInstance();
+        if (jenkins != null) {
+            return jenkins.getExtensionList(TokenMacro.class);
+        } else {
+            return ExtensionList.create((Jenkins) null, TokenMacro.class);
+        }
     }
 
     /**
@@ -199,8 +207,9 @@ public abstract class TokenMacro implements ExtensionPoint {
             }
             if (replacement == null && !throwException) // just put the token back in since we don't want to throw the exception
                 tokenizer.appendReplacement(sb, tokenizer.group());
-            else
+            else if (replacement != null)
                 tokenizer.appendReplacement(sb, replacement);
+            //TODO: do something with null replacements?
         }
         tokenizer.appendTail(sb);
 
@@ -232,5 +241,22 @@ public abstract class TokenMacro implements ExtensionPoint {
         // Expand Macros
         s = expand(context,listener,s,throwException,privateTokens);
         return s;
+    }
+    
+    /**
+     * Gets a workspace of the build in the macro.
+     * @param context Build
+     * @param macroName Name of the macro being evaluated
+     * @return Retrieved workspace
+     * @throws MacroEvaluationException  Workspace is inaccessible
+     */
+    @Nonnull
+    protected FilePath getWorkspace(@Nonnull AbstractBuild<?, ?> context, @CheckForNull String macroName) 
+            throws MacroEvaluationException {
+        final FilePath workspace = context.getWorkspace();
+        if (workspace == null) {
+            throw new MacroEvaluationException("Workspace is not accessible");
+        }
+        return workspace;
     }
 }

@@ -23,6 +23,9 @@
  */
 package org.jenkinsci.plugins.tokenmacro;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+
 /**
  * Signals that the evaluation of the macro has failed, and the error should be presented to users
  * without a stack trace.
@@ -30,7 +33,34 @@ package org.jenkinsci.plugins.tokenmacro;
  * @author Kohsuke Kawaguchi
  */
 public class MacroEvaluationException extends Exception {
-    public MacroEvaluationException(String message) {
-        super(message);
+    
+    private final @CheckForNull String macroName;
+    
+    public MacroEvaluationException(@Nonnull String message) {
+        this(message, null, null);
+    }
+    
+    public MacroEvaluationException(@Nonnull String message, @CheckForNull Throwable cause) {
+        this(message, null, cause);
+    }
+
+    public MacroEvaluationException(@CheckForNull String message, @Nonnull String macroName) {
+        this(message, macroName, null);
+    }
+    
+    public MacroEvaluationException(@CheckForNull String message, @CheckForNull String macroName, @CheckForNull Throwable cause) {
+        super(message, cause);
+        this.macroName = macroName;
+    }
+
+    @CheckForNull
+    public String getMacroName() {
+        return macroName;
+    }
+
+    @Override
+    public String getMessage() {
+        final String prefix = macroName != null ? "In " + macroName + ": " : "";
+        return prefix + super.getMessage();
     }
 }
