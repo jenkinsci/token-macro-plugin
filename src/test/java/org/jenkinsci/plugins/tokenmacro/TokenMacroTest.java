@@ -1,10 +1,7 @@
 package org.jenkinsci.plugins.tokenmacro;
 
 import com.google.common.collect.ListMultimap;
-import hudson.model.AbstractBuild;
-import hudson.model.FreeStyleBuild;
-import hudson.model.FreeStyleProject;
-import hudson.model.TaskListener;
+import hudson.model.*;
 import hudson.util.StreamTaskListener;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.TestExtension;
@@ -14,6 +11,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.fail;
 import static junit.framework.TestCase.assertEquals;
 import org.junit.Rule;
@@ -153,10 +153,15 @@ public class TokenMacroTest {
     }
 
     public class PrivateTestMacro extends TokenMacro {
+        private static final String MACRO_NAME = "TEST_PRIVATE";
+
         @Override
         public boolean acceptsMacroName(String macroName) {
-            return macroName.equals("TEST_PRIVATE");
+            return macroName.equals(MACRO_NAME);
         }
+
+        @Override
+        public String getMacroName() { return MACRO_NAME; }
 
         @Override
         public String evaluate(AbstractBuild<?,?> context, TaskListener listener, String macroName, Map<String,String> arguments, ListMultimap<String, String> argumentMultimap) throws MacroEvaluationException, IOException, InterruptedException {
@@ -165,10 +170,15 @@ public class TokenMacroTest {
     }
 
     public class PrivateTestMacro2 extends TokenMacro {
+        private static final String MACRO_NAME = "TEST2_PRIVATE";
+
         @Override
         public boolean acceptsMacroName(String macroName) {
-            return macroName.equals("TEST2_PRIVATE");
+            return macroName.equals(MACRO_NAME);
         }
+
+        @Override
+        public String getMacroName() { return MACRO_NAME; }
 
         @Override
         public String evaluate(AbstractBuild<?,?> context, TaskListener listener, String macroName, Map<String,String> arguments, ListMultimap<String, String> argumentMultimap) throws MacroEvaluationException, IOException, InterruptedException {
@@ -178,10 +188,15 @@ public class TokenMacroTest {
 
     @TestExtension
     public static class TestMacro extends TokenMacro {
+        private static final String MACRO_NAME = "TEST";
+
         @Override
         public boolean acceptsMacroName(String macroName) {
-            return macroName.equals("TEST");
+            return macroName.equals(MACRO_NAME);
         }
+
+        @Override
+        public String getMacroName() { return MACRO_NAME; }
 
         @Override
         public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap) throws MacroEvaluationException, IOException, InterruptedException {
@@ -191,10 +206,13 @@ public class TokenMacroTest {
 
     @TestExtension
     public static class NestedTestMacro extends TokenMacro {
+        private static final String MACRO_NAME = "TEST_NESTED";
+
         @Override
-        public boolean acceptsMacroName(String macroName) {
-            return macroName.equals("TEST_NESTED");
-        }
+        public boolean acceptsMacroName(String macroName) { return macroName.equals(MACRO_NAME); }
+
+        @Override
+        public String getMacroName() { return MACRO_NAME; }
 
         @Override
         public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap) throws MacroEvaluationException, IOException, InterruptedException {
@@ -204,6 +222,24 @@ public class TokenMacroTest {
         @Override
         public boolean hasNestedContent() {
             return true;
+        }
+    }
+
+    @TestExtension
+    public static class TestMacro2 extends TokenMacro {
+        private static final String MACRO_NAME = "TEST_2";
+
+        @Override
+        public boolean acceptsMacroName(String macroName) {
+            return macroName.equals(MACRO_NAME);
+        }
+
+        @Override
+        public String getMacroName() { return MACRO_NAME; }
+
+        @Override
+        public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap) throws MacroEvaluationException, IOException, InterruptedException {
+            return argumentMultimap.toString();
         }
     }
 }

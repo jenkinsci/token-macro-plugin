@@ -4,13 +4,11 @@ import hudson.Extension;
 import hudson.model.AbstractBuild;
 import hudson.model.TaskListener;
 import hudson.remoting.Callable;
-import java.io.Closeable;
-import java.io.Reader;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+
+import java.io.*;
 import java.util.Properties;
+
+import jenkins.security.MasterToSlaveCallable;
 import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 
@@ -20,6 +18,8 @@ import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 @Extension
 public class PropertyFromFileMacro extends DataBoundTokenMacro {
 
+    private static final String MACRO_NAME = "PROPFILE";
+
     @Parameter(required=true)
     public String file = null;
 
@@ -28,7 +28,7 @@ public class PropertyFromFileMacro extends DataBoundTokenMacro {
 
     @Override
     public boolean acceptsMacroName(String macroName) {
-        return macroName.equals("PROPFILE");
+        return macroName.equals(MACRO_NAME);
     }
 
     @Override
@@ -37,7 +37,7 @@ public class PropertyFromFileMacro extends DataBoundTokenMacro {
         return context.getWorkspace().act(new ReadProperty(root,file,property));
     }
 
-    private static class ReadProperty implements Callable<String,IOException> {
+    private static class ReadProperty extends MasterToSlaveCallable<String,IOException> {
 
         private String root;
         private String filename;

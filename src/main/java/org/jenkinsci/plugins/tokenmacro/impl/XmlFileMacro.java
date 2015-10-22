@@ -10,6 +10,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+
+import jenkins.security.MasterToSlaveCallable;
 import org.w3c.dom.*;
 import javax.xml.xpath.*;
 import javax.xml.parsers.*;
@@ -24,6 +26,8 @@ import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 @Extension
 public class XmlFileMacro extends DataBoundTokenMacro {
 
+    private static final String MACRO_NAME = "XML";
+
     @Parameter(required=true)
     public String file = null;
 
@@ -32,7 +36,7 @@ public class XmlFileMacro extends DataBoundTokenMacro {
 
     @Override
     public boolean acceptsMacroName(String macroName) {
-        return macroName.equals("XML");
+        return macroName.equals(MACRO_NAME);
     }
 
     @Override
@@ -41,7 +45,7 @@ public class XmlFileMacro extends DataBoundTokenMacro {
         return context.getWorkspace().act(new ReadXML(root,file,xpath));
     }
 
-    private static class ReadXML implements Callable<String,IOException> {
+    private static class ReadXML extends MasterToSlaveCallable<String, IOException> {
 
         private String root;
         private String filename;
