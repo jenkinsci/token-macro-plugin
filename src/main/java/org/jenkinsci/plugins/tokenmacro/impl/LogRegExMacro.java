@@ -46,7 +46,7 @@ public final class LogRegExMacro extends DataBoundTokenMacro {
 
     @Override
     public boolean acceptsMacroName(String macroName) {
-        return macroName.equals(MACRO_NAME);
+        return MACRO_NAME.equals(macroName);
     }
 
     @Override
