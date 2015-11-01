@@ -4,6 +4,7 @@ import com.google.common.collect.ListMultimap;
 import hudson.model.*;
 import hudson.util.StreamTaskListener;
 import org.jvnet.hudson.test.Bug;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.TestExtension;
 
 import java.io.IOException;
@@ -89,6 +90,20 @@ public class TokenMacroTest {
         assertEquals("${TEST_NESTED}{abc=[def, ghi], jkl=[true]}",TokenMacro.expand(b,TaskListener.NULL,"$${TEST_NESTED}$TEST_NESTED"));
         assertEquals("{abc=[def, ghi], jkl=[true]}$TEST_NESTED",TokenMacro.expand(b,TaskListener.NULL,"$TEST_NESTED$$TEST_NESTED"));
         assertEquals("{abc=[def, ghi], jkl=[true]}${TEST_NESTED}",TokenMacro.expand(b,TaskListener.NULL,"$TEST_NESTED$${TEST_NESTED}"));        
+    }
+
+    @Test
+    @Issue("JENKINS-29816")
+    public void testEscapedExpandAll() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject("foo");
+        FreeStyleBuild b = p.scheduleBuild2(0).get();
+
+        assertEquals("${TEST_NESTED}",TokenMacro.expandAll(b, TaskListener.NULL, "$${TEST_NESTED}"));
+        assertEquals("$TEST_NESTED",TokenMacro.expandAll(b, TaskListener.NULL, "$$TEST_NESTED"));
+        assertEquals("$TEST_NESTED{abc=[def, ghi], jkl=[true]}",TokenMacro.expandAll(b, TaskListener.NULL, "$$TEST_NESTED$TEST_NESTED"));
+        assertEquals("${TEST_NESTED}{abc=[def, ghi], jkl=[true]}",TokenMacro.expandAll(b, TaskListener.NULL, "$${TEST_NESTED}$TEST_NESTED"));
+        assertEquals("{abc=[def, ghi], jkl=[true]}$TEST_NESTED",TokenMacro.expandAll(b, TaskListener.NULL, "$TEST_NESTED$$TEST_NESTED"));
+        assertEquals("{abc=[def, ghi], jkl=[true]}${TEST_NESTED}",TokenMacro.expandAll(b, TaskListener.NULL, "$TEST_NESTED$${TEST_NESTED}"));
     }
     
     @Test

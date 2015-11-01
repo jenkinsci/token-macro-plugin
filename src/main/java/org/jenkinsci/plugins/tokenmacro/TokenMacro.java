@@ -234,9 +234,12 @@ public abstract class TokenMacro implements ExtensionPoint {
     public static String expandAll(AbstractBuild<?,?> context, TaskListener listener, String stringWithMacro, boolean throwException, List<TokenMacro> privateTokens) throws MacroEvaluationException, IOException, InterruptedException {
         // Do nothing for an empty String
         if (stringWithMacro==null || stringWithMacro.length()==0) return stringWithMacro;
+
         // Expand environment variables
+        stringWithMacro = stringWithMacro.replaceAll("\\$\\$", "\\$\\$\\$\\$");
         String s = context.getEnvironment(listener).expand(stringWithMacro);
         // Expand build variables
+        s = s.replaceAll("\\$\\$", "\\$\\$\\$\\$");
         s = Util.replaceMacro(s,context.getBuildVariableResolver());
         // Expand Macros
         s = expand(context,listener,s,throwException,privateTokens);
