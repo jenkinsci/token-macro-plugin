@@ -168,8 +168,13 @@ public abstract class TokenMacro implements ExtensionPoint {
         Tokenizer tokenizer = new Tokenizer(stringWithMacro);
         
         List<TokenMacro> all = new ArrayList<TokenMacro>(all());
-        if(privateTokens!=null) {
-            all.addAll( privateTokens );
+
+        if (privateTokens != null) {
+            for (TokenMacro macro : privateTokens) {
+                if (macro != null) {
+                    all.add(macro);
+                }
+            }
         }
 
         while (tokenizer.find()) {
