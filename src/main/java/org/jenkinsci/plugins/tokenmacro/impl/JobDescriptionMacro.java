@@ -13,6 +13,9 @@ public class JobDescriptionMacro extends DataBoundTokenMacro {
 
     public static final String MACRO_NAME = "JOB_DESCRIPTION";
 
+    @Parameter
+    public Boolean removeNewlines = false;
+
     @Override
     public boolean acceptsMacroName(String macroName) {
         return macroName.equals(MACRO_NAME);
@@ -21,6 +24,14 @@ public class JobDescriptionMacro extends DataBoundTokenMacro {
     @Override
     public String evaluate(AbstractBuild<?, ?> build, TaskListener listener, String macroName)
             throws MacroEvaluationException, IOException, InterruptedException {
-        return build.getParent().getDescription();
+        String val = build.getParent().getDescription();
+        if(val != null) {
+            if (removeNewlines) {
+                val = val.replaceAll("[\\n\\r]", " ");
+            }
+        } else {
+            val = "";
+        }
+        return val;
     }
 }
