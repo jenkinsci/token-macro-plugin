@@ -4,15 +4,13 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.model.TaskListener;
-import hudson.remoting.Callable;
-
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.util.Properties;
-
 import jenkins.security.MasterToSlaveCallable;
 import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
+
+import java.io.*;
+import java.nio.charset.Charset;
+import java.util.Properties;
 
 /**
  * Expands to a property from a property file relative to the workspace root.
@@ -51,13 +49,13 @@ public class PropertyFromFileMacro extends DataBoundTokenMacro {
             this.filename=filename;
             this.propertyname=property;
         }
-        
+
         public String call() throws IOException {
             Properties props = new Properties();
             File file = new File(root, filename);
             String propertyValue = "";
             if (file.exists()) {
-                Reader reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8);
+                Reader reader = new InputStreamReader(new FileInputStream(file), Charset.forName("UTF-8"));
                 Closeable resource = reader;    
                 try {
                     BufferedReader bReader = new BufferedReader(reader);

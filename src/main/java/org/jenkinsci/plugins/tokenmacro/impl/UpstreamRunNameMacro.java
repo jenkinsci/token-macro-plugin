@@ -1,12 +1,10 @@
 package org.jenkinsci.plugins.tokenmacro.impl;
 
-import hudson.model.AbstractBuild;
-import hudson.model.Cause;
-import hudson.model.CauseAction;
-import hudson.model.TaskListener;
+import hudson.model.*;
 import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 
 /**
@@ -18,7 +16,7 @@ public class UpstreamRunNameMacro extends DataBoundTokenMacro {
 
     @Override
     public boolean acceptsMacroName(String macroName) {
-        return macroName.equals("UPSTREAM_RUN_NAME");
+        return MACRO_NAME.equals(macroName);
     }
 
     @Override
@@ -27,7 +25,7 @@ public class UpstreamRunNameMacro extends DataBoundTokenMacro {
         if(action != null) {
             for(Cause c : action.getCauses()) {
                 if(c instanceof Cause.UpstreamCause) {
-                    Cause.UpstreamCause u = (Cause.UpstreamCause)c;
+                    final Cause.UpstreamCause u = (Cause.UpstreamCause)c;
                     if(u.getUpstreamRun() != null) {
                         return u.getUpstreamRun().getDisplayName();
                     }

@@ -29,6 +29,7 @@ import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.model.AbstractBuild;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 import org.apache.commons.lang.StringUtils;
 
@@ -261,5 +262,29 @@ public abstract class TokenMacro implements ExtensionPoint {
             throw new MacroEvaluationException("Workspace is not accessible");
         }
         return workspace;
+    }
+
+    /**
+     * Looks for a previous build, so long as that is in fact completed.
+     * Necessary since {@link #getRequiredMonitorService} does not wait for the
+     * previous build, so in the case of parallel-capable jobs, we need to
+     * behave sensibly when a later build actually finishes before an earlier
+     * one.
+     *
+     * @param run a run for which we may be sending mail
+     * @param listener a listener to which we may print warnings in case the
+     * actual previous run is still in progress
+     * @return the previous run, or null if that run is missing, or is still
+     * in progress
+     */
+    @CheckForNull
+    public static Run<?, ?> getPreviousRun(@Nonnull Run<?, ?> run, TaskListener listener) {
+        Run<?, ?> previousRun = run.getPreviousBuild();
+        if (previousRun != null && previousRun.isBuilding()) {
+            listener.getLogger().println(Messages.TokenMacro_Run_still_in_progress(previousRun.getDisplayName()));
+            return null;
+        } else {
+            return previousRun;
+        }
     }
 }
