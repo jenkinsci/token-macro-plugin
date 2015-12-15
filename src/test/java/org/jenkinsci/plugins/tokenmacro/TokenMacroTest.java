@@ -1,6 +1,7 @@
 package org.jenkinsci.plugins.tokenmacro;
 
 import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Lists;
 import hudson.model.*;
 import hudson.util.StreamTaskListener;
 import org.jvnet.hudson.test.Bug;
@@ -165,6 +166,21 @@ public class TokenMacroTest {
 
         assertEquals("${TEST_NESTEDX}", TokenMacro.expand(b,listener,"${TEST_NESTEDX}",false,null));
         assertEquals("${TEST_NESTEDX,abc=\"def\",abc=\"ghi\",jkl=true}", TokenMacro.expand(b,listener,"${TEST_NESTEDX,abc=\"def\",abc=\"ghi\",jkl=true}",false,null));
+    }
+
+    @Test
+    public void testThatATokenMacroListWithANullEntryDoesNotExplode() throws Exception {
+        List<TokenMacro> badList = Lists.newLinkedList();
+        badList.add(null);
+        badList.add(new PrivateTestMacro());
+        badList.add(new PrivateTestMacro2());
+
+        FreeStyleProject p = j.createFreeStyleProject("foo");
+        FreeStyleBuild b = p.scheduleBuild2(0).get();
+
+        listener = new StreamTaskListener(System.out);
+        assertEquals("TEST_PRIVATE"+j.jenkins.getRootUrl()+"job/foo/1/TEST2_PRIVATE",
+                TokenMacro.expand(b,listener,"${TEST_PRIVATE}${BUILD_URL}${TEST2_PRIVATE}",true,badList));
     }
 
     public class PrivateTestMacro extends TokenMacro {
