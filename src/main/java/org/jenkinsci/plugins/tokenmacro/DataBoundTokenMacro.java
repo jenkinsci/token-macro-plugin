@@ -24,7 +24,6 @@
 package org.jenkinsci.plugins.tokenmacro;
 
 import com.google.common.collect.ListMultimap;
-import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.model.TaskListener;
 import org.apache.commons.beanutils.ConvertUtils;
@@ -37,9 +36,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.MessageFormat;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.*;
@@ -93,7 +92,7 @@ public abstract class DataBoundTokenMacro extends TokenMacro {
     private synchronized void buildMap() {
         if (setters!=null)  return;
 
-        setters = new HashMap<String, Setter>();
+        setters = new ConcurrentHashMap<String, Setter>();
         for (final Field f : getClass().getFields()) {
             final Parameter p = f.getAnnotation(Parameter.class);
             if (p !=null) {
@@ -101,7 +100,7 @@ public abstract class DataBoundTokenMacro extends TokenMacro {
                 if (StringUtils.isNotEmpty(p.alias())) {
                     name = p.alias();
                 }
-                
+
                 setters.put(name,new Setter() {
                     public Class<?> getType() {
                         return f.getType();
@@ -133,7 +132,7 @@ public abstract class DataBoundTokenMacro extends TokenMacro {
                 if (name.startsWith("set")) {
                     name = Introspector.decapitalize(name.substring(3));
                 }
-                
+
                 if (StringUtils.isNotEmpty(p.alias())) {
                     name = p.alias();
                 }
