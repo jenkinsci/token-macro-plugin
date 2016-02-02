@@ -162,7 +162,7 @@ public abstract class DataBoundTokenMacro extends TokenMacro {
     }
 
     @Override
-    public synchronized String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap) throws MacroEvaluationException, IOException, InterruptedException {
+    public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap) throws MacroEvaluationException, IOException, InterruptedException {
         try {
             DataBoundTokenMacro copy = getClass().newInstance();
 
