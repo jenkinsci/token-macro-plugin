@@ -16,8 +16,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
 
 public class LogRegExMacroTest {
-    private TaskListener listener;
-    
     @Rule
     public final JenkinsRule j = new JenkinsRule();
 

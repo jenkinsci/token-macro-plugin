@@ -68,7 +68,7 @@ public abstract class DataBoundTokenMacro extends TokenMacro {
          */
         boolean required() default false;
 
-	String alias() default "";
+	    String alias() default "";
     }
 
     private interface Setter {

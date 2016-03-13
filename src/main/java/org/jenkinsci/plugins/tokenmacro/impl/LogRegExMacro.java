@@ -54,8 +54,7 @@ public final class LogRegExMacro extends DataBoundTokenMacro {
         return readLogFile(context.getLogFile());
     }
 
-    public String readLogFile(File file) throws IOException
-    {
+    public String readLogFile(File file) throws IOException {
         if (regex == null) {
             return "";
         }
@@ -77,11 +76,9 @@ public final class LogRegExMacro extends DataBoundTokenMacro {
         BufferedReader reader = new BufferedReader(
                 new InputStreamReader(new FileInputStream(file), logCharset));
         try {
-            while ((line = reader.readLine()) != null)
-            {
+            while ((line = reader.readLine()) != null) {
                 Matcher matcher = pattern.matcher(line);
-                if (matcher.find())
-                {
+                if (matcher.find()) {
                     // Match only the top-most line
                     return getTranslatedDescription(matcher);
                 }
@@ -93,26 +90,19 @@ public final class LogRegExMacro extends DataBoundTokenMacro {
         return "";
     }
 
-    private String getTranslatedDescription(Matcher matcher)
-    {
+    private String getTranslatedDescription(Matcher matcher) {
         String result = replacement;
         if (result == null) {
             if (matcher.groupCount() == 0)
-            {
                 result = "\\0";
-            }
-            else
-            {
+            } else {
                 result = "\\1";
             }
         }
 
         // Expand all groups: 1..Count, as well as 0 for the entire pattern
-        for (int i = matcher.groupCount(); i >= 0; i--)
-        {
-            result = result.replace(
-                "\\" + i,
-                matcher.group(i) == null ? "" : matcher.group(i));
+        for (int i = matcher.groupCount(); i >= 0; i--) {
+            result = result.replace("\\" + i, matcher.group(i) == null ? "" : matcher.group(i));
         }
 
         return result;

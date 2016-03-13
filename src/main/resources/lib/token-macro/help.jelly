@@ -1,8 +1,0 @@
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
-	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-
-  <j:forEach var="tm" items="${app.getPlugin('token-macro').allTokenMacros}">
-    <st:include it="${tm}" page="help.jelly" optional="true"/>
-  </j:forEach>
-  
-</j:jelly>

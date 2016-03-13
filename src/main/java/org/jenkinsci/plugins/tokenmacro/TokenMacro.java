@@ -34,10 +34,7 @@ import hudson.model.TaskListener;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -164,57 +161,7 @@ public abstract class TokenMacro implements ExtensionPoint {
     }
 
     public static String expand(AbstractBuild<?,?> context, TaskListener listener, String stringWithMacro, boolean throwException, List<TokenMacro> privateTokens) throws MacroEvaluationException, IOException, InterruptedException {
-        if ( StringUtils.isBlank( stringWithMacro ) ) return stringWithMacro;
-        StringBuffer sb = new StringBuffer();
-        Tokenizer tokenizer = new Tokenizer(stringWithMacro);
-        
-        List<TokenMacro> all = new ArrayList<TokenMacro>(all());
-        if(privateTokens!=null) {
-            all.addAll( privateTokens );
-        }
-
-        while (tokenizer.find()) {
-            String replacement = null;
-            if(tokenizer.isEscaped()) {
-                replacement = tokenizer.group().substring(1);                                
-            } else {            
-                String tokenName = tokenizer.getTokenName();
-                ListMultimap<String,String> args = tokenizer.getArgs();
-                Map<String,String> map = new HashMap<String, String>();
-                for (Entry<String, String> e : args.entries()) {
-                    map.put(e.getKey(),e.getValue());
-                }
-
-                for (TokenMacro tm : all) {
-                    if (tm.acceptsMacroName(tokenName)) {
-                        try {
-                            replacement = tm.evaluate(context,listener,tokenName,map,args);
-                            if(tm.hasNestedContent()) {
-                                replacement = expand(context,listener,replacement,throwException,privateTokens);
-                            }
-                        } catch(MacroEvaluationException e) {
-                            if(throwException) {
-                                throw e;
-                            } else {
-                                replacement = String.format("[Error replacing '%s' - %s]", tokenName, e.getMessage());
-                            }
-                        }
-                        break;
-                    }
-                }
-                
-                if (replacement == null && throwException)
-                    throw new MacroEvaluationException(String.format("Unrecognized macro '%s' in '%s'", tokenName, stringWithMacro));
-            }
-            if (replacement == null && !throwException) // just put the token back in since we don't want to throw the exception
-                tokenizer.appendReplacement(sb, tokenizer.group());
-            else if (replacement != null)
-                tokenizer.appendReplacement(sb, replacement);
-            //TODO: do something with null replacements?
-        }
-        tokenizer.appendTail(sb);
-
-        return sb.toString();
+        return Parser.process(context,listener,stringWithMacro,throwException,privateTokens);
     }
 
     /**

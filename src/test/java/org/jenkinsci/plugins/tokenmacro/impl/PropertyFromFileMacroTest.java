@@ -19,8 +19,7 @@ import org.jvnet.hudson.test.TestBuilder;
  * @author Kohsuke Kawaguchi
  */
 public class PropertyFromFileMacroTest {
-    private TaskListener listener;
-    
+
     @Rule
     public final JenkinsRule j = new JenkinsRule();
 

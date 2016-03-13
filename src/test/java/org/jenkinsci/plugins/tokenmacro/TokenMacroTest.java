@@ -1,10 +1,16 @@
 package org.jenkinsci.plugins.tokenmacro;
 
 import com.google.common.collect.ListMultimap;
-import hudson.model.*;
+import hudson.model.AbstractBuild;
+import hudson.model.FreeStyleBuild;
+import hudson.model.FreeStyleProject;
+import hudson.model.TaskListener;
 import hudson.util.StreamTaskListener;
+import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 
 import java.io.IOException;
@@ -13,13 +19,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.fail;
 import static junit.framework.TestCase.assertEquals;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -43,6 +44,17 @@ public class TokenMacroTest {
     }
 
     @Test
+    public void testLength() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject("foo");
+        FreeStyleBuild b = p.scheduleBuild2(0).get();
+
+        listener = StreamTaskListener.fromStdout();
+        assertEquals(String.valueOf((j.jenkins.getRootUrl()+"job/foo/1/").length()),TokenMacro.expand(b, listener,"${#BUILD_URL}"));
+
+        assertEquals(String.valueOf("{abc=[def, ghi], jkl=[true]}".length()),TokenMacro.expand(b,listener,"${#TEST,abc=\"def\",abc=\"ghi\",jkl=true}"));
+    }
+
+    @Test
     public void testNested() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
@@ -62,7 +74,7 @@ public class TokenMacroTest {
         FreeStyleProject p = j.createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
-        listener = new StreamTaskListener(System.out);
+        listener = StreamTaskListener.fromStdout();
 
         assertEquals("{arg=["+ veryLongStringParam + "]}",TokenMacro.expand(b,listener,"${TEST, arg=\"" + veryLongStringParam + "\"}"));
     }
@@ -72,7 +84,7 @@ public class TokenMacroTest {
         FreeStyleProject p = j.createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
-        listener = new StreamTaskListener(System.out);
+        listener = StreamTaskListener.fromStdout();
 
         assertEquals("{arg=[a \n b  \r\n c]}\n",TokenMacro.expand(b, listener, "${TEST, arg = \"a \\\n b  \\\r\n c\"}\n"));
 
@@ -128,7 +140,7 @@ public class TokenMacroTest {
         FreeStyleProject p = j.createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
-        listener = new StreamTaskListener(System.out);
+        listener = StreamTaskListener.fromStdout();
         assertEquals("\\{abc=[def, ghi], jkl=[true]}",TokenMacro.expand(b,listener,"\\${TEST_NESTED}"));
         assertEquals("\\{abc=[def, ghi], jkl=[true]}",TokenMacro.expand(b,listener,"\\$TEST_NESTED"));
         assertEquals("{abc=[def, ghi], jkl=[true]}\\{abc=[def, ghi], jkl=[true]}",TokenMacro.expand(b,listener,"$TEST_NESTED\\$TEST_NESTED"));
@@ -144,7 +156,7 @@ public class TokenMacroTest {
         FreeStyleProject p = j.createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
-        listener = new StreamTaskListener(System.out);
+        listener = StreamTaskListener.fromStdout();
         assertEquals("TEST_PRIVATE"+j.jenkins.getRootUrl()+"job/foo/1/TEST2_PRIVATE", 
             TokenMacro.expand(b,listener,"${TEST_PRIVATE}${BUILD_URL}${TEST2_PRIVATE}",true,privateMacros));
     }
@@ -154,16 +166,16 @@ public class TokenMacroTest {
         FreeStyleProject p = j.createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
-        listener = new StreamTaskListener(System.out);
+        listener = StreamTaskListener.fromStdout();
 
         try {
-            String s = TokenMacro.expand(b,listener,"${TEST_NESTEDX}");
+            TokenMacro.expand(b,listener,"${TEST_NESTEDX}");
             fail();
         } catch(MacroEvaluationException e) {
             // do nothing, just want to catch the exception when it occurs
         }
 
-        assertEquals("${TEST_NESTEDX}", TokenMacro.expand(b,listener,"${TEST_NESTEDX}",false,null));
+        assertEquals(" ${TEST_NESTEDX}", TokenMacro.expand(b,listener," ${TEST_NESTEDX}",false,null));
         assertEquals("${TEST_NESTEDX,abc=\"def\",abc=\"ghi\",jkl=true}", TokenMacro.expand(b,listener,"${TEST_NESTEDX,abc=\"def\",abc=\"ghi\",jkl=true}",false,null));
     }
 
