@@ -93,7 +93,7 @@ public final class LogRegExMacro extends DataBoundTokenMacro {
     private String getTranslatedDescription(Matcher matcher) {
         String result = replacement;
         if (result == null) {
-            if (matcher.groupCount() == 0)
+            if (matcher.groupCount() == 0) {
                 result = "\\0";
             } else {
                 result = "\\1";

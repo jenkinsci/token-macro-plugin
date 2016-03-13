@@ -213,7 +213,7 @@ public abstract class TokenMacro implements ExtensionPoint {
 
     /**
      * Looks for a previous build, so long as that is in fact completed.
-     * Necessary since {@link #getRequiredMonitorService} does not wait for the
+     * Necessary since {@link #hudson.tasks.Builder#getRequiredMonitorService} does not wait for the
      * previous build, so in the case of parallel-capable jobs, we need to
      * behave sensibly when a later build actually finishes before an earlier
      * one.
