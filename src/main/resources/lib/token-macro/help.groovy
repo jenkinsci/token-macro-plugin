@@ -2,7 +2,7 @@ st = namespace("jelly:stapler")
 
 
 org.jenkinsci.plugins.tokenmacro.TokenMacro.all().each { tm ->
-    st.include(it:tm, page: "help"/*, optional: true*/)
+    st.include(it:tm, page: "help", optional: true)
     br()
 }
 
