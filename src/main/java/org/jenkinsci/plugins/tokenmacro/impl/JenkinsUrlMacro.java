@@ -5,6 +5,10 @@ import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.TaskListener;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import jenkins.model.Jenkins;
 
 import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
@@ -19,6 +23,13 @@ public class JenkinsUrlMacro extends DataBoundTokenMacro {
     @Override
     public boolean acceptsMacroName(String macroName) {
         return macroName.equals(MACRO_NAME) || macroName.equals(ALTERNATE_MACRO_NAME);
+    }
+
+    @Override
+    public List<String> getAcceptedMacroNames() {
+        List<String> macroNames = new ArrayList<>();
+        Collections.addAll(macroNames, MACRO_NAME, ALTERNATE_MACRO_NAME);
+        return macroNames;
     }
 
     @Override

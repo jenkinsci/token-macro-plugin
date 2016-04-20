@@ -1,3 +1,4 @@
+<?jelly escape-by-default='true'?>
 <div>
   This plug-in adds reusable macro expansion capability for other plug-ins to use.
 </div>

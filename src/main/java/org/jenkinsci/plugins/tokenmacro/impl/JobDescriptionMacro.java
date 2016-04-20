@@ -1,9 +1,12 @@
 package org.jenkinsci.plugins.tokenmacro.impl;
 
+import com.trilead.ssh2.crypto.digest.MAC;
 import hudson.Extension;
 import hudson.model.AbstractBuild;
 import hudson.model.TaskListener;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
@@ -19,6 +22,11 @@ public class JobDescriptionMacro extends DataBoundTokenMacro {
     @Override
     public boolean acceptsMacroName(String macroName) {
         return macroName.equals(MACRO_NAME);
+    }
+
+    @Override
+    public List<String> getAcceptedMacroNames() {
+        return Collections.singletonList(MACRO_NAME);
     }
 
     @Override

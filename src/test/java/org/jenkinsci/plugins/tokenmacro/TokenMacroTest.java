@@ -8,10 +8,7 @@ import hudson.model.TaskListener;
 import hudson.util.StreamTaskListener;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -179,12 +176,26 @@ public class TokenMacroTest {
         assertEquals("${TEST_NESTEDX,abc=\"def\",abc=\"ghi\",jkl=true}", TokenMacro.expand(b,listener,"${TEST_NESTEDX,abc=\"def\",abc=\"ghi\",jkl=true}",false,null));
     }
 
+    @Test
+    public void testAutoComplete() throws Exception {
+        List<String> suggestions = TokenMacro.getAutoCompleteList("LKJLKJ");
+        assertEquals(0, suggestions.size());
+
+        suggestions = TokenMacro.getAutoCompleteList("TES");
+        assertEquals(3, suggestions.size());
+    }
+
     public class PrivateTestMacro extends TokenMacro {
         private static final String MACRO_NAME = "TEST_PRIVATE";
 
         @Override
         public boolean acceptsMacroName(String macroName) {
             return macroName.equals(MACRO_NAME);
+        }
+
+        @Override
+        public List<String> getAcceptedMacroNames() {
+            return Collections.singletonList(MACRO_NAME);
         }
 
         @Override
@@ -202,6 +213,11 @@ public class TokenMacroTest {
         }
 
         @Override
+        public List<String> getAcceptedMacroNames() {
+            return Collections.singletonList(MACRO_NAME);
+        }
+
+        @Override
         public String evaluate(AbstractBuild<?,?> context, TaskListener listener, String macroName, Map<String,String> arguments, ListMultimap<String, String> argumentMultimap) throws MacroEvaluationException, IOException, InterruptedException {
             return "TEST2_PRIVATE";
         }
@@ -214,6 +230,11 @@ public class TokenMacroTest {
         @Override
         public boolean acceptsMacroName(String macroName) {
             return macroName.equals(MACRO_NAME);
+        }
+
+        @Override
+        public List<String> getAcceptedMacroNames() {
+            return Collections.singletonList(MACRO_NAME);
         }
 
         @Override
@@ -235,6 +256,11 @@ public class TokenMacroTest {
         }
 
         @Override
+        public List<String> getAcceptedMacroNames() {
+            return Collections.singletonList(MACRO_NAME);
+        }
+
+        @Override
         public boolean hasNestedContent() {
             return true;
         }
@@ -247,6 +273,11 @@ public class TokenMacroTest {
         @Override
         public boolean acceptsMacroName(String macroName) {
             return macroName.equals(MACRO_NAME);
+        }
+
+        @Override
+        public List<String> getAcceptedMacroNames() {
+            return Collections.singletonList(MACRO_NAME);
         }
 
         @Override

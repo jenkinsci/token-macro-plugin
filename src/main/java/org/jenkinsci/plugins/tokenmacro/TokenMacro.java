@@ -73,7 +73,7 @@ import jenkins.model.Jenkins;
  * which expands to the HTML that lists all the tags and their usages:
  *
  * <pre>
- * &lt;help xmlons="/lib/token-macro"/>
+ * &lt;help xmlons="/lib/token-macro"/&gt;
  * </pre>
  *
  * @author Kohsuke Kawaguchi
@@ -138,8 +138,29 @@ public abstract class TokenMacro implements ExtensionPoint {
         return false;
     }
 
+    public List<String> getAcceptedMacroNames() {
+        return Collections.EMPTY_LIST;
+    }
+
+    public static List<String> getAutoCompleteList(String input) {
+        List<String> result = new ArrayList<>();
+        for(TokenMacro m : all()) {
+            for(String name : m.getAcceptedMacroNames()) {
+                if(name.isEmpty())
+                    continue;
+
+                if(name.startsWith(input)) {
+                    result.add(name);
+                }
+            }
+        }
+        return result;
+    }
+
     /**
      * All registered extension points.
+     * 
+     * @return All registered token macro classes.
      */
     public static ExtensionList<TokenMacro> all() {
         final Jenkins jenkins = Jenkins.getInstance();
@@ -150,12 +171,6 @@ public abstract class TokenMacro implements ExtensionPoint {
         }
     }
 
-    /**
-     * Expands all the macros, and throws an exception if there's any problem found.
-     *
-     * @param stringWithMacro
-     *      String that contains macro references in it, like "foo bar ${zot}".
-     */
     public static String expand(AbstractBuild<?,?> context, TaskListener listener, String stringWithMacro) throws MacroEvaluationException, IOException, InterruptedException {
         return expand(context, listener, stringWithMacro, true, null);
     }
@@ -164,17 +179,6 @@ public abstract class TokenMacro implements ExtensionPoint {
         return Parser.process(context,listener,stringWithMacro,throwException,privateTokens);
     }
 
-    /**
-     * Expands everything that needs to be expanded.
-     *
-     * Expands all the macros, environment variables, and build variables.
-     * Throws an exception if there's any problem found.
-     *
-     * This should be more convenient than having plugins do all 3 separately.
-     *
-     * @param stringWithMacro
-     *      String that contains macro references in it, like "foo bar ${zot}".
-     */
     public static String expandAll(AbstractBuild<?,?> context, TaskListener listener, String stringWithMacro) throws MacroEvaluationException, IOException, InterruptedException {
         return expandAll(context,listener,stringWithMacro,true,null);
     }
@@ -213,7 +217,7 @@ public abstract class TokenMacro implements ExtensionPoint {
 
     /**
      * Looks for a previous build, so long as that is in fact completed.
-     * Necessary since {@link #hudson.tasks.Builder#getRequiredMonitorService} does not wait for the
+     * Necessary since {@link hudson.tasks.Builder#getRequiredMonitorService} does not wait for the
      * previous build, so in the case of parallel-capable jobs, we need to
      * behave sensibly when a later build actually finishes before an earlier
      * one.
@@ -221,8 +225,7 @@ public abstract class TokenMacro implements ExtensionPoint {
      * @param run a run for which we may be sending mail
      * @param listener a listener to which we may print warnings in case the
      * actual previous run is still in progress
-     * @return the previous run, or null if that run is missing, or is still
-     * in progress
+     * @return the previous run, or null if that run is missing, or is still in progress
      */
     @CheckForNull
     public static Run<?, ?> getPreviousRun(@Nonnull Run<?, ?> run, TaskListener listener) {

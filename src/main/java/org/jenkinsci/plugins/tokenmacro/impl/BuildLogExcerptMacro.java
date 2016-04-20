@@ -7,6 +7,8 @@ import hudson.model.TaskListener;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Pattern;
 import org.apache.commons.io.IOUtils;
 import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
@@ -29,6 +31,11 @@ public class BuildLogExcerptMacro extends DataBoundTokenMacro {
     @Override
     public boolean acceptsMacroName(String macroName) {
         return macroName.equals(MACRO_NAME);
+    }
+
+    @Override
+    public List<String> getAcceptedMacroNames() {
+        return Collections.singletonList(MACRO_NAME);
     }
 
     @Override

@@ -7,10 +7,8 @@ import java.util.regex.Pattern;
 
 public class BeginningOrEndMatchTransorm extends Transform {
     private String pattern;
-    private boolean beginning;
 
     public BeginningOrEndMatchTransorm(String pattern, boolean beginning) {
-        this.beginning = beginning;
         if(beginning && !pattern.startsWith("^")) {
             pattern = "^" + pattern;
         } else if(!beginning && !pattern.endsWith("$")) {

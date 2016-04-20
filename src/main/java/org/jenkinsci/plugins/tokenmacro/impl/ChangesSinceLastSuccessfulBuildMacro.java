@@ -6,6 +6,9 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import org.jenkinsci.plugins.tokenmacro.TokenMacro;
 
+import java.util.Collections;
+import java.util.List;
+
 @Extension
 public class ChangesSinceLastSuccessfulBuildMacro
         extends AbstractChangesSinceMacro {
@@ -16,6 +19,11 @@ public class ChangesSinceLastSuccessfulBuildMacro
     @Override
     public boolean acceptsMacroName(String macroName) {
         return macroName.equals(MACRO_NAME);
+    }
+
+    @Override
+    public List<String> getAcceptedMacroNames() {
+        return Collections.singletonList(MACRO_NAME);
     }
 
     @Override

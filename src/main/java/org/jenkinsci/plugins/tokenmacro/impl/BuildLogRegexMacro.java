@@ -9,7 +9,9 @@ import org.apache.commons.lang.StringEscapeUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -54,6 +56,11 @@ public class BuildLogRegexMacro extends DataBoundTokenMacro {
     @Override
     public boolean acceptsMacroName(String macroName) {
         return macroName.equals(MACRO_NAME);
+    }
+
+    @Override
+    public List<String> getAcceptedMacroNames() {
+        return Collections.singletonList(MACRO_NAME);
     }
 
     private boolean startPre(StringBuffer buffer, boolean insidePre) {

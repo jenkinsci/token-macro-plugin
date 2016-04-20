@@ -11,6 +11,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -42,6 +44,11 @@ public class XmlFileMacro extends DataBoundTokenMacro {
     @Override
     public boolean acceptsMacroName(String macroName) {
         return macroName.equals(MACRO_NAME);
+    }
+
+    @Override
+    public List<String> getAcceptedMacroNames() {
+        return Collections.singletonList(MACRO_NAME);
     }
 
     @Override

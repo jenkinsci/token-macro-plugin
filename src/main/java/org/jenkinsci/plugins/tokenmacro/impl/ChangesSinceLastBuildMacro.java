@@ -17,8 +17,7 @@ import org.jenkinsci.plugins.tokenmacro.Util;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Collection;
-import java.util.Date;
+import java.util.*;
 import java.util.Map.Entry;
 
 @Extension
@@ -62,6 +61,13 @@ public class ChangesSinceLastBuildMacro extends DataBoundTokenMacro {
     @Override
     public boolean acceptsMacroName(String macroName) {
         return macroName.equals(MACRO_NAME) || macroName.equals(ALTERNATE_MACRO_NAME);
+    }
+
+    @Override
+    public List<String> getAcceptedMacroNames() {
+        List<String> macroNames = new ArrayList<>();
+        Collections.addAll(macroNames, MACRO_NAME, ALTERNATE_MACRO_NAME);
+        return macroNames;
     }
 
     @Override

@@ -6,6 +6,8 @@ import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Created by acearl on 10/22/2015.
@@ -17,6 +19,11 @@ public class UpstreamRunNameMacro extends DataBoundTokenMacro {
     @Override
     public boolean acceptsMacroName(String macroName) {
         return MACRO_NAME.equals(macroName);
+    }
+
+    @Override
+    public List<String> getAcceptedMacroNames() {
+        return Collections.singletonList(MACRO_NAME);
     }
 
     @Override

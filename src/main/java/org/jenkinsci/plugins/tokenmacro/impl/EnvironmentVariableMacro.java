@@ -4,6 +4,8 @@ import hudson.Extension;
 import hudson.model.AbstractBuild;
 import hudson.model.TaskListener;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
@@ -14,8 +16,15 @@ import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 @Extension
 public class EnvironmentVariableMacro extends DataBoundTokenMacro {
 
+    public static final String MACRO_NAME = "ENV";
+
     @Parameter(required=true)
     public String var = "";
+
+    @Override
+    public List<String> getAcceptedMacroNames() {
+        return Collections.singletonList(MACRO_NAME);
+    }
 
     @Override
     public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName)
@@ -29,7 +38,7 @@ public class EnvironmentVariableMacro extends DataBoundTokenMacro {
 
     @Override
     public boolean acceptsMacroName(String macroName) {
-        return macroName.equals("ENV");
+        return MACRO_NAME.equals(macroName);
     }
 
 }

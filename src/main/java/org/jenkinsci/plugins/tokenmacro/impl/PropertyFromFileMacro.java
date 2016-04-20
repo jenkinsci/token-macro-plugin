@@ -10,6 +10,8 @@ import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -29,6 +31,11 @@ public class PropertyFromFileMacro extends DataBoundTokenMacro {
     @Override
     public boolean acceptsMacroName(String macroName) {
         return macroName.equals(MACRO_NAME);
+    }
+
+    @Override
+    public List<String> getAcceptedMacroNames() {
+        return Collections.singletonList(MACRO_NAME);
     }
 
     @Override

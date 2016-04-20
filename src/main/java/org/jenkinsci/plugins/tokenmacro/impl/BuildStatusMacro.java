@@ -6,6 +6,8 @@ import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
@@ -19,6 +21,11 @@ public class BuildStatusMacro extends DataBoundTokenMacro {
     @Override
     public boolean acceptsMacroName(String macroName) {
         return macroName.equals(MACRO_NAME);
+    }
+
+    @Override
+    public List<String> getAcceptedMacroNames() {
+        return Collections.singletonList(MACRO_NAME);
     }
 
     @Override

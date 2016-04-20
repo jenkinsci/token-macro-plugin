@@ -31,6 +31,8 @@ import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.jenkinsci.plugins.tokenmacro.TokenMacro;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -38,9 +40,16 @@ import java.util.Map;
  */
 @Extension
 public class BuildNumberMacro extends TokenMacro {
+    public static final String MACRO_NAME = "BUILD_NUMBER";
+
     @Override
     public boolean acceptsMacroName(String macroName) {
-        return macroName.equals("BUILD_NUMBER");
+        return macroName.equals(MACRO_NAME);
+    }
+
+    @Override
+    public List<String> getAcceptedMacroNames() {
+        return Collections.singletonList(MACRO_NAME);
     }
 
     @Override
