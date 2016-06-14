@@ -1,8 +1,10 @@
 package org.jenkinsci.plugins.tokenmacro.impl;
 
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.Util;
 import hudson.model.AbstractBuild;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 import java.io.IOException;
 import java.util.Collections;
@@ -29,7 +31,13 @@ public class ProjectUrlMacro extends DataBoundTokenMacro {
     @Override
     public String evaluate(AbstractBuild<?, ?> build, TaskListener listener, String macroName)
             throws MacroEvaluationException, IOException, InterruptedException {
-        return "${JENKINS_URL}" + Util.encode(build.getProject().getUrl());
+        return evaluate(build,null,listener,macroName);
+    }
+
+    @Override
+    public String evaluate(Run<?, ?> run, FilePath workspace, TaskListener listener, String macroName)
+            throws MacroEvaluationException, IOException, InterruptedException {
+        return "${JENKINS_URL}" + Util.encode(run.getParent().getUrl());
     }
 
     @Override

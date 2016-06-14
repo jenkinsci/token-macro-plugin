@@ -1,8 +1,10 @@
 package org.jenkinsci.plugins.tokenmacro.impl;
 
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.console.ConsoleNote;
 import hudson.model.AbstractBuild;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 
 import java.io.BufferedReader;
@@ -41,8 +43,14 @@ public class BuildLogExcerptMacro extends DataBoundTokenMacro {
     @Override
     public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName)
             throws MacroEvaluationException, IOException, InterruptedException {
+        return evaluate(context,null,listener,macroName);
+    }
+
+    @Override
+    public String evaluate(Run<?,?> run, FilePath workspace, TaskListener listener, String macroName)
+            throws MacroEvaluationException, IOException, InterruptedException {
         try {
-            BufferedReader reader = new BufferedReader(context.getLogReader());
+            BufferedReader reader = new BufferedReader(run.getLogReader());
             try {
                 return getContent(reader);
             } finally {
@@ -55,7 +63,6 @@ public class BuildLogExcerptMacro extends DataBoundTokenMacro {
     }
 
     String getContent(BufferedReader reader) throws IOException {
-
         Pattern startPattern = Pattern.compile(start);
         Pattern endPattern = Pattern.compile(end);
 

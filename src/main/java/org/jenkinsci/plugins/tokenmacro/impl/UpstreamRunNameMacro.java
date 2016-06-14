@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.tokenmacro.impl;
 
+import hudson.FilePath;
 import hudson.model.*;
 import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
@@ -28,7 +29,12 @@ public class UpstreamRunNameMacro extends DataBoundTokenMacro {
 
     @Override
     public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName) throws MacroEvaluationException, IOException, InterruptedException {
-        CauseAction action = context.getAction(CauseAction.class);
+        return evaluate(context,null,listener,macroName);
+    }
+
+    @Override
+    public String evaluate(Run<?,?> run, FilePath workspace, TaskListener listener, String macroName) throws MacroEvaluationException, IOException, InterruptedException {
+        CauseAction action = run.getAction(CauseAction.class);
         if(action != null) {
             for(Cause c : action.getCauses()) {
                 if(c instanceof Cause.UpstreamCause) {

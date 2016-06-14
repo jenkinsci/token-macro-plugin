@@ -1,7 +1,9 @@
 package org.jenkinsci.plugins.tokenmacro.impl;
 
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.model.AbstractBuild;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 import java.io.IOException;
 import java.util.Collections;
@@ -29,7 +31,13 @@ public class EnvironmentVariableMacro extends DataBoundTokenMacro {
     @Override
     public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName)
             throws MacroEvaluationException, IOException, InterruptedException {
-        Map<String, String> env = context.getEnvironment(listener);
+        return evaluate(context,null,listener,macroName);
+    }
+
+    @Override
+    public String evaluate(Run<?, ?> run, FilePath workspace, TaskListener listener, String macroName)
+            throws MacroEvaluationException, IOException, InterruptedException {
+        Map<String, String> env = run.getEnvironment(listener);
         if(env.containsKey(var)){
             return env.get(var);
         }

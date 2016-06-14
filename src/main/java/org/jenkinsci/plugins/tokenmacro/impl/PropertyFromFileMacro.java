@@ -3,6 +3,7 @@ package org.jenkinsci.plugins.tokenmacro.impl;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 import jenkins.security.MasterToSlaveCallable;
 import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
@@ -40,7 +41,11 @@ public class PropertyFromFileMacro extends DataBoundTokenMacro {
 
     @Override
     public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName) throws MacroEvaluationException, IOException, InterruptedException {
-        final FilePath workspace = getWorkspace(context, macroName);
+        return evaluate(context, getWorkspace(context), listener, macroName);
+    }
+
+    @Override
+    public String evaluate(Run<?,?> run, FilePath workspace, TaskListener listener, String macroName) throws MacroEvaluationException, IOException, InterruptedException {
         String root = workspace.getRemote();
         return workspace.act(new ReadProperty(root, file, property));
     }
@@ -49,12 +54,12 @@ public class PropertyFromFileMacro extends DataBoundTokenMacro {
 
         private String root;
         private String filename;
-        private String propertyname;
+        private String property;
         
         public ReadProperty(String root, String filename, String property){
             this.root=root;
             this.filename=filename;
-            this.propertyname=property;
+            this.property=property;
         }
 
         public String call() throws IOException {
@@ -68,8 +73,8 @@ public class PropertyFromFileMacro extends DataBoundTokenMacro {
                     BufferedReader bReader = new BufferedReader(reader);
                     resource = bReader;
                     props.load(bReader);
-                    if(props.containsKey(propertyname)){
-                        propertyValue = props.getProperty(propertyname);
+                    if(props.containsKey(property)){
+                        propertyValue = props.getProperty(property);
                     } 
                 }
                 catch (IOException e) {

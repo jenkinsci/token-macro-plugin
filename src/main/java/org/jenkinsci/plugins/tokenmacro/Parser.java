@@ -3,7 +3,9 @@ package org.jenkinsci.plugins.tokenmacro;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimaps;
+import hudson.FilePath;
 import hudson.model.AbstractBuild;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.tokenmacro.transform.BeginningOrEndMatchTransorm;
@@ -25,7 +27,8 @@ public class Parser extends BaseParser<Object> {
     private Stack<Transform> transforms = new Stack<Transform>();
     private StringBuffer output;
 
-    private AbstractBuild<?, ?> build;
+    private Run<?, ?> run;
+    private FilePath workspace;
     private TaskListener listener;
     private boolean throwException;
     private List<TokenMacro> privateTokens;
@@ -34,8 +37,9 @@ public class Parser extends BaseParser<Object> {
     private String tokenName;
     private ListMultimap<String,String> args;
 
-    public Parser(AbstractBuild<?,?> build, TaskListener listener, String stringWithMacro) {
-        this.build = build;
+    public Parser(Run<?,?> run, FilePath workspace, TaskListener listener, String stringWithMacro) {
+        this.run = run;
+        this.workspace = workspace;
         this.listener = listener;
         this.stringWithMacro = stringWithMacro;
         this.output = new StringBuffer();
@@ -50,10 +54,13 @@ public class Parser extends BaseParser<Object> {
     }
 
     public static String process(AbstractBuild<?,?> build, TaskListener listener, String stringWithMacro, boolean throwException, List<TokenMacro> privateTokens) throws MacroEvaluationException {
+        return process(build,build.getWorkspace(),listener,stringWithMacro,throwException,privateTokens);
+    }
 
+    public static String process(Run<?, ?> run, FilePath workspace, TaskListener listener, String stringWithMacro, boolean throwException, List<TokenMacro> privateTokens) throws MacroEvaluationException {
         if ( StringUtils.isBlank( stringWithMacro ) ) return stringWithMacro;
 
-        Parser p = Parboiled.createParser(Parser.class, build, listener, stringWithMacro);
+        Parser p = Parboiled.createParser(Parser.class, run, workspace, listener, stringWithMacro);
         p.setThrowException(throwException);
         p.setPrivateTokens(privateTokens);
 
@@ -286,9 +293,16 @@ public class Parser extends BaseParser<Object> {
         for (TokenMacro tm : all) {
             if (tm.acceptsMacroName(tokenName)) {
                 try {
-                    replacement = tm.evaluate(build,listener,tokenName,map,args);
+                    // first we check if there is a method that takes a run/workspace/etc
+                    if(run instanceof AbstractBuild) {
+                        AbstractBuild<?,?> build = (AbstractBuild<?, ?>)run;
+                        replacement = tm.evaluate(build,listener,tokenName,map,args);
+                    } else {
+                        replacement = tm.evaluate(run,workspace,listener,tokenName,map,args);
+                    }
+
                     if(tm.hasNestedContent()) {
-                        replacement = Parser.process(build,listener,replacement,throwException,privateTokens);
+                        replacement = Parser.process(run,workspace,listener,replacement,throwException,privateTokens);
                     }
                 } catch(MacroEvaluationException e) {
                     if(throwException) {

@@ -1,10 +1,9 @@
 package org.jenkinsci.plugins.tokenmacro.impl;
 
 import hudson.Extension;
-import hudson.model.AbstractBuild;
-import hudson.model.Cause;
-import hudson.model.CauseAction;
-import hudson.model.TaskListener;
+import hudson.FilePath;
+import hudson.model.*;
+
 import java.io.IOException;
 import org.apache.commons.lang.StringUtils;
 
@@ -36,8 +35,14 @@ public class BuildCauseMacro extends DataBoundTokenMacro {
     @Override
     public String evaluate(AbstractBuild<?, ?> build, TaskListener listener, String macroName)
             throws MacroEvaluationException, IOException, InterruptedException {
+        return evaluate(build,null,listener,macroName);
+    }
+
+    @Override
+    public String evaluate(Run<?,?> run, FilePath workspace, TaskListener listener, String macroName)
+            throws MacroEvaluationException, IOException, InterruptedException {
         List<Cause> causes = new LinkedList<Cause>();
-        CauseAction causeAction = build.getAction(CauseAction.class);
+        CauseAction causeAction = run.getAction(CauseAction.class);
         if (causeAction != null) {
             causes = causeAction.getCauses();
         }

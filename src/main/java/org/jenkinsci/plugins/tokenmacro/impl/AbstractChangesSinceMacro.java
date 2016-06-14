@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.tokenmacro.impl;
 
+import hudson.FilePath;
 import hudson.model.*;
 import java.io.IOException;
 
@@ -33,11 +34,19 @@ abstract public class AbstractChangesSinceMacro
     @Parameter(alias="default")
     public String def = ChangesSinceLastBuildMacro.DEFAULT_DEFAULT_VALUE;
 
+
+
     @Override
     public String evaluate(AbstractBuild<?, ?> build, TaskListener listener, String macroName)
             throws MacroEvaluationException, IOException, InterruptedException {
+        return evaluate(build,null,listener,macroName);
+    }
+
+    @Override
+    public String evaluate(Run<?,?> run, FilePath workspace, TaskListener listener, String macroName)
+            throws MacroEvaluationException, IOException, InterruptedException {
         // No previous build so bail
-        if (TokenMacro.getPreviousRun(build, listener) == null) {
+        if (TokenMacro.getPreviousRun(run, listener) == null) {
             return "";
         }
 
@@ -46,19 +55,19 @@ abstract public class AbstractChangesSinceMacro
         }
 
         StringBuffer sb = new StringBuffer();
-        final Run startBuild;
-        final Run endBuild;
+        final Run startRun;
+        final Run endRun;
         if (reverse) {
-            startBuild = build;
-            endBuild = getFirstIncludedRun(build, listener);
+            startRun = run;
+            endRun = getFirstIncludedRun(run, listener);
         } else {
-            startBuild = getFirstIncludedRun(build, listener);
-            endBuild = build;
+            startRun = getFirstIncludedRun(run, listener);
+            endRun = run;
         }
         Run<?, ?> currentBuild = null;
-        while (currentBuild != endBuild) {
+        while (currentBuild != endRun) {
             if (currentBuild == null) {
-                currentBuild = startBuild;
+                currentBuild = startRun;
             } else {
                 if (reverse) {
                     currentBuild = currentBuild.getPreviousBuild();
@@ -88,16 +97,14 @@ abstract public class AbstractChangesSinceMacro
             public boolean printSpec(StringBuffer buf, char formatChar) {
                 switch (formatChar) {
                     case 'c':
-                        if(currentRun instanceof AbstractBuild) {
-                            try {
-                                buf.append(changes.evaluate((AbstractBuild) currentRun, listener, ChangesSinceLastBuildMacro.MACRO_NAME));
-                            } catch (MacroEvaluationException e) {
-                                // ignore this
-                            } catch (IOException e) {
-                                // ignore this
-                            } catch (InterruptedException e) {
-                                // ignore this
-                            }
+                        try {
+                            buf.append(changes.evaluate(currentRun, null, listener, ChangesSinceLastBuildMacro.MACRO_NAME));
+                        } catch (MacroEvaluationException e) {
+                            // ignore this
+                        } catch (IOException e) {
+                            // ignore this
+                        } catch (InterruptedException e) {
+                            // ignore this
                         }
                         return true;
                     case 'n':

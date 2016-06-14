@@ -11,6 +11,7 @@
     <jenkins.version>1.642.2</jenkins.version>
     <java.level>7</java.level>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <pipeline.version>1.10</pipeline.version>
   </properties>
   
   <licenses>
@@ -82,6 +83,9 @@
       <version>3.0.0</version>
       <scope>provided</scope>
     </dependency>
+
+
+    <!-- Test Deps -->
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-all</artifactId>
@@ -93,6 +97,31 @@
       <artifactId>jenkins-war</artifactId>
       <type>war</type>
       <version>${jenkins.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins.workflow</groupId>
+      <version>${pipeline.version}</version>
+      <artifactId>workflow-step-api</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins.workflow</groupId>
+      <artifactId>workflow-job</artifactId>
+      <version>${pipeline.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins.workflow</groupId>
+      <artifactId>workflow-aggregator</artifactId>
+      <version>${pipeline.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency> <!-- StepConfigTester -->
+      <groupId>org.jenkins-ci.plugins.workflow</groupId>
+      <artifactId>workflow-step-api</artifactId>
+      <classifier>tests</classifier>
+      <version>${pipeline.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

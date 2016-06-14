@@ -24,7 +24,9 @@
 package org.jenkinsci.plugins.tokenmacro;
 
 import com.google.common.collect.ListMultimap;
+import hudson.FilePath;
 import hudson.model.AbstractBuild;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 import org.apache.commons.beanutils.ConvertUtils;
 
@@ -62,9 +64,6 @@ public abstract class DataBoundTokenMacro extends TokenMacro {
     @Retention(RUNTIME)
     @Target({FIELD,METHOD})
     public @interface Parameter {
-        /**
-         * Indicates that this parameter is required.
-         */
         boolean required() default false;
 
 	    String alias() default "";
@@ -92,7 +91,7 @@ public abstract class DataBoundTokenMacro extends TokenMacro {
     private void buildMap() {
         if (setters!=null)  return;
 
-        setters = new ConcurrentHashMap<String, Setter>();
+        setters = new ConcurrentHashMap<>();
         for (final Field f : getClass().getFields()) {
             final Parameter p = f.getAnnotation(Parameter.class);
             if (p !=null) {
@@ -160,10 +159,10 @@ public abstract class DataBoundTokenMacro extends TokenMacro {
         }
     }
 
-    @Override
-    public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap) throws MacroEvaluationException, IOException, InterruptedException {
+    private DataBoundTokenMacro prepare(String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap) throws MacroEvaluationException {
+        DataBoundTokenMacro copy;
         try {
-            DataBoundTokenMacro copy = getClass().newInstance();
+            copy = getClass().newInstance();
 
             buildMap();
 
@@ -185,16 +184,32 @@ public abstract class DataBoundTokenMacro extends TokenMacro {
                 if (!arguments.containsKey(e.getKey()) && e.getValue().required())
                     throw new MacroEvaluationException(MessageFormat.format("Parameter {0} in token {1} is required but was not specfified", e.getKey(), macroName));
             }
-
-            return copy.evaluate(context,listener,macroName);
         } catch (InstantiationException e) {
             throw new Error(e);
         } catch (IllegalAccessException e) {
             throw new Error(e);
         }
+
+        return copy;
+    }
+
+    @Override
+    public String evaluate(AbstractBuild<?, ?> build, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap) throws MacroEvaluationException, IOException, InterruptedException {
+        DataBoundTokenMacro copy = prepare(macroName,arguments,argumentMultimap);
+        return copy.evaluate(build,listener,macroName);
+    }
+
+    @Override
+    public String evaluate(Run<?,?> run, FilePath workspace, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap) throws MacroEvaluationException, IOException, InterruptedException {
+        DataBoundTokenMacro copy = prepare(macroName,arguments,argumentMultimap);
+        return copy.evaluate(run, workspace, listener, macroName);
     }
 
     public abstract String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName) throws MacroEvaluationException, IOException, InterruptedException;
+
+    public String evaluate(Run<?,?> run, FilePath workspace, TaskListener listener, String macroName) throws MacroEvaluationException, IOException, InterruptedException {
+        return macroName + " is not supported in this context";
+    }
 
     @Override
     public boolean hasNestedContent() {

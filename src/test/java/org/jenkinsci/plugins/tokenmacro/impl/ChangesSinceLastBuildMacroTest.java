@@ -188,6 +188,7 @@ public class ChangesSinceLastBuildMacroTest {
         when(build.getResult()).thenReturn(result);
         ChangeLogSet changes1 = createChangeLog(message);
         when(build.getChangeSet()).thenReturn(changes1);
+        when(build.getChangeSets()).thenReturn(Collections.singletonList(changes1));
         when(build.getNumber()).thenReturn(buildNumber);
 
         return build;
@@ -198,6 +199,7 @@ public class ChangesSinceLastBuildMacroTest {
         when(build.getResult()).thenReturn(result);
         ChangeLogSet changes1 = createChangeLogWithAffectedFiles(message);
         when(build.getChangeSet()).thenReturn(changes1);
+        when(build.getChangeSets()).thenReturn(Collections.singletonList(changes1));
         when(build.getNumber()).thenReturn(buildNumber);
 
         return build;
@@ -219,6 +221,7 @@ public class ChangesSinceLastBuildMacroTest {
         when(build.getResult()).thenReturn(result);
         ChangeLogSet changes1 = createEmptyChangeLog();
         when(build.getChangeSet()).thenReturn(changes1);
+        when(build.getChangeSets()).thenReturn(Collections.singletonList(changes1));
         when(build.getNumber()).thenReturn(buildNumber);
 
         return build;

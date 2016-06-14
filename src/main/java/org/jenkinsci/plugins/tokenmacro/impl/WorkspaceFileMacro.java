@@ -27,6 +27,7 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 import java.io.IOException;
 import java.util.Collections;
@@ -58,15 +59,19 @@ public class WorkspaceFileMacro extends DataBoundTokenMacro  {
     @Override
     public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName)
             throws MacroEvaluationException, IOException, InterruptedException {        
+        return evaluate(context,getWorkspace(context),listener,macroName);
+    }
+
+    public String evaluate(Run<?,?> run, FilePath workspace, TaskListener listener, String macroName)
+            throws MacroEvaluationException, IOException, InterruptedException {
         // do some environment variable substitution
         try {
-            EnvVars env = context.getEnvironment(listener);
+            EnvVars env = run.getEnvironment(listener);
             path = env.expand(path);
         } catch(Exception e) {
             listener.error("Error retrieving environment: %s", e.getMessage());
         }
-        
-        final FilePath workspace = getWorkspace(context, macroName);
+
         if(!workspace.child(path).exists()) {
             return String.format(fileNotFoundMessage, path);
         }

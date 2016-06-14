@@ -3,7 +3,9 @@ package org.jenkinsci.plugins.tokenmacro.impl;
 
 import com.google.common.io.Files;
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.model.AbstractBuild;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 import java.io.BufferedReader;
 import java.io.File;
@@ -58,7 +60,12 @@ public final class LogRegExMacro extends DataBoundTokenMacro {
 
     @Override
     public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName) throws MacroEvaluationException, IOException, InterruptedException {
-        return readLogFile(context.getLogFile());
+        return evaluate(context,null,listener,macroName);
+    }
+
+    @Override
+    public String evaluate(Run<?, ?> run, FilePath workspace, TaskListener listener, String macroName) throws MacroEvaluationException, IOException, InterruptedException {
+        return readLogFile(run.getLogFile());
     }
 
     public String readLogFile(File file) throws IOException {

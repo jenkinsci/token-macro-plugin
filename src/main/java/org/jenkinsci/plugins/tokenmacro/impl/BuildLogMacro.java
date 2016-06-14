@@ -1,9 +1,12 @@
 package org.jenkinsci.plugins.tokenmacro.impl;
 
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.model.AbstractBuild;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.tools.ant.taskdefs.Parallel;
 import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 
@@ -41,10 +44,15 @@ public class BuildLogMacro extends DataBoundTokenMacro {
     @Override
     public String evaluate(AbstractBuild<?, ?> build, TaskListener listener, String macroName)
             throws MacroEvaluationException, IOException, InterruptedException {
+        return evaluate(build,null,listener,macroName);
+    }
 
+    @Override
+    public String evaluate(Run<?,?> run, FilePath workspace, TaskListener listener, String macroName)
+            throws MacroEvaluationException, IOException, InterruptedException {
         StringBuilder buffer = new StringBuilder();
         try {
-            List<String> lines = build.getLog(maxLines);
+            List<String> lines = run.getLog(maxLines);
             for (String line : lines) {
                 if (escapeHtml) {
                     line = StringEscapeUtils.escapeHtml(line);

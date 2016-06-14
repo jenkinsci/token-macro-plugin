@@ -3,6 +3,7 @@ package org.jenkinsci.plugins.tokenmacro.impl;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import java.io.Closeable;
@@ -53,7 +54,11 @@ public class XmlFileMacro extends DataBoundTokenMacro {
 
     @Override
     public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName) throws MacroEvaluationException, IOException, InterruptedException {
-        FilePath workspace = getWorkspace(context, macroName);
+        return evaluate(context,getWorkspace(context),listener,macroName);
+    }
+
+    @Override
+    public String evaluate(Run<?,?> run, FilePath workspace, TaskListener listener, String macroName)  throws MacroEvaluationException, IOException, InterruptedException {
         String root = workspace.getRemote();
         return workspace.act(new ReadXML(root,file,xpath));
     }

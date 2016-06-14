@@ -1,8 +1,10 @@
 package org.jenkinsci.plugins.tokenmacro.impl;
 
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.Util;
 import hudson.model.AbstractBuild;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -34,6 +36,12 @@ public class JenkinsUrlMacro extends DataBoundTokenMacro {
 
     @Override
     public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName)
+            throws MacroEvaluationException, IOException, InterruptedException {
+        return evaluate(context,null,listener,macroName);
+    }
+
+    @Override
+    public String evaluate(Run<?, ?> run, FilePath workspace, TaskListener listener, String macroName)
             throws MacroEvaluationException, IOException, InterruptedException {
         String jenkinsUrl = Jenkins.getActiveInstance().getRootUrl();
 

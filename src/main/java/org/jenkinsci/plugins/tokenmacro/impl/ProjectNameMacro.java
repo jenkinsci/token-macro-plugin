@@ -1,7 +1,9 @@
 package org.jenkinsci.plugins.tokenmacro.impl;
 
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.model.AbstractBuild;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -26,16 +28,21 @@ public class ProjectNameMacro extends DataBoundTokenMacro {
     public List<String> getAcceptedMacroNames() {
         List<String> macroNames = new ArrayList<>();
         Collections.addAll(macroNames, MACRO_NAME, MACRO_NAME2);
-
         return macroNames;
     }
 
     @Override
     public String evaluate(AbstractBuild<?, ?> build, TaskListener listener, String macroName)
             throws MacroEvaluationException, IOException, InterruptedException {
+        return evaluate(build,null,listener,macroName);
+    }
+
+    @Override
+    public String evaluate(Run<?, ?> build, FilePath workspace, TaskListener listener, String macroName)
+            throws MacroEvaluationException, IOException, InterruptedException {
         if(macroName.equals(MACRO_NAME2)) {
-            return build.getProject().getDisplayName();
+            return build.getParent().getDisplayName();
         }
-        return build.getProject().getFullDisplayName();
+        return build.getParent().getFullDisplayName();
     }
 }
