@@ -40,7 +40,6 @@ public class UpstreamRunNameMacro extends DataBoundTokenMacro {
                 if(c instanceof Cause.UpstreamCause) {
                     final Cause.UpstreamCause u = (Cause.UpstreamCause)c;
                     if(u.getUpstreamRun() != null) {
-                        assert u.getUpstreamRun() != null;
                         return u.getUpstreamRun().getDisplayName();
                     }
                 }

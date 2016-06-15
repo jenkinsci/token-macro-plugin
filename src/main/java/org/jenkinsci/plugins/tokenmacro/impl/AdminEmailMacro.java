@@ -20,6 +20,8 @@ import jenkins.model.JenkinsLocationConfiguration;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.jenkinsci.plugins.tokenmacro.TokenMacro;
 
+import javax.annotation.Nonnull;
+
 /**
  *
  * @author acearl
@@ -46,11 +48,15 @@ public class AdminEmailMacro extends TokenMacro {
 
     @Override
     public String evaluate(Run<?,?> run, FilePath workspace, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap) throws MacroEvaluationException, IOException, InterruptedException {
-        String res = "";
-        if(JenkinsLocationConfiguration.get() != null) {
-            assert JenkinsLocationConfiguration.get() != null;
-            res = JenkinsLocationConfiguration.get().getAdminAddress();
+        return getAdminAddress();
+    }
+
+    @Nonnull
+    public String getAdminAddress() throws MacroEvaluationException {
+        JenkinsLocationConfiguration configuration = JenkinsLocationConfiguration.get();
+        if (configuration == null) {
+            throw new MacroEvaluationException("Jenkins location configuration is not accessible");
         }
-        return res;
+        return configuration.getAdminAddress();
     }
 }
