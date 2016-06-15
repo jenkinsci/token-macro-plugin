@@ -48,6 +48,7 @@ public class AdminEmailMacro extends TokenMacro {
     public String evaluate(Run<?,?> run, FilePath workspace, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap) throws MacroEvaluationException, IOException, InterruptedException {
         String res = "";
         if(JenkinsLocationConfiguration.get() != null) {
+            assert JenkinsLocationConfiguration.get() != null;
             res = JenkinsLocationConfiguration.get().getAdminAddress();
         }
         return res;
