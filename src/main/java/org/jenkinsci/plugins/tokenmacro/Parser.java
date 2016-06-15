@@ -124,7 +124,6 @@ public class Parser extends BaseParser<Object> {
     /**
      * Rule for substring expansion, which is of the form ${TOKEN:offset:length}, where length is optional. offset and
      * length can be negative, which then operates from the end of the string.
-     * @return Rule
      */
     Rule SubstringExpansion() {
         final Var<Integer> offset = new Var(0);
@@ -147,7 +146,6 @@ public class Parser extends BaseParser<Object> {
     /**
      * Rule for beginning match expansion, which is of the form${TOKEN#pattern}, where pattern is a regular expression.
      * Will check for match at the beginning of the string, and if matched remove the matching text.
-     * @return
      */
     Rule BeginningMatchExpansion() {
         return Sequence('#',

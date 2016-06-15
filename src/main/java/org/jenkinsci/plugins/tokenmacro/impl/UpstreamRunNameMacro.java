@@ -34,14 +34,20 @@ public class UpstreamRunNameMacro extends DataBoundTokenMacro {
 
     @Override
     public String evaluate(Run<?,?> run, FilePath workspace, TaskListener listener, String macroName) throws MacroEvaluationException, IOException, InterruptedException {
+        return getUpstreamRunName(run);
+    }
+
+    @Nonnull
+    private String getUpstreamRunName(Run<?,?> run) throws MacroEvaluationException {
         CauseAction action = run.getAction(CauseAction.class);
         if(action != null) {
             for(Cause c : action.getCauses()) {
                 if(c instanceof Cause.UpstreamCause) {
                     final Cause.UpstreamCause u = (Cause.UpstreamCause)c;
-                    if(u.getUpstreamRun() != null) {
-                        return u.getUpstreamRun().getDisplayName();
+                    if(u.getUpstreamRun() == null) {
+                        throw new MacroEvaluationException("Upstream run does not exist");
                     }
+                    return u.getUpstreamRun().getDisplayName();
                 }
             }
         }
