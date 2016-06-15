@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.tokenmacro.impl;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.Result;
 import hudson.model.Run;
@@ -37,6 +38,7 @@ public class ChangesSinceLastUnstableBuildMacro
     }
 
     @Override
+    @SuppressFBWarnings
     public Run<?,?> getFirstIncludedRun(Run<?,?> run, TaskListener listener) {
         Run<?,?> firstIncludedBuild = run;
 

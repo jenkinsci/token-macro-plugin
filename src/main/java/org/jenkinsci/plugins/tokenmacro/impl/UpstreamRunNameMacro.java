@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.tokenmacro.impl;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath;
 import hudson.model.*;
 import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
@@ -47,6 +48,7 @@ public class UpstreamRunNameMacro extends DataBoundTokenMacro {
     }
 
     @Nonnull
+    @SuppressFBWarnings
     private Run<?,?> getUpstreamRun(Cause.UpstreamCause cause) throws MacroEvaluationException {
         if(cause.getUpstreamRun() == null)
             throw new MacroEvaluationException("Upstream run is not available");
