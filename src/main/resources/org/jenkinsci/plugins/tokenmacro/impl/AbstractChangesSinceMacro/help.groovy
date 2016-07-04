@@ -17,6 +17,12 @@ dd {
       }
       p(_("Defaults to ") + my.defaultFormatValue)
     }
+    dt("changesFormat")
+    dd() {
+      span(_("For each change in a build. See \${CHANGES_SINCE_LAST_BUILD} for placeholders."))
+    }
   }
-  span("See additional documentation on \${BUILD_CHANGES} token for showPaths, format and pathFormat parameters")
+  span("Following Parameters are also supported: " +
+          "showPaths, pathFormat, showDependencies, dateFormat, regex, replace, default. " +
+          "See \${CHANGES_SINCE_LAST_BUILD} details.")
 }
