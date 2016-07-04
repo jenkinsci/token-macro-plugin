@@ -38,5 +38,8 @@ dd() {
     dd(_("A regular expression."))
     dt("replace")
     dd(_("A replacement for all sub-strings of the change message that match the given regular expression."))
+    dt("default")
+    dd(_("Message to use when no changes are detected. " +
+            "Defaults to \"No changes\\n\""))
   }
 }
