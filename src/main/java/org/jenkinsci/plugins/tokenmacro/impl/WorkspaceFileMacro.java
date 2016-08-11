@@ -33,6 +33,7 @@ import hudson.model.TaskListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
 
@@ -84,13 +85,21 @@ public class WorkspaceFileMacro extends DataBoundTokenMacro  {
         try {
             if(maxLines > 0) {
                 int lines = 0;
-                String line;
+
                 StringBuilder result = new StringBuilder();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(workspace.child(path).read()));
-                while(lines < maxLines && (line = reader.readLine()) != null) {
-                    result.append(line);
-                    result.append('\n');
-                    lines++;
+                BufferedReader reader = null;
+                try {
+                    String line;
+                    reader = new BufferedReader(new InputStreamReader(workspace.child(path).read(), Charset.defaultCharset()));
+                    while (lines < maxLines && (line = reader.readLine()) != null) {
+                        result.append(line);
+                        result.append('\n');
+                        lines++;
+                    }
+                } finally {
+                    if(reader != null) {
+                        reader.close();
+                    }
                 }
 
                 return result.toString();
