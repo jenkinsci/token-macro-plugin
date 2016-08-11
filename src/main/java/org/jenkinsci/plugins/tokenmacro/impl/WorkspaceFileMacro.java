@@ -29,7 +29,10 @@ import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Collections;
 import java.util.List;
 
@@ -42,6 +45,8 @@ public class WorkspaceFileMacro extends DataBoundTokenMacro  {
     public String path = "";
     @Parameter
     public String fileNotFoundMessage = "ERROR: File '%s' does not exist";
+    @Parameter
+    public int maxLines = -1;
     
 
     public static final String MACRO_NAME = "FILE";
@@ -77,7 +82,21 @@ public class WorkspaceFileMacro extends DataBoundTokenMacro  {
         }
 
         try {
-            return workspace.child(path).readToString();
+            if(maxLines > 0) {
+                int lines = 0;
+                String line;
+                StringBuilder result = new StringBuilder();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(workspace.child(path).read()));
+                while(lines < maxLines && (line = reader.readLine()) != null) {
+                    result.append(line);
+                    result.append('\n');
+                    lines++;
+                }
+
+                return result.toString();
+            } else {
+                return workspace.child(path).readToString();
+            }
         } catch (IOException e) {
             return "ERROR: File '" + path + "' could not be read";
         }
