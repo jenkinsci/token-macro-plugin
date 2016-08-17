@@ -29,17 +29,27 @@ import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.model.AbstractBuild;
+import hudson.model.BuildVariableContributor;
+import hudson.model.BuildableItemWithBuildWrappers;
+import hudson.model.ParameterValue;
+import hudson.model.ParametersAction;
 import hudson.model.Run;
 import hudson.model.TaskListener;
-import org.apache.commons.lang.StringUtils;
+import hudson.tasks.BuildWrapper;
+import hudson.util.VariableResolver;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import java.io.IOException;
-import java.util.*;
-import java.util.Map.Entry;
+
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
-import org.apache.tools.ant.taskdefs.Parallel;
+
 
 /**
  * A macro that expands to text values in the context of a {@link AbstractBuild}.
@@ -213,9 +223,10 @@ public abstract class TokenMacro implements ExtensionPoint {
         // Expand environment variables
         stringWithMacro = stringWithMacro.replaceAll("\\$\\$", "\\$\\$\\$\\$");
         String s = run.getEnvironment(listener).expand(stringWithMacro);
-        // Expand build variables
-        s = s.replaceAll("\\$\\$", "\\$\\$\\$\\$");
+
         if(run instanceof AbstractBuild) {
+            // Expand build variables
+            s = s.replaceAll("\\$\\$", "\\$\\$\\$\\$");
             AbstractBuild<?,?> build = (AbstractBuild<?, ?>)run;
             s = Util.replaceMacro(s, build.getBuildVariableResolver());
         }
