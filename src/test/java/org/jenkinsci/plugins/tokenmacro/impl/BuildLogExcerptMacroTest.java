@@ -67,5 +67,19 @@ public class BuildLogExcerptMacroTest {
 
         assertEquals("7\n8\n9\n", result);
     }
+    
+    @Test
+    public void testGetContent_regexpStartEndTagsEndBeforeStart()
+    		throws Exception {
+    	AbstractBuild build = mock(AbstractBuild.class);
+    	when(build.getLogReader()).thenReturn(new StringReader("1\n2\nSTOP3\n4\n5\nTEST STARTED\n7\n8\n9\nTEST STOPED\n10\n11\n12\n"));
+    	
+    	buildLogExcerptMacro.start = ".*START.*";
+    	buildLogExcerptMacro.end = ".*STOP.*";
+    	
+    	final String result = buildLogExcerptMacro.evaluate(build, listener, BuildLogExcerptMacro.MACRO_NAME);
+    	
+    	assertEquals("7\n8\n9\n", result);
+    }
 }
 
