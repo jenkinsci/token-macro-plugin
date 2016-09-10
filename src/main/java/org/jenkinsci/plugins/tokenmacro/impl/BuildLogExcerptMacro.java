@@ -76,9 +76,12 @@ public class BuildLogExcerptMacro extends DataBoundTokenMacro {
                 started = true;
                 continue;
             }
-            if (endPattern.matcher(line).matches()) break;
 
-            if (started) buffer.append(line).append('\n');
+            if (started) {
+            	if (endPattern.matcher(line).matches()) break;
+            	
+            	buffer.append(line).append('\n');
+            }
         }
         return buffer.toString();
     }
