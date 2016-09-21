@@ -1,10 +1,8 @@
 package org.jenkinsci.plugins.tokenmacro;
 
 import com.google.common.collect.ListMultimap;
-import hudson.model.AbstractBuild;
-import hudson.model.FreeStyleBuild;
-import hudson.model.FreeStyleProject;
-import hudson.model.TaskListener;
+import hudson.Launcher;
+import hudson.model.*;
 import hudson.util.StreamTaskListener;
 import org.junit.Rule;
 import org.junit.Test;
@@ -174,6 +172,22 @@ public class TokenMacroTest {
 
         assertEquals(" ${TEST_NESTEDX}", TokenMacro.expand(b,listener," ${TEST_NESTEDX}",false,null));
         assertEquals("${TEST_NESTEDX,abc=\"def\",abc=\"ghi\",jkl=true}", TokenMacro.expand(b,listener,"${TEST_NESTEDX,abc=\"def\",abc=\"ghi\",jkl=true}",false,null));
+    }
+
+    @Test
+    @Issue("JENKINS-38420")
+    public void testJENKINS_38420() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject("foo");
+        project.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                listener.getLogger().println("<span class=\"timestamp\"><b>14:58:18</b> </span>version: 1.0.0-SNAPSHOT");
+                return true;
+            }
+        });
+        FreeStyleBuild b = project.scheduleBuild2(0).get();
+        final String result = TokenMacro.expand(b, listener, "${BUILD_LOG_REGEX, regex=\"^.*?version: (.*?)$\", substText=\"$1\", maxMatches=1, showTruncatedLines=false }", false, null);
+        assertEquals("1.0.0-SNAPSHOT\n", result);
     }
 
     @Test

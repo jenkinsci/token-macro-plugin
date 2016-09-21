@@ -97,8 +97,13 @@ public class Parser extends BaseParser<Object> {
                 Sequence(Identifier(), startToken()),
                 Optional(Expansion()),
                 Optional(Arguments()),
+                Optional(Spacing()),
                 '}',
                 processToken());
+    }
+
+    Rule WhiteSpace() {
+        return ZeroOrMore(AnyOf(" \t\f"));
     }
 
     Rule EscapedToken() {

@@ -7,3 +7,5 @@ work
 .classpath
 .settings
 .idea
+
+.vscode/
