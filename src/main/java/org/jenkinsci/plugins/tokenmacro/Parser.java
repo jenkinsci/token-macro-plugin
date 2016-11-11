@@ -285,7 +285,11 @@ public class Parser extends BaseParser<Object> {
 
         List<TokenMacro> all = new ArrayList<TokenMacro>(TokenMacro.all());
         if(privateTokens!=null) {
-            all.addAll( privateTokens );
+            for(TokenMacro t : privateTokens) {
+                if(t != null) {
+                    all.add(t);
+                }
+            }
         }
 
         Map<String,String> map = new HashMap<String, String>();
