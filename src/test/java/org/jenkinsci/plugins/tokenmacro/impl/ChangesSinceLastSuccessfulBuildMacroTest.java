@@ -243,6 +243,27 @@ public class ChangesSinceLastSuccessfulBuildMacroTest {
     }
 
     @Test
+    public void testShouldPrintDefaultMessageWhenNoChangeSets()
+            throws Exception {
+        AbstractBuild failureBuild = createBuild(Result.FAILURE, 41, "[DEFECT-666] Changes for a failed build.");
+
+        AbstractBuild currentBuild = createBuildWithNoChangeSets(Result.SUCCESS, 42);
+        when(currentBuild.getPreviousBuild()).thenReturn(failureBuild);
+        when(failureBuild.getNextBuild()).thenReturn(currentBuild);
+
+        String contentStr = content.evaluate(currentBuild, listener, ChangesSinceLastSuccessfulBuildMacro.MACRO_NAME);
+
+        Assert.assertEquals("Changes for Build #41\n"
+                + "[Ash Lux] [DEFECT-666] Changes for a failed build.\n"
+                + "\n"
+                + "\n"
+                + "Changes for Build #42\n"
+                + ChangesSinceLastBuildMacro.DEFAULT_DEFAULT_VALUE
+                + "\n", contentStr);
+    }
+
+
+    @Test
     public void testShouldPrintMessageWhenNoChanges()
             throws Exception {
         content.def = "another default message\n";
@@ -269,6 +290,14 @@ public class ChangesSinceLastSuccessfulBuildMacroTest {
         ChangeLogSet changes1 = createEmptyChangeLog();
         when(build.getChangeSet()).thenReturn(changes1);
         when(build.getChangeSets()).thenReturn(Collections.singletonList(changes1));
+        when(build.getNumber()).thenReturn(buildNumber);
+        return build;
+    }
+
+    private AbstractBuild createBuildWithNoChangeSets(Result result, int buildNumber) {
+        AbstractBuild build = mock(AbstractBuild.class);
+        when(build.getResult()).thenReturn(result);
+        when(build.getChangeSets()).thenReturn(Collections.EMPTY_LIST);
         when(build.getNumber()).thenReturn(buildNumber);
 
         return build;
