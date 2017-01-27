@@ -107,37 +107,41 @@ public class ChangesSinceLastBuildMacro extends DataBoundTokenMacro {
             changeSets = Collections.EMPTY_LIST;
         }
 
-        for(ChangeLogSet<?> changeSet : changeSets) {
-            if (!changeSet.isEmptySet()) {
-                for (ChangeLogSet.Entry entry : changeSet) {
-                    Util.printf(buf, format, new ChangesSincePrintfSpec(entry,
-                            pathFormat, dateFormatter));
+        if(changeSets.size() > 0) {
+            for (ChangeLogSet<?> changeSet : changeSets) {
+                if (!changeSet.isEmptySet()) {
+                    for (ChangeLogSet.Entry entry : changeSet) {
+                        Util.printf(buf, format, new ChangesSincePrintfSpec(entry,
+                                pathFormat, dateFormatter));
+                    }
+                } else {
+                    buf.append(def);
                 }
-            } else {
-                buf.append(def);
-            }
-            if (showDependencies) {
-                Run<?, ?> previousRun = TokenMacro.getPreviousRun(run, listener);
-                if (previousRun instanceof AbstractBuild) {
-                    AbstractBuild<?, ?> build = (AbstractBuild<?, ?>) previousRun;
-                    for (Entry<AbstractProject, DependencyChange> e : build.getDependencyChanges((AbstractBuild) previousRun).entrySet()) {
-                        buf.append("\n=======================\n");
-                        buf.append("\nChanges in ").append(e.getKey().getName())
-                                .append(":\n");
-                        for (AbstractBuild<?, ?> b : e.getValue().getBuilds()) {
-                            if (!b.getChangeSet().isEmptySet()) {
-                                for (ChangeLogSet.Entry entry : b.getChangeSet()) {
-                                    Util.printf(buf, format,
-                                            new ChangesSincePrintfSpec(entry,
-                                                    pathFormat, dateFormatter));
+                if (showDependencies) {
+                    Run<?, ?> previousRun = TokenMacro.getPreviousRun(run, listener);
+                    if (previousRun instanceof AbstractBuild) {
+                        AbstractBuild<?, ?> build = (AbstractBuild<?, ?>) previousRun;
+                        for (Entry<AbstractProject, DependencyChange> e : build.getDependencyChanges((AbstractBuild) previousRun).entrySet()) {
+                            buf.append("\n=======================\n");
+                            buf.append("\nChanges in ").append(e.getKey().getName())
+                                    .append(":\n");
+                            for (AbstractBuild<?, ?> b : e.getValue().getBuilds()) {
+                                if (!b.getChangeSet().isEmptySet()) {
+                                    for (ChangeLogSet.Entry entry : b.getChangeSet()) {
+                                        Util.printf(buf, format,
+                                                new ChangesSincePrintfSpec(entry,
+                                                        pathFormat, dateFormatter));
+                                    }
+                                } else {
+                                    buf.append(def);
                                 }
-                            } else {
-                                buf.append(def);
                             }
                         }
                     }
                 }
             }
+        } else {
+            buf.append(def);
         }
 
         return buf.toString();
