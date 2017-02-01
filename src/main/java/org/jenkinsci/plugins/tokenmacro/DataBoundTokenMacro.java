@@ -24,6 +24,7 @@
 package org.jenkinsci.plugins.tokenmacro;
 
 import com.google.common.collect.ListMultimap;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
@@ -84,6 +85,10 @@ public abstract class DataBoundTokenMacro extends TokenMacro {
     }
 
     private Map<String,Setter> setters;
+
+    public DataBoundTokenMacro() {
+        buildMap();
+    }
 
     /**
      * Builds up the {@link #setters} map that encapsulates where/how to set the value.
@@ -163,8 +168,6 @@ public abstract class DataBoundTokenMacro extends TokenMacro {
         DataBoundTokenMacro copy;
         try {
             copy = getClass().newInstance();
-
-            buildMap();
 
             for (Entry<String, String> e : argumentMultimap.entries()) {
                 Setter s = setters.get(e.getKey());
