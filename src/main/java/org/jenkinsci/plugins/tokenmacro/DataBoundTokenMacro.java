@@ -93,7 +93,7 @@ public abstract class DataBoundTokenMacro extends TokenMacro {
     /**
      * Builds up the {@link #setters} map that encapsulates where/how to set the value.
      */
-    private synchronized void buildMap() {
+    private void buildMap() {
         if (setters!=null)  return;
 
         setters = new ConcurrentHashMap<>();
