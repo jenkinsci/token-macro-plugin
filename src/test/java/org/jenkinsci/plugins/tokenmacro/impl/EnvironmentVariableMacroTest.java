@@ -24,4 +24,18 @@ public class EnvironmentVariableMacroTest {
         FreeStyleBuild b = p.scheduleBuild2(0).get();
         assertEquals("foo",TokenMacro.expand(b, StreamTaskListener.fromStdout(),"${ENV,var=\"JOB_NAME\"}"));
     }
+
+    @Test
+    public void testEnvironmentVariableExpansionDefault() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject("foo");
+        FreeStyleBuild b = p.scheduleBuild2(0).get();
+        assertEquals("You got the default",TokenMacro.expand(b, StreamTaskListener.fromStdout(),"${ENV,var=\"JORB_NAME\", default=\"You got the default\"}"));
+    }
+
+    @Test
+    public void testEnvironmentVariableExpansionMissingNoDefault() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject("foo");
+        FreeStyleBuild b = p.scheduleBuild2(0).get();
+        assertEquals("",TokenMacro.expand(b, StreamTaskListener.fromStdout(),"${ENV,var=\"JORB_NAME\"}"));
+    }
 }

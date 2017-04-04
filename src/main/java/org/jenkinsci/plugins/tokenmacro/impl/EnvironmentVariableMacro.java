@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 
@@ -22,6 +24,9 @@ public class EnvironmentVariableMacro extends DataBoundTokenMacro {
 
     @Parameter(required=true)
     public String var = "";
+
+    @Parameter(alias="default")
+    public String def = "";
 
     @Override
     public List<String> getAcceptedMacroNames() {
@@ -40,6 +45,8 @@ public class EnvironmentVariableMacro extends DataBoundTokenMacro {
         Map<String, String> env = run.getEnvironment(listener);
         if(env.containsKey(var)){
             return env.get(var);
+        } else if(StringUtils.isNotBlank(def)) {
+            return def;
         }
         return "";
     }
