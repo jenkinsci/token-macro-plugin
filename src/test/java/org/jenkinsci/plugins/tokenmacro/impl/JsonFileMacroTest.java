@@ -66,4 +66,49 @@ public class JsonFileMacroTest {
         assertEquals("Error: Found primitive type at key 'version' before exhausting path",TokenMacro.expand(b, StreamTaskListener.fromStdout(),
                 "${JSON,file=\"test.json\",path=\"project.version.another\"}"));
     }
+
+    @Test
+    public void testJsonExpr() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject("foo");
+        project.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                build.getWorkspace().child("test.json").write("{'project' : { 'version' : '1.2.3' } }","UTF-8");
+                return true;
+            }
+        });
+        FreeStyleBuild b = project.scheduleBuild2(0).get();
+        assertEquals("1.2.3",TokenMacro.expand(b, StreamTaskListener.fromStdout(),
+                "${JSON,file=\"test.json\",expr=\"$.project['version']\"}"));
+    }
+
+    @Test
+    public void testExprOverrides() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject("foo");
+        project.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                build.getWorkspace().child("test.json").write("{'project' : { 'version' : '1.2.3' }, 'foo' : 'bar' }","UTF-8");
+                return true;
+            }
+        });
+        FreeStyleBuild b = project.scheduleBuild2(0).get();
+        assertEquals("bar",TokenMacro.expand(b, StreamTaskListener.fromStdout(),
+                "${JSON,file=\"test.json\",path=\"project.version\",expr=\"$.foo\"}"));
+    }
+
+    @Test
+    public void testNoPathOrExpr() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject("foo");
+        project.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                build.getWorkspace().child("test.json").write("{'project' : { 'version' : '1.2.3' }, 'foo' : 'bar' }","UTF-8");
+                return true;
+            }
+        });
+        FreeStyleBuild b = project.scheduleBuild2(0).get();
+        assertEquals("You must specify the path or expr parameter",TokenMacro.expand(b, StreamTaskListener.fromStdout(),
+                "${JSON,file=\"test.json\"}"));
+    }
 }

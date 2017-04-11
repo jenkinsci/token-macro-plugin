@@ -1,5 +1,7 @@
 package org.jenkinsci.plugins.tokenmacro.impl;
 
+import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.JsonPath;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
@@ -37,8 +39,11 @@ public class JsonFileMacro extends DataBoundTokenMacro {
     @Parameter(required=true)
     public String file = null;
 
-    @Parameter(required=true)
+    @Parameter
     public String path = null;
+
+    @Parameter
+    public String expr = null;
 
     @Override
     public boolean acceptsMacroName(String macroName) {
@@ -57,64 +62,92 @@ public class JsonFileMacro extends DataBoundTokenMacro {
 
     @Override
     public String evaluate(Run<?,?> run, FilePath workspace, TaskListener listener, String macroName)  throws MacroEvaluationException, IOException, InterruptedException {
+        if(path == null && expr == null) {
+            return "You must specify the path or expr parameter";
+        }
+
+        // jsonPath takes precedence
+        if(path != null && expr != null) {
+            path = null;
+        }
+
         String root = workspace.getRemote();
-        return workspace.act(new ReadJSON(root,file,path,run.getCharset()));
+        return workspace.act(new ReadJSON(root,file,path,expr,run.getCharset()));
     }
 
     private static class ReadJSON extends MasterToSlaveCallable<String, IOException> {
 
         private String root;
         private String filename;
-        private String pathexpression;
+        private String expr;
+        private String path;
         private Charset charset;
 
-        public ReadJSON(String root, String filename, String path, Charset charset){
+        public ReadJSON(String root, String filename, String path, String expr, Charset charset){
             this.root=root;
             this.filename=filename;
-            this.pathexpression=path;
+            this.path=path;
             this.charset=charset;
+            this.expr=expr;
+        }
+
+        public String extractWithPath(File file) {
+            String result = "";
+            try {
+                JSONObject obj = JSONObject.fromObject(FileUtils.readFileToString(file, charset));
+                String[] pathKeys = path.split("\\.");
+                int count = 0;
+                for(String key : pathKeys) {
+                    if(obj.containsKey(key)) {
+                        count++;
+                        Object obj2 = obj.get(key);
+                        if(obj2 instanceof JSONObject) {
+                            obj = (JSONObject)obj2;
+                        } else {
+                            if(count < pathKeys.length) {
+                                result = "Error: Found primitive type at key '".concat(key).concat("' before exhausting path");
+                            } else {
+                                result = obj2.toString();
+                            }
+                            break;
+                        }
+                    } else {
+                        result = "Error: The key '".concat(key).concat("' does not exist in the JSON");
+                        break;
+                    }
+                }
+            } catch (IOException e) {
+                result = "Error: ".concat(filename).concat(" - Could not read JSON file.");
+            } catch (JSONException e) {
+                result = "Error: ".concat(filename).concat(" - JSON not well formed.");
+            } catch (Throwable e) {
+                LOGGER.log(Level.WARNING, "Unhandled exception during the macro evaluation", e);
+                result = "Error: ".concat(filename).concat(" - '").concat(path).concat("' invalid syntax or path maybe?");
+            }
+            return result;
+        }
+
+        public String extractWithJsonPath(File file) {
+            String result;
+            try {
+                DocumentContext jsonContext = JsonPath.parse(file);
+                result = jsonContext.read(expr);
+            } catch (IOException e) {
+                result = "Error: ".concat(filename).concat(" - Could not read JSON file");
+            }
+            return result;
         }
 
         public String call() throws IOException {
             File file = new File(root, filename);
             String result = "";
             if (file.exists()) {
-                try {
-                    JSONObject obj = JSONObject.fromObject(FileUtils.readFileToString(file, charset));
-                    String[] pathKeys = pathexpression.split("\\.");
-                    int count = 0;
-                    for(String key : pathKeys) {
-                        if(obj.containsKey(key)) {
-                            count++;
-                            Object obj2 = obj.get(key);
-                            if(obj2 instanceof JSONObject) {
-                                obj = (JSONObject)obj2;
-                            } else {
-                                if(count < pathKeys.length) {
-                                    result = "Error: Found primitive type at key '".concat(key).concat("' before exhausting path");
-                                } else {
-                                    result = obj2.toString();
-                                }
-                                break;
-                            }
-                        } else {
-                            result = "Error: The key '".concat(key).concat("' does not exist in the JSON");
-                            break;
-                        }
-                    }
+                if(path != null) {
+                    result = extractWithPath(file);
+                } else if(expr != null) {
+                    result = extractWithJsonPath(file);
                 }
-                catch (IOException e) {
-                    result = "Error: ".concat(filename).concat(" - Could not read JSON file.");
-                }
-                catch (JSONException e) {
-                    result = "Error: ".concat(filename).concat(" - JSON not well formed.");
-                }
-                catch (Throwable e) {
-                    LOGGER.log(Level.WARNING, "Unhandled exception during the macro evaluation", e);
-                    result = "Error: ".concat(filename).concat(" - '").concat(pathexpression).concat("' invalid syntax or path maybe?");
-                }
-            }
-            else {
+            } else {
                 result = "Error: ".concat(filename).concat(" not found");
             }
 
