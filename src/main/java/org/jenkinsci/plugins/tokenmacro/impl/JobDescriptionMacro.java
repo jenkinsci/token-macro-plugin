@@ -1,6 +1,5 @@
 package org.jenkinsci.plugins.tokenmacro.impl;
 
-import com.trilead.ssh2.crypto.digest.MAC;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
