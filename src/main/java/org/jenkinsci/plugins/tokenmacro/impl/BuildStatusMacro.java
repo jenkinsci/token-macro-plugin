@@ -14,6 +14,8 @@ import org.apache.tools.ant.taskdefs.Parallel;
 import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.jenkinsci.plugins.tokenmacro.TokenMacro;
+import org.jenkinsci.plugins.workflow.job.WorkflowJob;
+import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 
 @Extension
 public class BuildStatusMacro extends DataBoundTokenMacro {
@@ -39,6 +41,12 @@ public class BuildStatusMacro extends DataBoundTokenMacro {
     @Override
     public String evaluate(Run<?,?> run, FilePath workspace, TaskListener listener, String macroName)
             throws MacroEvaluationException, IOException, InterruptedException {
+
+        // In the case of pipeline jobs, if the status hasn't been set to a non-null value, then it is considered "success"
+        if(run instanceof WorkflowRun && null == run.getResult()) {
+            return Result.SUCCESS.toString();
+        }
+
         // Build can be "building" when the pre-build trigger is used. (and in this case there is not result set yet for the build)
         // Reporting "success", "still failing", etc doesn't make sense in this case.
         // When using on matrix build, the build is still in building stage when matrix aggregator end build trigger is fired, though
