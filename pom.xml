@@ -4,13 +4,14 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>2.19</version>
+    <version>2.33</version>
+    <relativePath />
   </parent>
 
   <properties>
     <jenkins.version>1.642.3</jenkins.version>
     <java.level>7</java.level>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <findbugs.failOnError>false</findbugs.failOnError> <!-- TODO fix the warnings instead -->
   </properties>
   
   <licenses>
@@ -44,22 +45,9 @@
   <scm>
     <connection>scm:git:git://github.com/jenkinsci/token-macro-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:jenkinsci/token-macro-plugin.git</developerConnection>
-    <tag>token-macro-2.1</tag>
+    <tag>HEAD</tag>
   </scm>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>findbugs-maven-plugin</artifactId>
-        <configuration>
-          <xmlOutput>true</xmlOutput>
-          <failOnError>false</failOnError>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
-  
   <dependencies>
     <dependency>
       <groupId>org.jenkins-ci.plugins.workflow</groupId>
@@ -70,6 +58,25 @@
       <groupId>org.parboiled</groupId>
       <artifactId>parboiled-java</artifactId>
       <version>1.1.7</version>
+      <exclusions>
+        <!-- Jenkins core bundles ASM 4, so if this really requires ASM 5 and is used at runtime, you are SOL. -->
+        <exclusion>
+          <groupId>org.ow2.asm</groupId>
+          <artifactId>asm</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.ow2.asm</groupId>
+          <artifactId>asm-analysis</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.ow2.asm</groupId>
+          <artifactId>asm-tree</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.ow2.asm</groupId>
+          <artifactId>asm-util</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.google.code.findbugs</groupId>
@@ -81,13 +88,17 @@
       <groupId>com.jayway.jsonpath</groupId>
       <artifactId>json-path</artifactId>
       <version>2.1.0</version>
+      <exclusions>
+        <exclusion> <!-- Note that json-smart *also* bundles ASM 5 inline, which we cannot do anything about. Bad form! -->
+          <groupId>org.ow2.asm</groupId>
+          <artifactId>asm</artifactId>
+        </exclusion>
+        <exclusion> <!-- inlines it anyway, no need to bundle a duplicate copy (but note that licenses.xml will be incomplete) -->
+          <groupId>net.minidev</groupId>
+          <artifactId>accessors-smart</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.plugins.workflow</groupId>
-      <artifactId>workflow-job</artifactId>
-      <version>2.0</version>
-    </dependency>
-
 
     <!-- Test Deps -->
     <dependency>
@@ -99,6 +110,12 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins.workflow</groupId>
       <artifactId>workflow-cps</artifactId>
+      <version>2.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins.workflow</groupId>
+      <artifactId>workflow-job</artifactId>
       <version>2.0</version>
       <scope>test</scope>
     </dependency>
@@ -126,13 +143,6 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.main</groupId>
-      <artifactId>jenkins-war</artifactId>
-      <type>war</type>
-      <version>${jenkins.version}</version>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
 
   <repositories>
@@ -149,4 +159,3 @@
     </pluginRepository>
   </pluginRepositories>
 </project>  
-
