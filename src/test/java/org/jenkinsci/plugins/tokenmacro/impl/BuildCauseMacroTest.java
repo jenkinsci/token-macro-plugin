@@ -69,6 +69,29 @@ public class BuildCauseMacroTest {
         assertEquals("Cause1, Cause2, Cause3", buildCauseMacro.evaluate(build, listener, BuildCauseMacro.MACRO_NAME));
     }
 
+    @Test
+    public void testCauseData()
+            throws Exception {
+        CauseAction causeAction = mock(CauseAction.class);
+        final Cause.UpstreamCause upstreamCause = mock(Cause.UpstreamCause.class);
+
+        when(upstreamCause.getUpstreamBuild()).thenReturn(3);
+        when(upstreamCause.getUpstreamProject()).thenReturn("Upstream");
+        when(upstreamCause.getUpstreamUrl()).thenReturn("http://localhost/jenkins/jobs/Upstream/3");
+
+        when(causeAction.getCauses()).thenReturn(new LinkedList<Cause>() {{
+            add(upstreamCause);
+        }});
+
+        when(build.getAction(CauseAction.class)).thenReturn(causeAction);
+        buildCauseMacro.data = "BUILD_NUMBER";
+        assertEquals("3", buildCauseMacro.evaluate(build,listener,BuildCauseMacro.MACRO_NAME));
+        buildCauseMacro.data = "PROJECT_NAME";
+        assertEquals("Upstream", buildCauseMacro.evaluate(build,listener,BuildCauseMacro.MACRO_NAME));
+        buildCauseMacro.data = "BUILD_URL";
+        assertEquals("http://localhost/jenkins/jobs/Upstream/3",buildCauseMacro.evaluate(build,listener,BuildCauseMacro.MACRO_NAME));
+    }
+
     private class CauseStub extends Cause {
         private String name;
 

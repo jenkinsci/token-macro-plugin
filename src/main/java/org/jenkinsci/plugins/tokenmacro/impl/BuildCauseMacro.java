@@ -20,6 +20,9 @@ public class BuildCauseMacro extends DataBoundTokenMacro {
     public static final String MACRO_NAME = "BUILD_CAUSE";
     public static final String ALTERNATE_MACRO_NAME = "CAUSE";
 
+    @Parameter
+    public String data = null;
+
     @Override
     public boolean acceptsMacroName(String macroName) {
         return macroName.equals(MACRO_NAME) || macroName.equals(ALTERNATE_MACRO_NAME);
@@ -55,12 +58,25 @@ public class BuildCauseMacro extends DataBoundTokenMacro {
             return "N/A";
         }
 
-        List<String> causeNames = new LinkedList<String>();
+        List<String> causeData = new LinkedList<String>();
         for (Cause cause : causes) {
-            causeNames.add(cause.getShortDescription());
+            if(data != null) {
+                if(cause instanceof Cause.UpstreamCause) {
+                    Cause.UpstreamCause upstreamCause = (Cause.UpstreamCause) cause;
+                    if (data.equals("BUILD_URL")) {
+                        causeData.add(upstreamCause.getUpstreamUrl());
+                    } else if (data.equals("PROJECT_NAME")) {
+                        causeData.add(upstreamCause.getUpstreamProject());
+                    } else if (data.equals("BUILD_NUMBER")) {
+                        causeData.add("" + upstreamCause.getUpstreamBuild());
+                    }
+                }
+            } else {
+                causeData.add(cause.getShortDescription());
+            }
         }
 
-        return StringUtils.join(causeNames, ", ");
+        return StringUtils.join(causeData, ", ");
     }
 }
 
