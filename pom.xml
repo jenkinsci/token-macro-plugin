@@ -93,10 +93,6 @@
           <groupId>org.ow2.asm</groupId>
           <artifactId>asm</artifactId>
         </exclusion>
-        <exclusion> <!-- inlines it anyway, no need to bundle a duplicate copy (but note that licenses.xml will be incomplete) -->
-          <groupId>net.minidev</groupId>
-          <artifactId>accessors-smart</artifactId>
-        </exclusion>
       </exclusions>
     </dependency>
 
