@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>2.33</version>
+    <version>3.2</version>
     <relativePath />
   </parent>
 
@@ -87,15 +87,11 @@
     <dependency>
       <groupId>com.jayway.jsonpath</groupId>
       <artifactId>json-path</artifactId>
-      <version>2.1.0</version>
+      <version>2.4.0</version>
       <exclusions>
         <exclusion> <!-- Note that json-smart *also* bundles ASM 5 inline, which we cannot do anything about. Bad form! -->
           <groupId>org.ow2.asm</groupId>
           <artifactId>asm</artifactId>
-        </exclusion>
-        <exclusion> <!-- inlines it anyway, no need to bundle a duplicate copy (but note that licenses.xml will be incomplete) -->
-          <groupId>net.minidev</groupId>
-          <artifactId>accessors-smart</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
