@@ -4,9 +4,12 @@ import hudson.console.ConsoleNote;
 import hudson.model.AbstractBuild;
 import hudson.model.TaskListener;
 import hudson.util.StreamTaskListener;
+import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 
+import java.io.InputStreamReader;
 import java.io.StringReader;
 
 import static org.junit.Assert.assertEquals;
@@ -240,6 +243,25 @@ public class BuildLogRegexMacroTest {
         final String result = buildLogRegexMacro.evaluate(build, listener, BuildLogRegexMacro.MACRO_NAME);
 
         assertEquals("JENKINS", result);
+    }
+
+    @Test @Issue("JENKINS-49746")
+    public void testOverlappingResults()
+            throws Exception {
+        buildLogRegexMacro.regex = "(?m)^(nc\\w+:\\s+\\*E,|.*\\bNG\\b|\\s*Error\\b|E-).*$";
+        buildLogRegexMacro.linesBefore = 5;
+        buildLogRegexMacro.greedy = false;
+        buildLogRegexMacro.linesAfter = 10;
+        buildLogRegexMacro.maxMatches = 5;
+        buildLogRegexMacro.showTruncatedLines = false;
+
+        when(build.getLogReader()).thenReturn(
+                new InputStreamReader(getClass().getResourceAsStream("JENKINS-49746-input.txt")));
+
+        final String result = buildLogRegexMacro.evaluate(build, listener, BuildLogRegexMacro.MACRO_NAME);
+
+        final String expected = IOUtils.toString(getClass().getResourceAsStream("JENKINS-49746-output.txt"));
+        assertEquals(expected.replaceAll("\r\n", "\n").trim(), result.replaceAll("\r\n", "\n").trim());
     }
 }
 

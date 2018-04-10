@@ -54,6 +54,8 @@ public class BuildLogRegexMacro extends DataBoundTokenMacro {
     public boolean addNewline = true;
     @Parameter
     public String defaultValue = "";
+    @Parameter
+    public boolean greedy = true;
 
     @Override
     public boolean acceptsMacroName(String macroName) {
@@ -180,7 +182,7 @@ public class BuildLogRegexMacro extends DataBoundTokenMacro {
                     break;
                 }
             }
-            if (matched) {
+            if (matched && (greedy || (numMatches < maxMatches))) {
                 // The current line matches.
                 if (showTruncatedLines == true && numLinesTruncated > 0) {
                     // Append information about truncated lines.
