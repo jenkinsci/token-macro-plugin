@@ -24,23 +24,18 @@
 package org.jenkinsci.plugins.tokenmacro;
 
 import com.google.common.collect.ListMultimap;
+import hudson.EnvVars;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.model.AbstractBuild;
-import hudson.model.BuildVariableContributor;
-import hudson.model.BuildableItemWithBuildWrappers;
-import hudson.model.ParameterValue;
-import hudson.model.ParametersAction;
 import hudson.model.Run;
 import hudson.model.TaskListener;
-import hudson.tasks.BuildWrapper;
 import hudson.util.VariableResolver;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -222,14 +217,22 @@ public abstract class TokenMacro implements ExtensionPoint {
 
         // Expand environment variables
         stringWithMacro = stringWithMacro.replaceAll("\\$\\$", "\\$\\$\\$\\$");
-        String s = run.getEnvironment(listener).expand(stringWithMacro);
+        EnvVars env = run.getEnvironment(listener);
+        String s = stringWithMacro;
+        if(env != null) {
+            s = run.getEnvironment(listener).expand(s);
+        }
 
         if(run instanceof AbstractBuild) {
             // Expand build variables
             s = s.replaceAll("\\$\\$", "\\$\\$\\$\\$");
             AbstractBuild<?,?> build = (AbstractBuild<?, ?>)run;
-            s = Util.replaceMacro(s, build.getBuildVariableResolver());
+            VariableResolver<String> resolver = build.getBuildVariableResolver();
+            if(resolver != null) {
+                s = Util.replaceMacro(s, build.getBuildVariableResolver());
+            }
         }
+
         // Expand Macros
         s = expand(run,workspace,listener,s,throwException,privateTokens);
         return s;

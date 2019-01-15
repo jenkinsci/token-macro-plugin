@@ -201,7 +201,7 @@ public class TokenMacroTest {
     }
 
     @Test
-     public void testThatATokenMacroListWithANullEntryDoesNotExplode() throws Exception {
+    public void testThatATokenMacroListWithANullEntryDoesNotExplode() throws Exception {
         List<TokenMacro> badList = Lists.newLinkedList();
         badList.add(null);
         badList.add(new PrivateTestMacro());

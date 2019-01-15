@@ -24,6 +24,8 @@ import java.util.*;
  */
 public class Parser extends BaseParser<Object> {
 
+    private static final int MAX_RECURSION_LEVEL = 10;
+
     private Stack<Transform> transforms = new Stack<Transform>();
     private StringBuffer output;
 
@@ -33,6 +35,7 @@ public class Parser extends BaseParser<Object> {
     private boolean throwException;
     private List<TokenMacro> privateTokens;
     private String stringWithMacro;
+    private int recursionLevel;
 
     private String tokenName;
     private ListMultimap<String,String> args;
@@ -43,6 +46,16 @@ public class Parser extends BaseParser<Object> {
         this.listener = listener;
         this.stringWithMacro = stringWithMacro;
         this.output = new StringBuffer();
+        this.recursionLevel = 0;
+    }
+
+    public Parser(Run<?,?> run, FilePath workspace, TaskListener listener, String stringWithMacro, int recursionLevel) {
+        this.run = run;
+        this.workspace = workspace;
+        this.listener = listener;
+        this.stringWithMacro = stringWithMacro;
+        this.output = new StringBuffer();
+        this.recursionLevel = recursionLevel;
     }
 
     public void setThrowException(boolean throwException) {
@@ -58,9 +71,13 @@ public class Parser extends BaseParser<Object> {
     }
 
     public static String process(Run<?, ?> run, FilePath workspace, TaskListener listener, String stringWithMacro, boolean throwException, List<TokenMacro> privateTokens) throws MacroEvaluationException {
+        return process(run, workspace, listener, stringWithMacro, throwException, privateTokens, 0);
+    }
+
+    private static String process(Run<?,?> run, FilePath workspace, TaskListener listener, String stringWithMacro, boolean throwException, List<TokenMacro> privateTokens, int recursionLevel) throws MacroEvaluationException {
         if ( StringUtils.isBlank( stringWithMacro ) ) return stringWithMacro;
 
-        Parser p = Parboiled.createParser(Parser.class, run, workspace, listener, stringWithMacro);
+        Parser p = Parboiled.createParser(Parser.class, run, workspace, listener, stringWithMacro, recursionLevel);
         p.setThrowException(throwException);
         p.setPrivateTokens(privateTokens);
 
@@ -308,8 +325,8 @@ public class Parser extends BaseParser<Object> {
                         replacement = tm.evaluate(run,workspace,listener,tokenName,map,args);
                     }
 
-                    if(tm.hasNestedContent()) {
-                        replacement = Parser.process(run,workspace,listener,replacement,throwException,privateTokens);
+                    if(tm.hasNestedContent() && recursionLevel < MAX_RECURSION_LEVEL) {
+                        replacement = Parser.process(run,workspace,listener,replacement,throwException,privateTokens,recursionLevel+1);
                     }
                 } catch(MacroEvaluationException e) {
                     if(throwException) {

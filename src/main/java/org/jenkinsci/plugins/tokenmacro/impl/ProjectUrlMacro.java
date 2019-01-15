@@ -37,11 +37,6 @@ public class ProjectUrlMacro extends DataBoundTokenMacro {
     @Override
     public String evaluate(Run<?, ?> run, FilePath workspace, TaskListener listener, String macroName)
             throws MacroEvaluationException, IOException, InterruptedException {
-        return "${JENKINS_URL}" + Util.encode(run.getParent().getUrl());
-    }
-
-    @Override
-    public boolean hasNestedContent() {
-        return true;
+        return JenkinsUrlMacro.expand(run,workspace,listener,"${JENKINS_URL}") + Util.encode(run.getParent().getUrl());
     }
 }

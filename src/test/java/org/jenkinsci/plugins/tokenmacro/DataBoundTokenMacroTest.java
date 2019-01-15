@@ -11,11 +11,13 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.TaskListener;
 import java.io.IOException;
-import static junit.framework.TestCase.assertEquals;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 /**
  *
@@ -48,6 +50,15 @@ public class DataBoundTokenMacroTest {
         FreeStyleBuild b = p.scheduleBuild2(0).get();
         
         assertEquals("default = foo, arg2 = 4", TokenMacro.expand(b, TaskListener.NULL, "${ALIAS_MACRO, default=\"foo\", int=4}"));
+    }
+
+
+    @Test
+    public void testRecursionLimit() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject("foo");
+        FreeStyleBuild b = p.scheduleBuild2(0).get();
+
+        assertEquals("0 1 2 3 4 5 6 7 8 9 10 $RECURSIVE11", TokenMacro.expand(b, TaskListener.NULL, "$RECURSIVE0"));
     }
     
     @TestExtension
@@ -90,6 +101,28 @@ public class DataBoundTokenMacroTest {
             return "ALIAS_MACRO".equals(macroName);
         }
         
+    }
+
+    @TestExtension
+    public static class RecursiveDataBoundMacro extends DataBoundTokenMacro {
+        @Override
+        public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName) throws MacroEvaluationException, IOException, InterruptedException {
+            int level = Integer.parseInt(macroName.substring(9));
+            if(level > 10) {
+                return "DONE!";
+            }
+            return level + " $RECURSIVE" + (level+1);
+        }
+
+        @Override
+        public boolean acceptsMacroName(String macroName) {
+            return macroName.startsWith("RECURSIVE");
+        }
+
+        @Override
+        public boolean hasNestedContent() {
+            return true;
+        }
     }
     
 }

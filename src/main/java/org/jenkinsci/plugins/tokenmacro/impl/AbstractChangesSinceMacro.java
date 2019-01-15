@@ -54,6 +54,12 @@ abstract public class AbstractChangesSinceMacro
             format = getDefaultFormatValue();
         }
 
+        format = TokenMacro.expandAll(run, workspace, listener, format);
+
+        if(StringUtils.isNotEmpty(pathFormat)) {
+            pathFormat = TokenMacro.expandAll(run, workspace, listener, pathFormat);
+        }
+
         StringBuffer sb = new StringBuffer();
         final Run startRun;
         final Run endRun;
@@ -115,11 +121,6 @@ abstract public class AbstractChangesSinceMacro
                 }
             }
         });
-    }
-
-    @Override
-    public boolean hasNestedContent() {
-        return true;
     }
 
     public abstract String getDefaultFormatValue();

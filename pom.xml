@@ -57,7 +57,7 @@
     <dependency>
       <groupId>org.parboiled</groupId>
       <artifactId>parboiled-java</artifactId>
-      <version>1.1.7</version>
+      <version>1.1.8</version>
       <exclusions>
         <!-- Jenkins core bundles ASM 4, so if this really requires ASM 5 and is used at runtime, you are SOL. -->
         <exclusion>
@@ -97,6 +97,12 @@
     </dependency>
 
     <!-- Test Deps -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.12</version>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins.workflow</groupId>
       <artifactId>workflow-api</artifactId>

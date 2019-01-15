@@ -94,6 +94,12 @@ public class ChangesSinceLastBuildMacro extends DataBoundTokenMacro {
             dateFormatter = new SimpleDateFormat(dateFormat);
         }
 
+        format = TokenMacro.expandAll(run, workspace, listener, format);
+
+        if(StringUtils.isNotEmpty(pathFormat)) {
+            pathFormat = TokenMacro.expandAll(run, workspace, listener, pathFormat);
+        }
+
         StringBuffer buf = new StringBuffer();
         List<ChangeLogSet<?>> changeSets;
         try {
@@ -145,13 +151,6 @@ public class ChangesSinceLastBuildMacro extends DataBoundTokenMacro {
         }
 
         return buf.toString();
-    }
-
-
-
-    @Override
-    public boolean hasNestedContent() {
-        return true;
     }
 
     public class ChangesSincePrintfSpec
