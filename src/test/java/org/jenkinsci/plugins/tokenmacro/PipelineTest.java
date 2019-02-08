@@ -3,11 +3,13 @@ package org.jenkinsci.plugins.tokenmacro;
 import com.google.common.collect.ListMultimap;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
+import hudson.model.Label;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.util.StreamTaskListener;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -30,13 +32,17 @@ public class PipelineTest {
     @Rule
     public final JenkinsRule j = new JenkinsRule();
 
+    @Before
+    public void setup() throws Exception {
+	j.createOnlineSlave(Label.get("agents"));
+    }
+
     @Test
     public void testEscapedExpandAll() throws Exception {
-        WorkflowJob job = j.getInstance().createProject(WorkflowJob.class, "foo");
+        WorkflowJob job = j.jenkins.createProject(WorkflowJob.class, "foo");
 
-        job.setDefinition(new CpsFlowDefinition("node { echo 'Hello, world' }"));
-        Run<?,?> run = job.scheduleBuild2(0).get();
-        j.assertBuildStatusSuccess(run);
+        job.setDefinition(new CpsFlowDefinition("node('agents') {\n\techo 'Hello, world'\n}", true));
+        Run<?,?> run = j.assertBuildStatusSuccess(job.scheduleBuild2(0));
 
         listener = StreamTaskListener.fromStdout();
         assertEquals(j.jenkins.getRootUrl()+"job/foo/1/",TokenMacro.expand(run,null,listener,"${BUILD_URL}"));
@@ -47,10 +53,9 @@ public class PipelineTest {
 
     @Test
     public void testException() throws Exception {
-        WorkflowJob job = j.getInstance().createProject(WorkflowJob.class, "foo");
-        job.setDefinition(new CpsFlowDefinition("node { echo 'Hello, world' }"));
-        Run<?,?> run = job.scheduleBuild2(0).get();
-        j.assertBuildStatusSuccess(run);
+        WorkflowJob job = j.jenkins.createProject(WorkflowJob.class, "foo");
+        job.setDefinition(new CpsFlowDefinition("node('agents') {\n\techo 'Hello, world'\n}", true));
+        Run<?,?> run = j.assertBuildStatusSuccess(job.scheduleBuild2(0));
 
         listener = StreamTaskListener.fromStdout();
 
@@ -67,10 +72,9 @@ public class PipelineTest {
 
     @Test
     public void testUnconvertedMacro() throws Exception {
-        WorkflowJob job = j.getInstance().createProject(WorkflowJob.class, "foo");
-        job.setDefinition(new CpsFlowDefinition("node { echo 'Hello, world' }"));
-        Run<?,?> run = job.scheduleBuild2(0).get();
-        j.assertBuildStatusSuccess(run);
+        WorkflowJob job = j.jenkins.createProject(WorkflowJob.class, "foo");
+        job.setDefinition(new CpsFlowDefinition("node('agents') {\n\techo 'Hello, world'\n}", true));
+        Run<?,?> run = j.assertBuildStatusSuccess(job.scheduleBuild2(0));
 
         listener = StreamTaskListener.fromStdout();
 
