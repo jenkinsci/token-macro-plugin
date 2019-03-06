@@ -71,7 +71,7 @@ public class ChangesSinceLastBuildMacroTest {
 
         String content = changesSinceLastBuildMacro.evaluate(currentBuild, listener, ChangesSinceLastBuildMacro.MACRO_NAME);
 
-        // Java 9 changed the SHORT date format...
+        // Java 9 changed the SHORT date format... https://www.oracle.com/technetwork/java/javase/9-relnote-issues-3704069.html#JDK-8008577
         assertTrue(content.matches("Oct 21, 2013,? 7:39:00 PM"));
     }
 
