@@ -55,7 +55,7 @@ import jenkins.model.Jenkins;
  * and the user is allowed to configure how those strings look like.
  *
  * <p>
- * In such situation, it is useful to have a notion of "macro tokens", one that look like like <tt>${foobar}</tt>,
+ * In such situation, it is useful to have a notion of "macro tokens", one that look like like <pre>${foobar}</pre>,
  * and expands to some string value when evaluated. This is exactly such an abstraction, and it is placed
  * in its own plugin in the hope that it's reusable by other plugins.
  *
@@ -70,7 +70,7 @@ import jenkins.model.Jenkins;
  *
  * <h2>Views</h2>
  * <p>
- * Implementation should have <tt>help.jelly</tt> that renders a DT tag that shows the syntax of the macro,
+ * Implementation should have <pre>help.jelly</pre> that renders a DT tag that shows the syntax of the macro,
  * followed by a DD tag that shows the details. See existing use of this extension point for the general
  * guide line of the syntax.
  *
