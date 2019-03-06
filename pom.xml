@@ -166,6 +166,23 @@
       </exclusions>
     </dependency>
   </dependencies>
+  
+  <build>
+    <plugins>
+      <plugin>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>3.0.1</version>
+          <configuration>
+            <quiet>true</quiet>
+            <links>
+              <link>http://javadoc.jenkins.io/</link>
+            </links>
+            <!-- workaround for https://bugs.openjdk.java.net/browse/JDK-8212233 -->
+            <source>8</source>
+          </configuration>
+        </plugin>
+    </plugins>
+  </build>
 
   <repositories>
     <repository>
