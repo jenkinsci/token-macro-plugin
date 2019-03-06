@@ -20,6 +20,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -70,7 +71,8 @@ public class ChangesSinceLastBuildMacroTest {
 
         String content = changesSinceLastBuildMacro.evaluate(currentBuild, listener, ChangesSinceLastBuildMacro.MACRO_NAME);
 
-        assertEquals("Oct 21, 2013 7:39:00 PM", content);
+        // Java 9 changed the SHORT date format...
+        assertTrue(content.matches("Oct 21, 2013,? 7:39:00 PM"));
     }
 
     @Test
