@@ -147,6 +147,7 @@ public class ChangesSinceLastSuccessfulBuildMacroTest {
         String contentStr = content.evaluate(currentBuild, listener, ChangesSinceLastSuccessfulBuildMacro.MACRO_NAME);
 
         // Date format changed in Java 9, so we have to accomodate the potential additional comma
+        // See https://www.oracle.com/technetwork/java/javase/9-relnote-issues-3704069.html#JDK-8008577
         Assert.assertTrue(contentStr.matches(
                 "Changes for Build #41\n" + "Oct 21, 2013,? 7:39:00 PM\n" + "Changes for Build #42\n" + "Oct 21, 2013,? 7:39:00 PM\n"));
     }
