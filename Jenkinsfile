@@ -1,5 +1,5 @@
 stage('all') {
     node('maven-windows') {
-      mvn --show-version clean install
+       bat 'mvn --show-version clean install'
     }
 }
