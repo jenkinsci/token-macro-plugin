@@ -46,6 +46,7 @@
   <scm>
     <connection>scm:git:git://github.com/jenkinsci/token-macro-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:jenkinsci/token-macro-plugin.git</developerConnection>
+    <url>https://github.com/jenkinsci/token-macro-plugin</url>
     <tag>HEAD</tag>
   </scm>
 
