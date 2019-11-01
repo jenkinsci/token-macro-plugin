@@ -36,7 +36,9 @@ public class SubstringTransform extends Transform {
             }
 
             if (offset + length > input.length()) {
-                throw new MacroEvaluationException("");
+                throw new MacroEvaluationException(
+                    String.format("Incorrect offset or length: input length is %d and offset end is %d",
+                                  input.length(), offset + length));
             }
 
             input = input.substring(offset, offset+length);
