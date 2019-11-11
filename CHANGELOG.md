@@ -2,7 +2,7 @@
 
 ### Version 2.8 (June 11, 2019)
 
--   [Fix security issue](http://Fix%20security%20issue){.external-link}
+-   [Fix security issue](http://Fix%20security%20issue)
 
 ### Version 2.7 (March 7, 2019)
 
@@ -11,7 +11,7 @@
 ### Version 2.6 (January 28, 2019)
 
 -   [Fix security
-    issue](https://jenkins.io/security/advisory/2019-01-28/){.external-link}
+    issue](https://jenkins.io/security/advisory/2019-01-28/)
 
 ### Version 2.3 (September 1, 2017)
 
@@ -27,38 +27,38 @@
 -   Add tm pipeline step that will take a string with macros and expand
     and return the resulting string
 -   Fix issue with BUILD\_STATUS in pipeline jobs
-    ([JENKINS-44322](https://issues.jenkins-ci.org/browse/JENKINS-44322){.external-link})
+    ([JENKINS-44322](https://issues.jenkins-ci.org/browse/JENKINS-44322))
 
 ### Version 2.1 (April 4, 2017)
 
 -   Fixed issue where the plugin may report incorrect parameters when it
     shouldn't
-    ([JENKINS-38871](https://issues.jenkins-ci.org/browse/JENKINS-38871){.external-link})
+    ([JENKINS-38871](https://issues.jenkins-ci.org/browse/JENKINS-38871))
 -   Fixed issue with CHANGES\_SINCE\_LAST\_SUCCESS not showing "No
     Changes"
-    ([JENKINS-38668](https://issues.jenkins-ci.org/browse/JENKINS-38668){.external-link})
+    ([JENKINS-38668](https://issues.jenkins-ci.org/browse/JENKINS-38668))
 -   Additional tests were added
-    ([JENKINS-40683](https://issues.jenkins-ci.org/browse/JENKINS-40683){.external-link})
+    ([JENKINS-40683](https://issues.jenkins-ci.org/browse/JENKINS-40683))
 -   Fixed issues so that the plugin can be used in the global plugin
     tests for core
-    ([JENKINS-39672](https://issues.jenkins-ci.org/browse/JENKINS-39672){.external-link})
+    ([JENKINS-39672](https://issues.jenkins-ci.org/browse/JENKINS-39672))
 -   Fixed issue with whitespace following the variable definition
-    ([JENKINS-38420](https://issues.jenkins-ci.org/browse/JENKINS-38420){.external-link})
+    ([JENKINS-38420](https://issues.jenkins-ci.org/browse/JENKINS-38420))
 -   Added JSON token for retrieving data from a JSON file.
 
 ### Version 2.0 (September 20, 2016)
 
 -   Thanks to the following for contributions in this
-    release [dcoraboeuf](https://github.com/dcoraboeuf){.external-link}, [duemir](https://github.com/duemir){.external-link}
+    release [dcoraboeuf](https://github.com/dcoraboeuf), [duemir](https://github.com/duemir)
 -   Initial support for using Token Macro in pipeline script context
-    ([JENKINS-35368](https://issues.jenkins-ci.org/browse/JENKINS-35368){.external-link})
+    ([JENKINS-35368](https://issues.jenkins-ci.org/browse/JENKINS-35368))
 -   Fixed issue with synchronization which was causing slowness
-    ([JENKINS-32331](https://issues.jenkins-ci.org/browse/JENKINS-32331){.external-link})
+    ([JENKINS-32331](https://issues.jenkins-ci.org/browse/JENKINS-32331))
 -   Provide new method to get auto-completion possibilities for a given
     string
-    ([JENKINS-9345](https://issues.jenkins-ci.org/browse/JENKINS-9345){.external-link})
+    ([JENKINS-9345](https://issues.jenkins-ci.org/browse/JENKINS-9345))
 -   Allow for additional transforms on the result of the token
-    ([JENKINS-28951](https://issues.jenkins-ci.org/browse/JENKINS-28951){.external-link})
+    ([JENKINS-28951](https://issues.jenkins-ci.org/browse/JENKINS-28951))
 
 ### Version 1.12.1 (December 14, 2015)
 
@@ -68,11 +68,11 @@
 
 -   Migrated tokens from email-ext to token-macro
 -   Fixed issue with multiline JOB\_DESCRIPTION in subject
-    ([JENKINS-32012](https://issues.jenkins-ci.org/browse/JENKINS-32012){.external-link})
+    ([JENKINS-32012](https://issues.jenkins-ci.org/browse/JENKINS-32012))
 -   Fixed issue where extra $'s for escaping $'s were being removed
-    ([JENKINS-29816](https://issues.jenkins-ci.org/browse/JENKINS-29816){.external-link})
+    ([JENKINS-29816](https://issues.jenkins-ci.org/browse/JENKINS-29816))
 -   Added UPSTREAM\_RUN\_NAME macro
-    ([JENKINS-27542](https://issues.jenkins-ci.org/browse/JENKINS-27542){.external-link})
+    ([JENKINS-27542](https://issues.jenkins-ci.org/browse/JENKINS-27542))
 
 ### Version 1.11 (October 16, 2015)
 
@@ -83,10 +83,10 @@
     ([JENKINS-12742](https://issues.jenkins-ci.org/browse/JENKINS-12742))
 -   ![(info)](https://wiki.jenkins.io/s/en_GB/8100/5084f018d64a97dc638ca9a178856f851ea353ff/_/images/icons/emoticons/information.svg) Allow configuring charsets in LOG\_REGEX
     macro ([PR
-    18](https://github.com/jenkinsci/token-macro-plugin/pull/18){.external-link})
+    18](https://github.com/jenkinsci/token-macro-plugin/pull/18))
 -   ![(error)](https://wiki.jenkins.io/s/en_GB/8100/5084f018d64a97dc638ca9a178856f851ea353ff/_/images/icons/emoticons/error.svg) Cleanup of issues discovered by FindBugs, the
     plugin is FindBugs-clean ([PR
-    18](https://github.com/jenkinsci/token-macro-plugin/pull/18){.external-link})
+    18](https://github.com/jenkinsci/token-macro-plugin/pull/18))
 
 ### Version 1.10 (February 13, 2014)
 
@@ -101,7 +101,7 @@
 
 -   Cleaned up the pom a bit
 -   Fixed issue with private tokens accumulating over time ([issue
-    \#18912](https://issues.jenkins-ci.org/browse/JENKINS-18912){.external-link})
+    \#18912](https://issues.jenkins-ci.org/browse/JENKINS-18912))
 
 ### Version 1.8.1 (Jul 20, 2013)
 
@@ -112,7 +112,7 @@
 
 -   Updated the way that macros are escaped so that it's more like
     Groovy ([issue
-    \#18014](https://issues.jenkins-ci.org/browse/JENKINS-18014){.external-link})
+    \#18014](https://issues.jenkins-ci.org/browse/JENKINS-18014))
 -   Created macro (LOG\_REGEX) to match against the log output and allow
     replacing it.
 -   Fix issue with PROPFILE token that would hang the build if the
@@ -141,7 +141,7 @@
 
 -   New method `TokenMacro.expandAll( build, listener, template )` that
     supports to expand all macros, but also all environment and [build
-    variables](http://ci.jenkins-ci.org/env-vars.html){.external-link}.
+    variables](http://ci.jenkins-ci.org/env-vars.html).
 
 ### Version 1.4
 
