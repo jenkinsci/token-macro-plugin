@@ -3,13 +3,6 @@
 This plugin adds reusable macro expansion capability for other plugins to use 
 in job configurations.
 
-Older versions of this plugin may not be safe to use. Please review the
-following warnings before using an older version:
-
--   [Information disclosure and DoS](https://jenkins.io/security/advisory/2019-01-28/#SECURITY-1102)
--   [XML External Entity processing
-    vulnerability](https://jenkins.io/security/advisory/2019-06-11/#SECURITY-1399)
-
 ## Motivation
 In various Jenkins plugins, such as email-ext and description-setter, a 
 user is asked to provide an "expression" that evaluates to text. For 
