@@ -18,8 +18,12 @@ dd() {
          "Defaults to 0."))
   
     dt("maxMatches")
-    dd(_("The maximum number of matches to include. If 0, all matches will be included. " +
+    dd(_("The maximum number of matches to include from the head of the log. If 0, all matches will be included. " +
          "Defaults to 0."))
+  
+    dt("maxTailMatches")
+    dd(_("The maximum number of matches to include from the tail of the log. When combined with maxMatches, it further limits the matches to the tail end of matched results. " +
+         "If 0, all matches will be included. Defaults to 0."))
 
     dt("showTruncatedLines")
     dd(_("If true, include [...truncated ### lines...] lines. " +
@@ -41,5 +45,8 @@ dd() {
   
     dt("defaultValue")
     dd(_("This value will be used if nothing is replaced."))
+  
+    dt("greedy")
+    dd(_("When false and maxMatches is non-zero it causes more conservative addition of results when used with other parameters such as linesBefore and linesAfter"))
   }
 }

@@ -34,6 +34,7 @@ public class BuildLogRegexMacro extends DataBoundTokenMacro {
     private static final int LINES_BEFORE_DEFAULT_VALUE = 0;
     private static final int LINES_AFTER_DEFAULT_VALUE = 0;
     private static final int MAX_MATCHES_DEFAULT_VALUE = 0;
+    private static final int MAX_TAIL_MATCHES_DEFAULT_VALUE = 0;
     @Parameter
     public String regex = "(?i)\\b(error|exception|fatal|fail(ed|ure)|un(defined|resolved))\\b";
     @Parameter
@@ -56,6 +57,8 @@ public class BuildLogRegexMacro extends DataBoundTokenMacro {
     public String defaultValue = "";
     @Parameter
     public boolean greedy = true;
+    @Parameter
+    public int maxTailMatches = MAX_TAIL_MATCHES_DEFAULT_VALUE;
 
     @Override
     public boolean acceptsMacroName(String macroName) {
@@ -67,34 +70,34 @@ public class BuildLogRegexMacro extends DataBoundTokenMacro {
         return Collections.singletonList(MACRO_NAME);
     }
 
-    private boolean startPre(StringBuffer buffer, boolean insidePre) {
+    private boolean startPre(List<String> matchResults, boolean insidePre) {
         if (!insidePre) {
-            buffer.append("<pre>\n");
+            matchResults.add("<pre>\n");
             insidePre = true;
         }
         return insidePre;
     }
 
-    private boolean stopPre(StringBuffer buffer, boolean insidePre) {
+    private boolean stopPre(List<String> matchResults, boolean insidePre) {
         if (insidePre) {
-            buffer.append("</pre>\n");
+            matchResults.add("</pre>\n");
             insidePre = false;
         }
         return insidePre;
     }
 
-    private void appendContextLine(StringBuffer buffer, String line, boolean escapeHtml) {
+    private void appendContextLine(List<String> matchResults, String line, boolean escapeHtml) {
         if (escapeHtml) {
             line = StringEscapeUtils.escapeHtml(line);
         }
-        buffer.append(line);
-        buffer.append('\n');
+        matchResults.add(line+'\n');
     }
 
-    private void appendMatchedLine(StringBuffer buffer, String line, boolean escapeHtml, String style, boolean addNewline) {
+    private void appendMatchedLine(List<String> matchResults, String line, boolean escapeHtml, String style, boolean addNewline) {
         if (escapeHtml) {
             line = StringEscapeUtils.escapeHtml(line);
         }
+        StringBuffer buffer = new StringBuffer();
         if (style != null) {
             buffer.append("<b");
             if (style.length() > 0) {
@@ -112,9 +115,11 @@ public class BuildLogRegexMacro extends DataBoundTokenMacro {
         if (addNewline) {
             buffer.append('\n');
         }
+        matchResults.add(buffer.toString());
     }
 
-    private void appendLinesTruncated(StringBuffer buffer, int numLinesTruncated, boolean asHtml) {
+    private void appendLinesTruncated(List<String> matchResults, int numLinesTruncated, boolean asHtml) {
+        StringBuffer buffer = new StringBuffer();
         // This format comes from hudson.model.Run.getLog(maxLines).
         if (asHtml) {
             buffer.append("<p>");
@@ -126,6 +131,7 @@ public class BuildLogRegexMacro extends DataBoundTokenMacro {
             buffer.append("</p>");
         }
         buffer.append('\n');
+        matchResults.add(buffer.toString());
     }
 
     @Override
@@ -155,7 +161,7 @@ public class BuildLogRegexMacro extends DataBoundTokenMacro {
         escapeHtml = asHtml || escapeHtml;
 
         final Pattern pattern = Pattern.compile(regex);
-        final StringBuffer buffer = new StringBuffer();
+        List<String> matchResults = new LinkedList<>();
         int numLinesTruncated = 0;
         int numMatches = 0;
         int numLinesStillNeeded = 0;
@@ -182,26 +188,26 @@ public class BuildLogRegexMacro extends DataBoundTokenMacro {
                     break;
                 }
             }
-            if (matched && (greedy || (numMatches < maxMatches))) {
+            if (matched && (greedy || maxMatches == 0 || (numMatches < maxMatches))) {
                 // The current line matches.
                 if (showTruncatedLines == true && numLinesTruncated > 0) {
                     // Append information about truncated lines.
-                    insidePre = stopPre(buffer, insidePre);
-                    appendLinesTruncated(buffer, numLinesTruncated, asHtml);
+                    insidePre = stopPre(matchResults, insidePre);
+                    appendLinesTruncated(matchResults, numLinesTruncated, asHtml);
                     numLinesTruncated = 0;
                 }
                 if (asHtml) {
-                    insidePre = startPre(buffer, insidePre);
+                    insidePre = startPre(matchResults, insidePre);
                 }
                 while (!linesBeforeList.isEmpty()) {
-                    appendContextLine(buffer, linesBeforeList.remove(), escapeHtml);
+                    appendContextLine(matchResults, linesBeforeList.remove(), escapeHtml);
                 }
                 // Append the (possibly transformed) current line.
                 if (substText != null) {
                     matcher.appendTail(sb);
                     line = sb.toString();
                 }
-                appendMatchedLine(buffer, line, escapeHtml, matchedLineHtmlStyle, addNewline);
+                appendMatchedLine(matchResults, line, escapeHtml, matchedLineHtmlStyle, addNewline);
                 ++numMatches;
                 // Set up to add numLinesStillNeeded
                 numLinesStillNeeded = linesAfter;
@@ -209,7 +215,7 @@ public class BuildLogRegexMacro extends DataBoundTokenMacro {
                 // The current line did not match.
                 if (numLinesStillNeeded > 0) {
                     // Append this line as a line after.
-                    appendContextLine(buffer, line, escapeHtml);
+                    appendContextLine(matchResults, line, escapeHtml);
                     --numLinesStillNeeded;
                 } else {
                     // Store this line as a possible line before.
@@ -234,15 +240,17 @@ public class BuildLogRegexMacro extends DataBoundTokenMacro {
                 }
             }
             if (numLinesTruncated > 0) {
-                insidePre = stopPre(buffer, insidePre);
-                appendLinesTruncated(buffer, numLinesTruncated, asHtml);
+                insidePre = stopPre(matchResults, insidePre);
+                appendLinesTruncated(matchResults, numLinesTruncated, asHtml);
             }
         }
-        insidePre = stopPre(buffer, insidePre);
-        if (buffer.length() == 0) {
+        insidePre = stopPre(matchResults, insidePre);
+        if (matchResults.size() == 0) {
             return defaultValue;
         }
-        return buffer.toString();
+        if (maxTailMatches > 0 && matchResults.size() > maxTailMatches) {
+            matchResults = matchResults.subList(matchResults.size() - maxTailMatches, matchResults.size());
+        }
+        return String.join("", matchResults);
     }
 }
-

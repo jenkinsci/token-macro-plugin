@@ -28,6 +28,12 @@ public class BuildLogRegexMacroTest {
         build = mock(AbstractBuild.class);
     }
 
+    private void mockLogReaderWithSimpleErrorLog()
+            throws Exception {
+        when(build.getLogReader()).thenReturn(new StringReader(
+                "1\n2\n3\n4\n5\n6 ERROR\n7\n8\n9 ERROR\n10\n11\n12\n13\n14\n15\n16\n17\n18 ERROR\n19\n20\n21\n22\n23\n"));
+    }
+
     @Test
     public void testGetContent_emptyBuildLogShouldStayEmpty()
             throws Exception {
@@ -41,8 +47,7 @@ public class BuildLogRegexMacroTest {
     @Test
     public void testGetContent_matchedLines()
             throws Exception {
-        when(build.getLogReader()).thenReturn(new StringReader(
-                "1\n2\n3\n4\n5\n6 ERROR\n7\n8\n9 ERROR\n10\n11\n12\n13\n14\n15\n16\n17\n18 ERROR\n19\n20\n21\n22\n23\n"));
+        mockLogReaderWithSimpleErrorLog();
         buildLogRegexMacro.showTruncatedLines = false;
 
         final String result = buildLogRegexMacro.evaluate(build, listener, BuildLogRegexMacro.MACRO_NAME);
@@ -51,10 +56,58 @@ public class BuildLogRegexMacroTest {
     }
 
     @Test
+    public void testGetContent_matchedLines_with_maxMatches()
+            throws Exception {
+        mockLogReaderWithSimpleErrorLog();
+        buildLogRegexMacro.showTruncatedLines = false;
+        buildLogRegexMacro.maxMatches = 1;
+
+        final String result = buildLogRegexMacro.evaluate(build, listener, BuildLogRegexMacro.MACRO_NAME);
+
+        assertEquals("6 ERROR\n", result);
+    }
+
+    @Test
+    public void testGetContent_matchedLines_when_not_greedy_with_default_maxMatches()
+            throws Exception {
+        mockLogReaderWithSimpleErrorLog();
+        buildLogRegexMacro.showTruncatedLines = false;
+        buildLogRegexMacro.greedy = false;
+
+        final String result = buildLogRegexMacro.evaluate(build, listener, BuildLogRegexMacro.MACRO_NAME);
+
+        assertEquals("6 ERROR\n9 ERROR\n18 ERROR\n", result);
+    }
+
+    @Test
+    public void testGetContent_matchedLines_with_maxTailMatches()
+            throws Exception {
+        mockLogReaderWithSimpleErrorLog();
+        buildLogRegexMacro.showTruncatedLines = false;
+        buildLogRegexMacro.maxTailMatches = 1;
+
+        final String result = buildLogRegexMacro.evaluate(build, listener, BuildLogRegexMacro.MACRO_NAME);
+
+        assertEquals("18 ERROR\n", result);
+    }
+
+    @Test
+    public void testGetContent_matchedLines_with_maxMatches_and_maxTailMatches()
+            throws Exception {
+        mockLogReaderWithSimpleErrorLog();
+        buildLogRegexMacro.showTruncatedLines = false;
+        buildLogRegexMacro.maxMatches = 2;
+        buildLogRegexMacro.maxTailMatches = 1;
+
+        final String result = buildLogRegexMacro.evaluate(build, listener, BuildLogRegexMacro.MACRO_NAME);
+
+        assertEquals("9 ERROR\n", result);
+    }
+
+    @Test
     public void testGetContent_truncatedAndMatchedLines()
             throws Exception {
-        when(build.getLogReader()).thenReturn(new StringReader(
-                "1\n2\n3\n4\n5\n6 ERROR\n7\n8\n9 ERROR\n10\n11\n12\n13\n14\n15\n16\n17\n18 ERROR\n19\n20\n21\n22\n23\n"));
+        mockLogReaderWithSimpleErrorLog();
 
         final String result = buildLogRegexMacro.evaluate(build, listener, BuildLogRegexMacro.MACRO_NAME);
 
@@ -64,8 +117,7 @@ public class BuildLogRegexMacroTest {
     @Test
     public void testGetContent_truncatedMatchedAndContextLines()
             throws Exception {
-        when(build.getLogReader()).thenReturn(new StringReader(
-                "1\n2\n3\n4\n5\n6 ERROR\n7\n8\n9 ERROR\n10\n11\n12\n13\n14\n15\n16\n17\n18 ERROR\n19\n20\n21\n22\n23\n"));
+        mockLogReaderWithSimpleErrorLog();
         buildLogRegexMacro.linesBefore = 3;
         buildLogRegexMacro.linesAfter = 3;
         final String result = buildLogRegexMacro.evaluate(build, listener, BuildLogRegexMacro.MACRO_NAME);
@@ -76,8 +128,7 @@ public class BuildLogRegexMacroTest {
     @Test
     public void testGetContent_matchedAndContextLines()
             throws Exception {
-        when(build.getLogReader()).thenReturn(new StringReader(
-                "1\n2\n3\n4\n5\n6 ERROR\n7\n8\n9 ERROR\n10\n11\n12\n13\n14\n15\n16\n17\n18 ERROR\n19\n20\n21\n22\n23\n"));
+        mockLogReaderWithSimpleErrorLog();
         buildLogRegexMacro.showTruncatedLines = false;
         buildLogRegexMacro.linesBefore = 3;
         buildLogRegexMacro.linesAfter = 3;
@@ -89,8 +140,7 @@ public class BuildLogRegexMacroTest {
     @Test
     public void testGetContent_truncatedMatchedAndContextLinesAsHtml()
             throws Exception {
-        when(build.getLogReader()).thenReturn(new StringReader(
-                "1\n2\n3\n4\n5\n6 ERROR\n7\n8\n9 ERROR\n10\n11\n12\n13\n14\n15\n16\n17\n18 ERROR\n19\n20\n21\n22\n23\n"));
+        mockLogReaderWithSimpleErrorLog();
         buildLogRegexMacro.matchedLineHtmlStyle = "color: red";
         buildLogRegexMacro.linesBefore = 3;
         buildLogRegexMacro.linesAfter = 3;
@@ -102,8 +152,7 @@ public class BuildLogRegexMacroTest {
     @Test
     public void testGetContent_matchedAndContextLinesAsHtml()
             throws Exception {
-        when(build.getLogReader()).thenReturn(new StringReader(
-                "1\n2\n3\n4\n5\n6 ERROR\n7\n8\n9 ERROR\n10\n11\n12\n13\n14\n15\n16\n17\n18 ERROR\n19\n20\n21\n22\n23\n"));
+        mockLogReaderWithSimpleErrorLog();
         buildLogRegexMacro.matchedLineHtmlStyle = "color: red";
         buildLogRegexMacro.linesBefore = 3;
         buildLogRegexMacro.linesAfter = 3;
