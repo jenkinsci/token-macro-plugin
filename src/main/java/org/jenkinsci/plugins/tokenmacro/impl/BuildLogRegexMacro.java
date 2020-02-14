@@ -11,12 +11,14 @@ import org.apache.commons.lang.StringEscapeUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.Stack;
 import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 
@@ -70,20 +72,21 @@ public class BuildLogRegexMacro extends DataBoundTokenMacro {
         return Collections.singletonList(MACRO_NAME);
     }
 
-    private boolean startPre(List<String> matchResults, boolean insidePre) {
-        if (!insidePre) {
+    private Integer startPre(List<String> matchResults, int preStartLoc) {
+        if (preStartLoc == -1) {
             matchResults.add("<pre>\n");
-            insidePre = true;
+            preStartLoc = matchResults.size() - 1;
         }
-        return insidePre;
+        return preStartLoc;
     }
 
-    private boolean stopPre(List<String> matchResults, boolean insidePre) {
-        if (insidePre) {
+    private Integer stopPre(List<String> matchResults, Integer preStartLoc, Stack<Pair<Integer, Integer>> preRanges) {
+        if (preStartLoc != -1) {
             matchResults.add("</pre>\n");
-            insidePre = false;
+            preRanges.push(new Pair(preStartLoc, matchResults.size() - 1));
+            preStartLoc = -1;
         }
-        return insidePre;
+        return preStartLoc;
     }
 
     private void appendContextLine(List<String> matchResults, String line, boolean escapeHtml) {
@@ -162,10 +165,11 @@ public class BuildLogRegexMacro extends DataBoundTokenMacro {
 
         final Pattern pattern = Pattern.compile(regex);
         List<String> matchResults = new LinkedList<>();
+        Stack<Pair<Integer, Integer>> preRanges = new Stack<>();
         int numLinesTruncated = 0;
         int numMatches = 0;
         int numLinesStillNeeded = 0;
-        boolean insidePre = false;
+        Integer preStartLoc = -1;
         Queue<String> linesBeforeList = new LinkedList<String>();
         String line;
         while ((line = reader.readLine()) != null) {
@@ -192,12 +196,12 @@ public class BuildLogRegexMacro extends DataBoundTokenMacro {
                 // The current line matches.
                 if (showTruncatedLines == true && numLinesTruncated > 0) {
                     // Append information about truncated lines.
-                    insidePre = stopPre(matchResults, insidePre);
+                    preStartLoc = stopPre(matchResults, preStartLoc, preRanges);
                     appendLinesTruncated(matchResults, numLinesTruncated, asHtml);
                     numLinesTruncated = 0;
                 }
                 if (asHtml) {
-                    insidePre = startPre(matchResults, insidePre);
+                    preStartLoc = startPre(matchResults, preStartLoc);
                 }
                 while (!linesBeforeList.isEmpty()) {
                     appendContextLine(matchResults, linesBeforeList.remove(), escapeHtml);
@@ -240,17 +244,72 @@ public class BuildLogRegexMacro extends DataBoundTokenMacro {
                 }
             }
             if (numLinesTruncated > 0) {
-                insidePre = stopPre(matchResults, insidePre);
+                preStartLoc = stopPre(matchResults, preStartLoc, preRanges);
                 appendLinesTruncated(matchResults, numLinesTruncated, asHtml);
             }
         }
-        insidePre = stopPre(matchResults, insidePre);
+        preStartLoc = stopPre(matchResults, preStartLoc, preRanges);
         if (matchResults.size() == 0) {
             return defaultValue;
         }
         if (maxTailMatches > 0 && matchResults.size() > maxTailMatches) {
-            matchResults = matchResults.subList(matchResults.size() - maxTailMatches, matchResults.size());
+            int tailStartLocation;
+            if (asHtml) {
+                // Here, we need to account for the existence of any <pre> tags while determining the tail.
+                // The fundamental assumption here is that between the pre blocks, there are only truncated lines.
+                tailStartLocation = matchResults.size() - 1;
+                int resultsNeeded = maxTailMatches;
+                while (! preRanges.empty()) {
+                    Pair<Integer, Integer> range = preRanges.pop();
+                    int preStart = range.getKey();
+                    int preEnd = range.getValue();
+                    int resultsInPreBlock = preEnd - preStart - 1;
+                    if (resultsNeeded > resultsInPreBlock) {
+                        resultsNeeded -= resultsInPreBlock;
+                        tailStartLocation = preStart;
+                    }
+                    else {
+                        tailStartLocation = preEnd - resultsNeeded;
+                        // If we stopped short of the <pre> start tag, then insert one into the range.
+                        if (preStart != tailStartLocation) {
+                            matchResults.add(tailStartLocation, "<pre>\n");
+                        }
+                        resultsNeeded = 0;
+                        break;
+                    }
+                }
+                // This means we went past all blocks and haven't found enough results.
+                if (resultsNeeded != 0) {
+                    tailStartLocation = 0;
+                }
+            }
+            else {
+                if (showTruncatedLines) {
+                    int resultsNeeded = maxTailMatches;
+                    for (tailStartLocation = matchResults.size(); resultsNeeded > 0 && tailStartLocation > 0; ) {
+                        --tailStartLocation;
+                        if (! matchResults.get(tailStartLocation).contains("...truncated ")) --resultsNeeded;
+                    }
+                    // This means we went past all lines and haven't found enough results.
+                    if (resultsNeeded != 0) {
+                        tailStartLocation = 0;
+                    }
+                }
+                else {
+                    // This is the simplest case, with no extraneous lines in the results.
+                    tailStartLocation = matchResults.size() - maxTailMatches;
+                }
+            }
+            matchResults = matchResults.subList(tailStartLocation, matchResults.size());
         }
         return String.join("", matchResults);
+    }
+
+    // Poor man's substitution of the Apache Common's Pair.
+    private static class Pair<K,V> extends AbstractMap.SimpleEntry<K,V>
+    {
+        Pair(K key, V val) {
+            super(key, val);
+        }
     }
 }
