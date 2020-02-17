@@ -12,6 +12,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -164,7 +165,7 @@ public class BuildLogRegexMacro extends DataBoundTokenMacro {
         escapeHtml = asHtml || escapeHtml;
 
         final Pattern pattern = Pattern.compile(regex);
-        List<String> matchResults = new LinkedList<>();
+        List<String> matchResults = new ArrayList<>();
         Stack<Pair<Integer, Integer>> preRanges = new Stack<>();
         int numLinesTruncated = 0;
         int numMatches = 0;
