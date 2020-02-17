@@ -1,4 +1,14 @@
+target
+work
+*.iml
+*.ipr
+*.iws
+.project
+.classpath
+.settings
+.idea
+
+.vscode/
 ID
 tags
 .*.sw*
-target
