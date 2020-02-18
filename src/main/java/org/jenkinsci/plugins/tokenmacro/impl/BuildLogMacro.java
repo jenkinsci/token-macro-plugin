@@ -29,6 +29,9 @@ public class BuildLogMacro extends DataBoundTokenMacro {
     public int maxLines = MAX_LINES_DEFAULT_VALUE;
 
     @Parameter
+    public int truncTailLines = 0;
+
+    @Parameter
     public boolean escapeHtml = false;
 
     @Override
@@ -50,10 +53,19 @@ public class BuildLogMacro extends DataBoundTokenMacro {
     @Override
     public String evaluate(Run<?,?> run, FilePath workspace, TaskListener listener, String macroName)
             throws MacroEvaluationException, IOException, InterruptedException {
+        if (maxLines <= 0) {
+            throw new MacroEvaluationException("Invalid maxLines value: " + maxLines);
+        }
+        if (truncTailLines < 0) {
+            throw new MacroEvaluationException("Invalid truncTailLines value: " + truncTailLines);
+        }
         StringBuilder buffer = new StringBuilder();
         try {
             List<String> lines = run.getLog(maxLines);
-            for (String line : lines) {
+            // It is OK if this turns out to be a negative value, the entire log will get skipped.
+            int nLinesToEval = lines.size() - truncTailLines;
+            for (int i = 0; i < nLinesToEval; ++i) {
+                String line = lines.get(i);
                 if (escapeHtml) {
                     line = StringEscapeUtils.escapeHtml(line);
                 }
