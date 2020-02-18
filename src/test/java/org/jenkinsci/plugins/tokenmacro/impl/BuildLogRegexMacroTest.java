@@ -11,6 +11,8 @@ import org.jvnet.hudson.test.Issue;
 
 import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.util.Map;
+import java.util.HashMap;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
@@ -21,11 +23,22 @@ public class BuildLogRegexMacroTest {
     private TaskListener listener;
     private AbstractBuild build;
 
+    private final String TRUNC_1_LINE_TEXT = "[...truncated 1 lines...]\n";
+    private final String TRUNC_2_LINE_TEXT = "[...truncated 2 lines...]\n";
+    private final String TRUNC_1_LINE_HTML = "<p>[...truncated 1 lines...]</p>\n";
+    private final String TRUNC_2_LINE_HTML = "<p>[...truncated 2 lines...]</p>\n";
+
     @Before
     public void beforeTest() {
         buildLogRegexMacro = new BuildLogRegexMacro();
         listener = StreamTaskListener.fromStdout();
         build = mock(AbstractBuild.class);
+    }
+
+    private void mockLogReaderWithSimpleErrorLog()
+            throws Exception {
+        when(build.getLogReader()).thenReturn(new StringReader(
+                "1\n2\n3\n4\n5\n6 ERROR\n7\n8\n9 ERROR\n10\n11\n12\n13\n14\n15\n16\n17\n18 ERROR\n19\n20\n21\n22\n23\n"));
     }
 
     @Test
@@ -41,8 +54,7 @@ public class BuildLogRegexMacroTest {
     @Test
     public void testGetContent_matchedLines()
             throws Exception {
-        when(build.getLogReader()).thenReturn(new StringReader(
-                "1\n2\n3\n4\n5\n6 ERROR\n7\n8\n9 ERROR\n10\n11\n12\n13\n14\n15\n16\n17\n18 ERROR\n19\n20\n21\n22\n23\n"));
+        mockLogReaderWithSimpleErrorLog();
         buildLogRegexMacro.showTruncatedLines = false;
 
         final String result = buildLogRegexMacro.evaluate(build, listener, BuildLogRegexMacro.MACRO_NAME);
@@ -51,10 +63,58 @@ public class BuildLogRegexMacroTest {
     }
 
     @Test
+    public void testGetContent_matchedLines_with_maxMatches()
+            throws Exception {
+        mockLogReaderWithSimpleErrorLog();
+        buildLogRegexMacro.showTruncatedLines = false;
+        buildLogRegexMacro.maxMatches = 1;
+
+        final String result = buildLogRegexMacro.evaluate(build, listener, BuildLogRegexMacro.MACRO_NAME);
+
+        assertEquals("6 ERROR\n", result);
+    }
+
+    @Test
+    public void testGetContent_matchedLines_when_not_greedy_with_default_maxMatches()
+            throws Exception {
+        mockLogReaderWithSimpleErrorLog();
+        buildLogRegexMacro.showTruncatedLines = false;
+        buildLogRegexMacro.greedy = false;
+
+        final String result = buildLogRegexMacro.evaluate(build, listener, BuildLogRegexMacro.MACRO_NAME);
+
+        assertEquals("6 ERROR\n9 ERROR\n18 ERROR\n", result);
+    }
+
+    @Test
+    public void testGetContent_matchedLines_with_maxTailMatches()
+            throws Exception {
+        mockLogReaderWithSimpleErrorLog();
+        buildLogRegexMacro.showTruncatedLines = false;
+        buildLogRegexMacro.maxTailMatches = 1;
+
+        final String result = buildLogRegexMacro.evaluate(build, listener, BuildLogRegexMacro.MACRO_NAME);
+
+        assertEquals("18 ERROR\n", result);
+    }
+
+    @Test
+    public void testGetContent_matchedLines_with_maxMatches_and_maxTailMatches()
+            throws Exception {
+        mockLogReaderWithSimpleErrorLog();
+        buildLogRegexMacro.showTruncatedLines = false;
+        buildLogRegexMacro.maxMatches = 2;
+        buildLogRegexMacro.maxTailMatches = 1;
+
+        final String result = buildLogRegexMacro.evaluate(build, listener, BuildLogRegexMacro.MACRO_NAME);
+
+        assertEquals("9 ERROR\n", result);
+    }
+
+    @Test
     public void testGetContent_truncatedAndMatchedLines()
             throws Exception {
-        when(build.getLogReader()).thenReturn(new StringReader(
-                "1\n2\n3\n4\n5\n6 ERROR\n7\n8\n9 ERROR\n10\n11\n12\n13\n14\n15\n16\n17\n18 ERROR\n19\n20\n21\n22\n23\n"));
+        mockLogReaderWithSimpleErrorLog();
 
         final String result = buildLogRegexMacro.evaluate(build, listener, BuildLogRegexMacro.MACRO_NAME);
 
@@ -64,8 +124,7 @@ public class BuildLogRegexMacroTest {
     @Test
     public void testGetContent_truncatedMatchedAndContextLines()
             throws Exception {
-        when(build.getLogReader()).thenReturn(new StringReader(
-                "1\n2\n3\n4\n5\n6 ERROR\n7\n8\n9 ERROR\n10\n11\n12\n13\n14\n15\n16\n17\n18 ERROR\n19\n20\n21\n22\n23\n"));
+        mockLogReaderWithSimpleErrorLog();
         buildLogRegexMacro.linesBefore = 3;
         buildLogRegexMacro.linesAfter = 3;
         final String result = buildLogRegexMacro.evaluate(build, listener, BuildLogRegexMacro.MACRO_NAME);
@@ -76,8 +135,7 @@ public class BuildLogRegexMacroTest {
     @Test
     public void testGetContent_matchedAndContextLines()
             throws Exception {
-        when(build.getLogReader()).thenReturn(new StringReader(
-                "1\n2\n3\n4\n5\n6 ERROR\n7\n8\n9 ERROR\n10\n11\n12\n13\n14\n15\n16\n17\n18 ERROR\n19\n20\n21\n22\n23\n"));
+        mockLogReaderWithSimpleErrorLog();
         buildLogRegexMacro.showTruncatedLines = false;
         buildLogRegexMacro.linesBefore = 3;
         buildLogRegexMacro.linesAfter = 3;
@@ -89,8 +147,7 @@ public class BuildLogRegexMacroTest {
     @Test
     public void testGetContent_truncatedMatchedAndContextLinesAsHtml()
             throws Exception {
-        when(build.getLogReader()).thenReturn(new StringReader(
-                "1\n2\n3\n4\n5\n6 ERROR\n7\n8\n9 ERROR\n10\n11\n12\n13\n14\n15\n16\n17\n18 ERROR\n19\n20\n21\n22\n23\n"));
+        mockLogReaderWithSimpleErrorLog();
         buildLogRegexMacro.matchedLineHtmlStyle = "color: red";
         buildLogRegexMacro.linesBefore = 3;
         buildLogRegexMacro.linesAfter = 3;
@@ -102,8 +159,7 @@ public class BuildLogRegexMacroTest {
     @Test
     public void testGetContent_matchedAndContextLinesAsHtml()
             throws Exception {
-        when(build.getLogReader()).thenReturn(new StringReader(
-                "1\n2\n3\n4\n5\n6 ERROR\n7\n8\n9 ERROR\n10\n11\n12\n13\n14\n15\n16\n17\n18 ERROR\n19\n20\n21\n22\n23\n"));
+        mockLogReaderWithSimpleErrorLog();
         buildLogRegexMacro.matchedLineHtmlStyle = "color: red";
         buildLogRegexMacro.linesBefore = 3;
         buildLogRegexMacro.linesAfter = 3;
@@ -111,6 +167,158 @@ public class BuildLogRegexMacroTest {
         final String result = buildLogRegexMacro.evaluate(build, listener, BuildLogRegexMacro.MACRO_NAME);
 
         assertEquals("<pre>\n3\n4\n5\n<b style=\"color: red\">6 ERROR</b>\n7\n8\n<b style=\"color: red\">9 ERROR</b>\n10\n11\n12\n15\n16\n17\n<b style=\"color: red\">18 ERROR</b>\n19\n20\n21\n</pre>\n", result);
+    }
+
+    @Test
+    public void testGetContent_matchedLines_as_text_showing_truncated_lines()
+            throws Exception {
+        when(build.getLogReader()).thenReturn(new StringReader("a\n1\nb\n2\nc\n3\n"));
+        buildLogRegexMacro.regex = "\\d";
+        buildLogRegexMacro.showTruncatedLines = true;
+
+        final String result = buildLogRegexMacro.evaluate(build, listener, BuildLogRegexMacro.MACRO_NAME);
+
+        assertEquals(TRUNC_1_LINE_TEXT + "1\n" + TRUNC_1_LINE_TEXT + "2\n" + TRUNC_1_LINE_TEXT + "3\n", result);
+    }
+
+    public void getContent_matchedLines_as_text_showing_truncated_lines_with_maxTailMatches(int maxTailMatches, String expectedResult)
+            throws Exception {
+        when(build.getLogReader()).thenReturn(new StringReader("a\n1\nb\n2\nc\n3\n"));
+        buildLogRegexMacro.regex = "\\d";
+        buildLogRegexMacro.showTruncatedLines = true;
+        buildLogRegexMacro.maxTailMatches = maxTailMatches;
+
+        final String result = buildLogRegexMacro.evaluate(build, listener, BuildLogRegexMacro.MACRO_NAME);
+
+        assertEquals(expectedResult, result);
+    }
+
+    @Test
+    public void testGetContent_matchedLines_as_text_showing_truncated_lines_1()
+            throws Exception {
+        getContent_matchedLines_as_text_showing_truncated_lines_with_maxTailMatches(1, "3\n");
+    }
+
+    @Test
+    public void testGetContent_matchedLines_as_text_showing_truncated_lines_2()
+            throws Exception {
+        getContent_matchedLines_as_text_showing_truncated_lines_with_maxTailMatches(2, "2\n" + TRUNC_1_LINE_TEXT + "3\n");
+    }
+
+    @Test
+    public void testGetContent_matchedLines_as_text_showing_truncated_lines_3()
+            throws Exception {
+        getContent_matchedLines_as_text_showing_truncated_lines_with_maxTailMatches(3, "1\n" + TRUNC_1_LINE_TEXT + "2\n" + TRUNC_1_LINE_TEXT + "3\n");
+    }
+
+    @Test
+    public void testGetContent_matchedLines_as_text_showing_truncated_lines_4()
+            throws Exception {
+        getContent_matchedLines_as_text_showing_truncated_lines_with_maxTailMatches(4, TRUNC_1_LINE_TEXT + "1\n" + TRUNC_1_LINE_TEXT + "2\n" + TRUNC_1_LINE_TEXT + "3\n");
+    }
+
+    @Test
+    public void testGetContent_matchedLines_as_html_showing_truncated_lines()
+            throws Exception {
+        when(build.getLogReader()).thenReturn(new StringReader("a\n1\nb\n2\nc\n3\n"));
+        buildLogRegexMacro.regex = "\\d";
+        buildLogRegexMacro.showTruncatedLines = true;
+        buildLogRegexMacro.matchedLineHtmlStyle = "";
+
+        final String result = buildLogRegexMacro.evaluate(build, listener, BuildLogRegexMacro.MACRO_NAME);
+
+        assertEquals(TRUNC_1_LINE_HTML + "<pre>\n<b>1</b>\n</pre>\n" + TRUNC_1_LINE_HTML + "<pre>\n<b>2</b>\n</pre>\n" + TRUNC_1_LINE_HTML + "<pre>\n<b>3</b>\n</pre>\n", result);
+    }
+
+    public void getContent_matchedLines_as_html_showing_truncated_lines_with_maxTailMatches(int maxTailMatches, String expectedResult)
+            throws Exception {
+        when(build.getLogReader()).thenReturn(new StringReader("a\n1\nb\n2\nc\n3\n"));
+        buildLogRegexMacro.regex = "\\d";
+        buildLogRegexMacro.showTruncatedLines = true;
+        buildLogRegexMacro.matchedLineHtmlStyle = "";
+        buildLogRegexMacro.maxTailMatches = maxTailMatches;
+        final String result = buildLogRegexMacro.evaluate(build, listener, BuildLogRegexMacro.MACRO_NAME);
+
+        assertEquals(expectedResult, result);
+    }
+
+    @Test
+    public void testGetContent_matchedLines_as_html_showing_truncated_lines_with_maxTailMatches_1()
+            throws Exception {
+        getContent_matchedLines_as_html_showing_truncated_lines_with_maxTailMatches(1, "<pre>\n<b>3</b>\n</pre>\n");
+    }
+
+
+    @Test
+    public void testGetContent_matchedLines_as_html_showing_truncated_lines_with_maxTailMatches_2()
+            throws Exception {
+        getContent_matchedLines_as_html_showing_truncated_lines_with_maxTailMatches(2, "<pre>\n<b>2</b>\n</pre>\n" + TRUNC_1_LINE_HTML +
+                                                                                       "<pre>\n<b>3</b>\n</pre>\n");
+    }
+
+    @Test
+    public void testGetContent_matchedLines_as_html_showing_truncated_lines_with_maxTailMatches_3()
+            throws Exception {
+        getContent_matchedLines_as_html_showing_truncated_lines_with_maxTailMatches(3, "<pre>\n<b>1</b>\n</pre>\n" + TRUNC_1_LINE_HTML +
+                                                                                       "<pre>\n<b>2</b>\n</pre>\n" + TRUNC_1_LINE_HTML +
+                                                                                       "<pre>\n<b>3</b>\n</pre>\n");
+    }
+
+    @Test
+    public void testGetContent_matchedLines_as_html_showing_truncated_lines_with_maxTailMatches_4()
+            throws Exception {
+        getContent_matchedLines_as_html_showing_truncated_lines_with_maxTailMatches(4, TRUNC_1_LINE_HTML +
+                                                                                       "<pre>\n<b>1</b>\n</pre>\n" + TRUNC_1_LINE_HTML +
+                                                                                       "<pre>\n<b>2</b>\n</pre>\n" + TRUNC_1_LINE_HTML +
+                                                                                       "<pre>\n<b>3</b>\n</pre>\n");
+    }
+
+    public void testGetContent_matchedBlocks_as_html_showing_truncated_lines_with_maxTailMatches(int maxTailMatches, String expectedResult)
+            throws Exception {
+        when(build.getLogReader()).thenReturn(new StringReader("a\nb\n1\n2\nc\nd\n3\n4\ne\nf\n5\n6\n"));
+        buildLogRegexMacro.regex = "\\d";
+        buildLogRegexMacro.showTruncatedLines = true;
+        buildLogRegexMacro.matchedLineHtmlStyle = "";
+        buildLogRegexMacro.maxTailMatches = maxTailMatches;
+        final String result = buildLogRegexMacro.evaluate(build, listener, BuildLogRegexMacro.MACRO_NAME);
+
+        assertEquals(expectedResult, result);
+    }
+
+    @Test
+    public void testGetContent_matchedBlocks_as_html_showing_truncated_lines_with_maxTailMatches_1()
+            throws Exception {
+        testGetContent_matchedBlocks_as_html_showing_truncated_lines_with_maxTailMatches(1, "<pre>\n<b>6</b>\n</pre>\n");
+    }
+
+    @Test
+    public void testGetContent_matchedBlocks_as_html_showing_truncated_lines_with_maxTailMatches_2()
+            throws Exception {
+        testGetContent_matchedBlocks_as_html_showing_truncated_lines_with_maxTailMatches(2, "<pre>\n<b>5</b>\n<b>6</b>\n</pre>\n");
+    }
+
+    @Test
+    public void testGetContent_matchedBlocks_as_html_showing_truncated_lines_with_maxTailMatches_3()
+            throws Exception {
+        testGetContent_matchedBlocks_as_html_showing_truncated_lines_with_maxTailMatches(3, "<pre>\n<b>4</b>\n</pre>\n" + TRUNC_2_LINE_HTML +
+                                                                                            "<pre>\n<b>5</b>\n<b>6</b>\n</pre>\n");
+    }
+
+    @Test
+    public void testGetContent_matchedBlocks_as_html_showing_truncated_lines_with_maxTailMatches_6()
+            throws Exception {
+        testGetContent_matchedBlocks_as_html_showing_truncated_lines_with_maxTailMatches(6, "<pre>\n<b>1</b>\n<b>2</b>\n</pre>\n" + TRUNC_2_LINE_HTML +
+                                                                                            "<pre>\n<b>3</b>\n<b>4</b>\n</pre>\n" + TRUNC_2_LINE_HTML +
+                                                                                            "<pre>\n<b>5</b>\n<b>6</b>\n</pre>\n");
+    }
+
+    @Test
+    public void testGetContent_matchedBlocks_as_html_showing_truncated_lines_with_maxTailMatches_7()
+            throws Exception {
+        testGetContent_matchedBlocks_as_html_showing_truncated_lines_with_maxTailMatches(7, TRUNC_2_LINE_HTML +
+                                                                                            "<pre>\n<b>1</b>\n<b>2</b>\n</pre>\n" + TRUNC_2_LINE_HTML +
+                                                                                            "<pre>\n<b>3</b>\n<b>4</b>\n</pre>\n" + TRUNC_2_LINE_HTML +
+                                                                                            "<pre>\n<b>5</b>\n<b>6</b>\n</pre>\n");
     }
 
     @Test

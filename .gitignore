@@ -9,6 +9,6 @@ work
 .idea
 
 .vscode/
-*.sw*
-tags
 ID
+tags
+.*.sw*
