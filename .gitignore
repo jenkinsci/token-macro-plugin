@@ -9,3 +9,6 @@ work
 .idea
 
 .vscode/
+ID
+tags
+.*.sw*
