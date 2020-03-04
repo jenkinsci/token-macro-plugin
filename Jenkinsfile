@@ -7,5 +7,5 @@ def configurations = [
 buildPlugin(
     forceAci: true,
     failFast: false,
-    configurations: buildPlugin.recommendedConfigurations()
+    configurations: configurations
 )
