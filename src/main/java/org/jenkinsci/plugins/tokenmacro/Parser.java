@@ -86,7 +86,7 @@ public class Parser extends BaseParser<Object> {
         } catch(Exception e) {
             if(e.getCause() instanceof MacroEvaluationException)
                 throw (MacroEvaluationException)e.getCause();
-            return String.format("Error processing tokens: %s", e.getMessage());
+            throw new MacroEvaluationException("Error processing tokens", e);
         }
 
         return p.output.toString();

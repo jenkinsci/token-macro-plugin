@@ -37,6 +37,24 @@ public class DataBoundTokenMacroTest {
     }
     
     @Test
+    public void testMethodDataBoundMacro() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject("foo");
+        FreeStyleBuild b = p.scheduleBuild2(0).get();
+
+        assertEquals("DEFAULT", TokenMacro.expand(b, TaskListener.NULL, "${ENUM_MACRO}"));
+        assertEquals("DEFAULT", TokenMacro.expand(b, TaskListener.NULL, "${ENUM_MACRO, value=\"DEFAULT\"}"));
+        assertEquals("YES", TokenMacro.expand(b, TaskListener.NULL, "${ENUM_MACRO, value=\"YES\"}"));
+    }
+
+    @Test(expected = MacroEvaluationException.class)
+    public void testMethodDataBoundMacroThrows() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject("foo");
+        FreeStyleBuild b = p.scheduleBuild2(0).get();
+
+        TokenMacro.expand(b, TaskListener.NULL, "${ENUM_MACRO, value=\"BAD\"}");
+    }
+
+    @Test
     public void testDataBoundMacroWithFieldAlias() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
@@ -51,7 +69,6 @@ public class DataBoundTokenMacroTest {
         
         assertEquals("default = foo, arg2 = 4", TokenMacro.expand(b, TaskListener.NULL, "${ALIAS_MACRO, default=\"foo\", int=4}"));
     }
-
 
     @Test
     public void testRecursionLimit() throws Exception {
@@ -77,7 +94,35 @@ public class DataBoundTokenMacroTest {
             return "TEST_MACRO".equals(macroName);
         }        
     }
-    
+
+    public enum Choice {
+        DEFAULT,
+        YES,
+        NO
+    }
+
+    @TestExtension
+    public static class MethodDataBoundMacro extends DataBoundTokenMacro {
+
+        private Choice value = Choice.DEFAULT;
+
+        @Parameter
+        public void setValue(final String value) {
+            this.value = Choice.valueOf(value);
+        }
+
+        @Override
+        public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName) throws MacroEvaluationException, IOException, InterruptedException {
+            return this.value.toString();
+        }
+
+        @Override
+        public boolean acceptsMacroName(String macroName) {
+            return macroName.equals("ENUM_MACRO");
+        }
+    }
+
+
     @TestExtension
     public static class AliasDataBoundMacro extends DataBoundTokenMacro {
         
