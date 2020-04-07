@@ -62,32 +62,18 @@ public class BuildStatusMacro extends DataBoundTokenMacro {
             }
         } else if (buildResult == Result.UNSTABLE) {
             Run<?,?> prevRun = TokenMacro.getPreviousRun(run, listener);
-            if (prevRun != null) {
+            while (prevRun != null) {
+                //iterate through previous builds
+                //(fail_or_aborted)* and then an unstable : return still unstable
+                //(fail_or_aborted)* and then successful : return unstable
                 if (prevRun.getResult() == Result.UNSTABLE) {
                     return "Still Unstable";
                 } else if (prevRun.getResult() == Result.SUCCESS) {
                     return "Unstable";
-                } else if (prevRun.getResult() == Result.FAILURE ||
-                        prevRun.getResult() == Result.ABORTED ||
-                        prevRun.getResult() == Result.NOT_BUILT) {
-                    //iterate through previous builds
-                    //(fail_or_aborted)* and then an unstable : return still unstable
-                    //(fail_or_aborted)* and then successful : return unstable
-                    Run<?,?> previous = TokenMacro.getPreviousRun(prevRun, listener);
-                    while (previous != null) {
-                        if (previous.getResult() == Result.SUCCESS) {
-                            return "Unstable";
-                        }
-                        if (previous.getResult() == Result.UNSTABLE) {
-                            return "Still unstable";
-                        }
-                        previous = TokenMacro.getPreviousRun(previous, listener);
-                    }
-                    return "Unstable";
                 }
-            } else {
-                return "Unstable";
+                prevRun = TokenMacro.getPreviousRun(prevRun, listener);
             }
+            return "Unstable";
         } else if (buildResult == Result.SUCCESS) {
             Run<?,?> prevBuild = TokenMacro.getPreviousRun(run, listener);
             if (prevBuild != null && (prevBuild.getResult() == Result.UNSTABLE || prevBuild.getResult() == Result.FAILURE)) {
