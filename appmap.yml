@@ -1,0 +1,3 @@
+name: token-macro-plugin
+packages:
+- path: org.jenkinsci.plugins.tokenmacro
