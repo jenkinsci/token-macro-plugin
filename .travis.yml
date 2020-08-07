@@ -1,4 +1,4 @@
-insert
+# Turn on validation, so we can use import:
 version: ~> 1.0
 
 jdk:
