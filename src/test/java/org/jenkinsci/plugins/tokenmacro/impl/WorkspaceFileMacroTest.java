@@ -57,9 +57,10 @@ public class WorkspaceFileMacroTest {
             @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                 FilePath file = build.getWorkspace().child("foo");
-                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(file.write()));
-                for(int i = 0; i < 1000; i++) {
-                    writer.write("Hello, world! " + i + "\n");
+                try(BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(file.write()))) {
+                    for(int i = 0; i < 1000; i++) {
+                        writer.write("Hello, world! " + i + "\n");
+                    }
                 }
                 return true;
             }
