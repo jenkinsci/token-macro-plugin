@@ -16,6 +16,7 @@ import java.io.StringReader;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -95,9 +96,9 @@ public class XmlFileMacro extends DataBoundTokenMacro {
             features.put(EXTERNAL_PARAMETER_ENTITIES, false);
             features.put(LOAD_EXTERNAL_DTD, false);
 
-            for(String feature : features.keySet()) {
+            for(Map.Entry<String, Boolean> feature : features.entrySet()) {
                 try {
-                    dFactory.setFeature(feature, features.get(feature));
+                    dFactory.setFeature(feature.getKey(), feature.getValue());
                 } catch(ParserConfigurationException e) {
                     LOGGER.log(Level.INFO, "Could not enable/disable feature: " + feature);
                 }
@@ -108,9 +109,9 @@ public class XmlFileMacro extends DataBoundTokenMacro {
             attributes.put(XMLConstants.ACCESS_EXTERNAL_DTD, "");
             attributes.put(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
             attributes.put(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
-            for(String attribute : attributes.keySet()) {
+            for(Map.Entry<String, String> attribute : attributes.entrySet()) {
                 try {
-                    dFactory.setAttribute(attribute, attributes.get(attribute));
+                    dFactory.setAttribute(attribute.getKey(), attribute.getValue());
                 } catch(IllegalArgumentException e) {
                     LOGGER.log(Level.INFO, "Could not set attribute: " + attribute);
                 }
