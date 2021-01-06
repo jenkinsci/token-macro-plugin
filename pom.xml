@@ -9,7 +9,7 @@
   </parent>
 
   <properties>
-    <jenkins.version>2.222.3</jenkins.version>
+    <jenkins.version>2.274</jenkins.version>
     <java.level>8</java.level>
   </properties>
   
@@ -52,7 +52,7 @@
     <dependencies>
       <dependency>
         <groupId>io.jenkins.tools.bom</groupId>
-        <artifactId>bom-2.222.x</artifactId>
+        <artifactId>bom-2.263.x</artifactId>
         <version>20</version>
         <scope>import</scope>
         <type>pom</type>
@@ -66,28 +66,33 @@
       <artifactId>workflow-step-api</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm</artifactId>
+      <version>9.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm-tree</artifactId>
+      <version>9.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm-analysis</artifactId>
+      <version>9.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm-util</artifactId>
+      <version>9.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>org.parboiled</groupId>
       <artifactId>parboiled-java</artifactId>
-      <version>1.1.8</version>
-      <exclusions>
-        <!-- Jenkins core bundles ASM 4, so if this really requires ASM 5 and is used at runtime, you are SOL. -->
-        <exclusion>
-          <groupId>org.ow2.asm</groupId>
-          <artifactId>asm</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.ow2.asm</groupId>
-          <artifactId>asm-analysis</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.ow2.asm</groupId>
-          <artifactId>asm-tree</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.ow2.asm</groupId>
-          <artifactId>asm-util</artifactId>
-        </exclusion>
-      </exclusions>
+      <version>1.3.1</version>
     </dependency>
     <dependency>
       <groupId>com.jayway.jsonpath</groupId>
