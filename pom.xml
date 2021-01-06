@@ -70,21 +70,25 @@
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm</artifactId>
       <version>9.0</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm-tree</artifactId>
       <version>9.0</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm-analysis</artifactId>
       <version>9.0</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm-util</artifactId>
       <version>9.0</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.parboiled</groupId>
