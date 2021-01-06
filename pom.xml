@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>4.14</version>
+    <version>4.15</version>
     <relativePath />
   </parent>
 
@@ -23,7 +23,7 @@
   </licenses>
 
   <artifactId>token-macro</artifactId>
-  <version>2.13-SNAPSHOT</version>
+  <version>2.14-SNAPSHOT</version>
   <packaging>hpi</packaging>
   <name>Token Macro Plugin</name>
   <description>This plugin adds reusable macro expansion capability for other plugins to use.</description>
@@ -159,7 +159,7 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>1.9.5</version>
+      <version>3.6.28</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -174,7 +174,7 @@
     <plugins>
       <plugin>
           <artifactId>maven-javadoc-plugin</artifactId>
-          <version>3.0.1</version>
+          <version>3.2.0</version>
           <configuration>
             <quiet>true</quiet>
             <links>
