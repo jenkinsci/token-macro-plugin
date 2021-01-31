@@ -22,7 +22,7 @@
   </licenses>
 
   <artifactId>token-macro</artifactId>
-  <version>2.15-SNAPSHOT</version>
+  <version>2.15</version>
   <packaging>hpi</packaging>
   <name>Token Macro Plugin</name>
   <description>This plugin adds reusable macro expansion capability for other plugins to use.</description>
@@ -45,7 +45,7 @@
     <connection>scm:git:git://github.com/jenkinsci/token-macro-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:jenkinsci/token-macro-plugin.git</developerConnection>
     <url>https://github.com/jenkinsci/token-macro-plugin</url>
-    <tag>HEAD</tag>
+    <tag>token-macro-2.15</tag>
   </scm>
 
   <dependencyManagement>
