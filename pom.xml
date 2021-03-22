@@ -45,7 +45,7 @@
     <connection>scm:git:git://github.com/jenkinsci/token-macro-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:jenkinsci/token-macro-plugin.git</developerConnection>
     <url>https://github.com/jenkinsci/token-macro-plugin</url>
-    <tag>HEAD</tag>
+    <tag>${scmTag}</tag>
   </scm>
 
   <dependencyManagement>
@@ -53,7 +53,7 @@
       <dependency>
         <groupId>io.jenkins.tools.bom</groupId>
         <artifactId>bom-2.263.x</artifactId>
-        <version>25</version>
+        <version>26</version>
         <scope>import</scope>
         <type>pom</type>
       </dependency>
