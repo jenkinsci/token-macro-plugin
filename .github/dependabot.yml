@@ -1,6 +1,11 @@
 version: 2
 updates:
-  - package-ecosystem: "maven"
+  - package-ecosystem: maven
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: weekly
+    target-branch: master
+    reviewers:
+    - slide
+    labels:
+    - skip-changelog
