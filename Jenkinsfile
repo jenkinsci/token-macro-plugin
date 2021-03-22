@@ -5,7 +5,5 @@ def configurations = [
 ]
 
 buildPlugin(
-    useAci: true,
-    failFast: false,
     configurations: configurations
 )
