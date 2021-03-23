@@ -9,7 +9,7 @@
   </parent>
 
   <properties>
-    <revision>2.15</revision>
+    <revision>2.16</revision>
     <changelist>999999-SNAPSHOT</changelist>
     <gitHubRepo>jenkinsci/token-macro-plugin</gitHubRepo>
     <jenkins.version>2.274</jenkins.version>
