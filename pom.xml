@@ -9,10 +9,9 @@
   </parent>
 
   <properties>
-    <revision>2.16</revision>
     <changelist>999999-SNAPSHOT</changelist>
     <gitHubRepo>jenkinsci/token-macro-plugin</gitHubRepo>
-    <jenkins.version>2.274</jenkins.version>
+    <jenkins.version>2.277.1</jenkins.version>
     <java.level>8</java.level>
   </properties>
   
@@ -25,7 +24,7 @@
   </licenses>
 
   <artifactId>token-macro</artifactId>
-  <version>${revision}-${changelist}</version>
+  <version>${changelist}</version>
   <packaging>hpi</packaging>
   <name>Token Macro Plugin</name>
   <description>This plugin adds reusable macro expansion capability for other plugins to use.</description>
@@ -55,7 +54,7 @@
     <dependencies>
       <dependency>
         <groupId>io.jenkins.tools.bom</groupId>
-        <artifactId>bom-2.263.x</artifactId>
+        <artifactId>bom-2.277.x</artifactId>
         <version>26</version>
         <scope>import</scope>
         <type>pom</type>
