@@ -95,7 +95,7 @@ public class BuildLogRegexMacro extends DataBoundTokenMacro {
     }
 
     private void appendContextLine(List<String> matchResults, String line, boolean escapeHtml) {
-        if (maxLineLength != 0 && line.length() > maxLineLength) {
+        if (maxLineLength != MAX_LINE_LENGTH_DEFAULT_VALUE && line.length() > maxLineLength) {
             line = line.substring(0, maxLineLength) + "...";
         }
         if (escapeHtml) {
@@ -105,7 +105,7 @@ public class BuildLogRegexMacro extends DataBoundTokenMacro {
     }
 
     private void appendMatchedLine(List<String> matchResults, String line, boolean escapeHtml, String style, boolean addNewline) {
-        if (maxLineLength != 0 && line.length() > maxLineLength) {
+        if (maxLineLength != MAX_LINE_LENGTH_DEFAULT_VALUE && line.length() > maxLineLength) {
             line = line.substring(0, maxLineLength) + "...";
         }
         if (escapeHtml) {

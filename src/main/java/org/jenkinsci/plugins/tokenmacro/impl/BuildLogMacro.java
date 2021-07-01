@@ -70,7 +70,7 @@ public class BuildLogMacro extends DataBoundTokenMacro {
             int nLinesToEval = lines.size() - truncTailLines;
             for (int i = 0; i < nLinesToEval; ++i) {
                 String line = lines.get(i);
-                if (maxLineLength != 0 && line.length() > maxLineLength) {
+                if (maxLineLength != MAX_LINE_LENGTH_DEFAULT_VALUE && line.length() > maxLineLength) {
                     line = line.substring(0, maxLineLength) + "...";
                 }
                 if (escapeHtml) {
