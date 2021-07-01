@@ -24,6 +24,7 @@ public class BuildLogMacro extends DataBoundTokenMacro {
     public static final String MACRO_NAME = "BUILD_LOG";
 
     public static final int MAX_LINES_DEFAULT_VALUE = 250;
+    public static final int MAX_LINE_LENGTH_DEFAULT_VALUE = 0;
 
     @Parameter
     public int maxLines = MAX_LINES_DEFAULT_VALUE;
@@ -33,6 +34,9 @@ public class BuildLogMacro extends DataBoundTokenMacro {
 
     @Parameter
     public boolean escapeHtml = false;
+
+    @Parameter
+    public int maxLineLength = MAX_LINE_LENGTH_DEFAULT_VALUE;
 
     @Override
     public boolean acceptsMacroName(String macroName) {
@@ -66,6 +70,9 @@ public class BuildLogMacro extends DataBoundTokenMacro {
             int nLinesToEval = lines.size() - truncTailLines;
             for (int i = 0; i < nLinesToEval; ++i) {
                 String line = lines.get(i);
+                if (maxLineLength != 0 && line.length() > maxLineLength) {
+                    line = line.substring(0, maxLineLength) + "...";
+                }
                 if (escapeHtml) {
                     line = StringEscapeUtils.escapeHtml(line);
                 }

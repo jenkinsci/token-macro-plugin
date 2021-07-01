@@ -34,11 +34,12 @@ import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 public class BuildLogRegexMacro extends DataBoundTokenMacro {
 
     public static final String MACRO_NAME = "BUILD_LOG_REGEX";
-    private static final int LINES_BEFORE_DEFAULT_VALUE = 0;
-    private static final int LINES_AFTER_DEFAULT_VALUE = 0;
-    private static final int MAX_MATCHES_DEFAULT_VALUE = 0;
-    private static final int MAX_TAIL_MATCHES_DEFAULT_VALUE = 0;
-    private static final int MAX_LINE_LENGTH_DEFAULT_VALUE = 0;
+    public static final int LINES_BEFORE_DEFAULT_VALUE = 0;
+    public static final int LINES_AFTER_DEFAULT_VALUE = 0;
+    public static final int MAX_MATCHES_DEFAULT_VALUE = 0;
+    public static final int MAX_TAIL_MATCHES_DEFAULT_VALUE = 0;
+    public static final int MAX_LINE_LENGTH_DEFAULT_VALUE = 0;
+
     @Parameter
     public String regex = "(?i)\\b(error|exception|fatal|fail(ed|ure)|un(defined|resolved))\\b";
     @Parameter
