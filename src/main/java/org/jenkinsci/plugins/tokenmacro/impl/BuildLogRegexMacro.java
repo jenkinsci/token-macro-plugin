@@ -38,6 +38,7 @@ public class BuildLogRegexMacro extends DataBoundTokenMacro {
     private static final int LINES_AFTER_DEFAULT_VALUE = 0;
     private static final int MAX_MATCHES_DEFAULT_VALUE = 0;
     private static final int MAX_TAIL_MATCHES_DEFAULT_VALUE = 0;
+    private static final int MAX_LINE_LENGTH_DEFAULT_VALUE = 0;
     @Parameter
     public String regex = "(?i)\\b(error|exception|fatal|fail(ed|ure)|un(defined|resolved))\\b";
     @Parameter
@@ -62,6 +63,8 @@ public class BuildLogRegexMacro extends DataBoundTokenMacro {
     public boolean greedy = true;
     @Parameter
     public int maxTailMatches = MAX_TAIL_MATCHES_DEFAULT_VALUE;
+    @Parameter
+    public int maxLineLength = MAX_LINE_LENGTH_DEFAULT_VALUE;
 
     @Override
     public boolean acceptsMacroName(String macroName) {
@@ -91,6 +94,9 @@ public class BuildLogRegexMacro extends DataBoundTokenMacro {
     }
 
     private void appendContextLine(List<String> matchResults, String line, boolean escapeHtml) {
+        if (maxLineLength != 0 && line.length() > maxLineLength) {
+            line = line.substring(0, maxLineLength) + "...";
+        }
         if (escapeHtml) {
             line = StringEscapeUtils.escapeHtml(line);
         }
@@ -98,6 +104,9 @@ public class BuildLogRegexMacro extends DataBoundTokenMacro {
     }
 
     private void appendMatchedLine(List<String> matchResults, String line, boolean escapeHtml, String style, boolean addNewline) {
+        if (maxLineLength != 0 && line.length() > maxLineLength) {
+            line = line.substring(0, maxLineLength) + "...";
+        }
         if (escapeHtml) {
             line = StringEscapeUtils.escapeHtml(line);
         }

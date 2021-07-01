@@ -24,6 +24,10 @@ dd() {
     dt("maxTailMatches")
     dd(_("The maximum number of matches to include from the tail of the log. When combined with maxMatches, it further limits the matches to the tail end of matched results. " +
          "If 0, all matches will be included. Defaults to 0."))
+  
+    dt("maxLineLength")
+    dd(_("A maximum length for log lines. When lines are longer than the specified value, they are truncated and a \"...\" marker is appended at the end. " +
+         "If 0, no truncation is done. Defaults to 0."))
 
     dt("showTruncatedLines")
     dd(_("If true, include [...truncated ### lines...] lines. " +
