@@ -134,4 +134,26 @@ public class BuildLogMacroTest {
 
         assertEquals("", content);
     }
+
+    @Test
+    public void testGetContent_truncated_with_maxLineLength()
+            throws Exception {
+        buildLogMacro.maxLineLength = 4;
+        when(build.getLog(anyInt())).thenReturn(testLog);
+
+        String content = buildLogMacro.evaluate(build, listener, BuildLogMacro.MACRO_NAME);
+
+        assertEquals("line...\nline...\nline...\n", content);
+    }
+
+    @Test
+    public void testGetContent_untruncated_with_maxLineLength()
+            throws Exception {
+        buildLogMacro.maxLineLength = 6;
+        when(build.getLog(anyInt())).thenReturn(testLog);
+
+        String content = buildLogMacro.evaluate(build, listener, BuildLogMacro.MACRO_NAME);
+
+        assertEquals("line 1\nline 2\nline 3\n", content);
+    }
 }

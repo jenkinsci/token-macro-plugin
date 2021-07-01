@@ -321,6 +321,35 @@ public class BuildLogRegexMacroTest {
                                                                                             "<pre>\n<b>5</b>\n<b>6</b>\n</pre>\n");
     }
 
+    private void testGetContent_line_truncation_with_maxLineLength(String input, String regex, String expectedResult, int maxLineLength)
+            throws Exception {
+        testGetContent_line_truncation_with_maxLineLength(input, regex, expectedResult, maxLineLength, 0, 0);
+    }
+
+    private void testGetContent_line_truncation_with_maxLineLength(String input, String regex, String expectedResult, int maxLineLength, int linesBefore, int linesAfter)
+            throws Exception {
+        when(build.getLogReader()).thenReturn(new StringReader(input));
+        buildLogRegexMacro.linesBefore = linesBefore;
+        buildLogRegexMacro.linesAfter = linesAfter;
+        buildLogRegexMacro.regex = regex;
+        buildLogRegexMacro.maxLineLength = maxLineLength;
+        final String result = buildLogRegexMacro.evaluate(build, listener, BuildLogRegexMacro.MACRO_NAME);
+
+        assertEquals(expectedResult, result);
+    }
+
+    @Test
+    public void testGetContent_truncated_lines_with_maxLineLength()
+            throws Exception {
+        testGetContent_line_truncation_with_maxLineLength("short line\na longer line\n", ".", "short line\na longer l...\n", 10);
+    }
+
+    @Test
+    public void testGetContent_truncated_context_lines_with_maxLineLength ()
+            throws Exception {
+        testGetContent_line_truncation_with_maxLineLength("ab\n1\nc\n", "\\d", "a...\n1\nc\n", 1, 1, 1);
+    }
+
     @Test
     public void testGetContent_errorMatchedAndNothingReplaced()
             throws Exception {
