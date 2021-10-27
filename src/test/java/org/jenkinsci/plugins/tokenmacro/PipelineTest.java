@@ -34,7 +34,7 @@ public class PipelineTest {
 
     @Before
     public void setup() throws Exception {
-	j.createOnlineSlave(Label.get("agents"));
+	    j.createOnlineSlave(Label.get("agents"));
     }
 
     @Test

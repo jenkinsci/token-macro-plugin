@@ -76,15 +76,23 @@ public class TokenMacroTest {
     }
 
     @Test
-    public void testMultilineStringArgs() throws Exception {
+    public void testMultilineStringArg() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
         listener = StreamTaskListener.fromStdout();
 
-        assertEquals("{arg=[a \n b  \r\n c]}\n",TokenMacro.expand(b, listener, "${TEST, arg = \"a \\\n b  \\\r\n c\"}\n"));
+        assertEquals("{arg=[a \n b  \r\n c]}\n",TokenMacro.expand(b, listener, "${TEST, arg = \"a \\\n b  \\\r\\\n c\"}\n"));
+    }
 
-        assertEquals("${TEST, arg = \"a \n b  \r\n c\"}\n",TokenMacro.expand(b, listener, "${TEST, arg = \"a \n b  \r\n c\"}\n"));
+    @Test(expected = MacroEvaluationException.class)
+    public void testInvalidMultilineStringArg() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject("foo");
+        FreeStyleBuild b = p.scheduleBuild2(0).get();
+
+        listener = StreamTaskListener.fromStdout();
+
+        TokenMacro.expand(b, listener, "${TEST, arg = \"a \n b  \r\n c\"}\n");
     }
 
     @Test
@@ -130,7 +138,7 @@ public class TokenMacroTest {
         assertEquals("For only 10 easy payment of $69.99 , AWESOME-O 4000 can be yours!", TokenMacro.expand(b,TaskListener.NULL,"For only 10 easy payment of $69.99 , AWESOME-O 4000 can be yours!"));
     }
 
-    @Bug(18014)
+    @Issue("JENKINS-18014")
     @Test
     public void testEscapeCharEscaped() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo");
