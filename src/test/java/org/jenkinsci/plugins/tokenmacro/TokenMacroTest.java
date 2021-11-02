@@ -130,7 +130,7 @@ public class TokenMacroTest {
         assertEquals("For only 10 easy payment of $69.99 , AWESOME-O 4000 can be yours!", TokenMacro.expand(b,TaskListener.NULL,"For only 10 easy payment of $69.99 , AWESOME-O 4000 can be yours!"));
     }
 
-    @Bug(18014)
+    @Issue("JENKINS-18014")
     @Test
     public void testEscapeCharEscaped() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo");

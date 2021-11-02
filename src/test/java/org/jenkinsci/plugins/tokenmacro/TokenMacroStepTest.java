@@ -15,7 +15,7 @@ public class TokenMacroStepTest {
 
     @Test public void basics() throws Exception {
         WorkflowJob p = j.createProject(WorkflowJob.class, "p");
-        p.setDefinition(new CpsFlowDefinition("node { def val = tm('${BUILD_NUMBER}') ; echo val }"));
+        p.setDefinition(new CpsFlowDefinition("node { def val = tm('${BUILD_NUMBER}') ; echo val }", true));
         j.assertLogContains("1", j.assertBuildStatusSuccess(p.scheduleBuild2(0)));
     }
 }
