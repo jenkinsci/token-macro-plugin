@@ -38,6 +38,26 @@ public class PipelineTest {
     }
 
     @Test
+    public void testEnvironmentVariables() throws Exception {
+        WorkflowJob job = j.jenkins.createProject(WorkflowJob.class, "foo");
+        job.setDefinition(new CpsFlowDefinition("pipeline {\n" +
+                "  agent any\n" +
+                "  environment {\n" +
+                "    VERSION = \"1.0.0\"\n" +
+                "  }\n\n" +
+                "  stages {\n" +
+                "    stage('Cool') {\n" +
+                "      steps {\n" +
+                "        echo \"VERSION=\" + tm('${ENV, var=\"VERSION\"}')\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}", true));
+        Run<?,?> run = j.assertBuildStatusSuccess(job.scheduleBuild2(0));
+        j.assertLogContains("VERSION=1.0.0", run);
+    }
+
+    @Test
     public void testEscapedExpandAll() throws Exception {
         WorkflowJob job = j.jenkins.createProject(WorkflowJob.class, "foo");
 
