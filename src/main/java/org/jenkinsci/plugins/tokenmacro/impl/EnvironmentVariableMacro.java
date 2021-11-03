@@ -7,6 +7,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
@@ -48,9 +49,8 @@ public class EnvironmentVariableMacro extends DataBoundTokenMacro {
      * @returns The environment variable value or empty string on error
      */
     private String getEnvVarFromWorkflowRun(Run<?,?> run) {
+        Class<?> workflowRunClass = run.getClass();
         try {
-            Class<?> workflowRunClass = run.getClass();
-
             if(workflowRunClass.getName().contains("WorkflowRun")) {
                 // get the FlowExecution object for this run
                 Method getExecution = workflowRunClass.getMethod("getExecution");
@@ -76,8 +76,8 @@ public class EnvironmentVariableMacro extends DataBoundTokenMacro {
                     return envVars.get(var);
                 }
             }
-        } catch(Exception e) {
-            // we don't need to do anything here...
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            // don't do anything here
         }
         return "";
     }

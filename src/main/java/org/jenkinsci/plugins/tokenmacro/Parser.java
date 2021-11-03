@@ -369,6 +369,10 @@ public class Parser {
             matches = new char[] { 'f', 'a', 'l', 's', 'e' };
         }
 
+        if(matches == null) {
+            throw new MacroEvaluationException("Invalid boolean value for argument for macro: " + tokenName);
+        }
+
         for(int i = 0; i < matches.length; ++i) {
             if(c.current() != matches[i]) {
                 throw new MacroEvaluationException("Invalid boolean value in macro: " + tokenName);
