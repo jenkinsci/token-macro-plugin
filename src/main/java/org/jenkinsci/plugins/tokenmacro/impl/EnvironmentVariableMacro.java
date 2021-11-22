@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.tokenmacro.impl;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -47,6 +48,7 @@ public class EnvironmentVariableMacro extends DataBoundTokenMacro {
      * @param run - the run object
      * @returns The environment variable value or empty string on error
      */
+    @SuppressFBWarnings("REC_CATCH_EXCEPTION")
     private String getEnvVarFromWorkflowRun(Run<?,?> run) {
         try {
             Class<?> workflowRunClass = run.getClass();
