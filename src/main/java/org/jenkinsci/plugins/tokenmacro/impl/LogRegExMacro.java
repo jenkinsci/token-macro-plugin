@@ -1,7 +1,6 @@
 
 package org.jenkinsci.plugins.tokenmacro.impl;
 
-import com.google.common.io.Files;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;

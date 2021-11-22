@@ -1,6 +1,5 @@
 package org.jenkinsci.plugins.tokenmacro;
 
-import com.google.common.base.Supplier;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimaps;
 import hudson.FilePath;
@@ -366,11 +365,7 @@ public class Parser extends BaseParser<Object> {
     boolean startToken() {
         tokenName = match();
         if(args == null) {
-            args = Multimaps.newListMultimap(new TreeMap<String, Collection<String>>(), new Supplier<List<String>>() {
-                public List<String> get() {
-                    return new ArrayList<String>();
-                }
-            });
+            args = Multimaps.newListMultimap(new TreeMap<String, Collection<String>>(), ArrayList::new);
         } else {
             args.clear();
         }
