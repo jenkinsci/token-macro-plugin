@@ -82,7 +82,7 @@
     <dependency>
       <groupId>com.jayway.jsonpath</groupId>
       <artifactId>json-path</artifactId>
-      <version>2.5.0</version>
+      <version>2.6.0</version>
       <exclusions>
         <exclusion> <!-- Note that json-smart *also* bundles ASM 5 inline, which we cannot do anything about. Bad form! -->
           <groupId>org.ow2.asm</groupId>
