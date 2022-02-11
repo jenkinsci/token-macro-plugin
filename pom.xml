@@ -4,13 +4,13 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>4.17</version>
+    <version>4.33</version>
     <relativePath />
   </parent>
 
   <properties>
     <changelist>999999-SNAPSHOT</changelist>
-    <gitHubRepo>jenkinsci/token-macro-plugin</gitHubRepo>
+    <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
     <jenkins.version>2.289.1</jenkins.version>
     <java.level>8</java.level>
   </properties>
@@ -18,7 +18,7 @@
   <licenses>
     <license>
       <name>The MIT License (MIT)</name>
-      <url>http://opensource.org/licenses/MIT</url>
+      <url>https://opensource.org/licenses/MIT</url>
       <distribution>repo</distribution>
     </license>
   </licenses>
@@ -28,7 +28,7 @@
   <packaging>hpi</packaging>
   <name>Token Macro Plugin</name>
   <description>This plugin adds reusable macro expansion capability for other plugins to use.</description>
-  <url>https://github.com/jenkinsci/token-macro-plugin</url>
+  <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
 
   <developers>
     <developer>
@@ -82,11 +82,16 @@
     <dependency>
       <groupId>com.jayway.jsonpath</groupId>
       <artifactId>json-path</artifactId>
-      <version>2.6.0</version>
+      <version>2.7.0</version>
       <exclusions>
         <exclusion> <!-- Note that json-smart *also* bundles ASM 5 inline, which we cannot do anything about. Bad form! -->
           <groupId>org.ow2.asm</groupId>
           <artifactId>asm</artifactId>
+        </exclusion>
+        <!-- Provided by Jenkins core -->
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -129,7 +134,6 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins.workflow</groupId>
       <artifactId>workflow-basic-steps</artifactId>
-      <version>2.23</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -147,39 +151,14 @@
     <dependency>
       <groupId>org.jenkinsci.plugins</groupId>
       <artifactId>pipeline-model-definition</artifactId>
-      <version>1.8.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>3.8.0</version>
       <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <artifactId>hamcrest-core</artifactId>
-          <groupId>org.hamcrest</groupId>
-        </exclusion>
-      </exclusions>
     </dependency>
   </dependencies>
-  
-  <build>
-    <plugins>
-      <plugin>
-          <artifactId>maven-javadoc-plugin</artifactId>
-          <version>3.3.1</version>
-          <configuration>
-            <quiet>true</quiet>
-            <links>
-              <link>http://javadoc.jenkins.io/</link>
-            </links>
-            <!-- workaround for https://bugs.openjdk.java.net/browse/JDK-8212233 -->
-            <source>8</source>
-          </configuration>
-        </plugin>
-    </plugins>
-  </build>
 
   <repositories>
     <repository>

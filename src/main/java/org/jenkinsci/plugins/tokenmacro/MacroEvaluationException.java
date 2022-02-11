@@ -23,8 +23,8 @@
  */
 package org.jenkinsci.plugins.tokenmacro;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Signals that the evaluation of the macro has failed, and the error should be presented to users
@@ -36,15 +36,15 @@ public class MacroEvaluationException extends Exception {
     
     private final @CheckForNull String macroName;
     
-    public MacroEvaluationException(@Nonnull String message) {
+    public MacroEvaluationException(@NonNull String message) {
         this(message, null, null);
     }
     
-    public MacroEvaluationException(@Nonnull String message, @CheckForNull Throwable cause) {
+    public MacroEvaluationException(@NonNull String message, @CheckForNull Throwable cause) {
         this(message, null, cause);
     }
 
-    public MacroEvaluationException(@CheckForNull String message, @Nonnull String macroName) {
+    public MacroEvaluationException(@CheckForNull String message, @NonNull String macroName) {
         this(message, macroName, null);
     }
     
