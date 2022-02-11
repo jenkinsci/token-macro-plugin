@@ -3,7 +3,7 @@ package org.jenkinsci.plugins.tokenmacro.transform;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.jenkinsci.plugins.tokenmacro.Transform;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Created by acearl on 2/25/2016.
@@ -19,7 +19,7 @@ public class SubstringTransform extends Transform {
     }
 
     @Override
-    public String transform(@Nonnull String input) throws MacroEvaluationException {
+    public String transform(@NonNull String input) throws MacroEvaluationException {
         if(offset > input.length()) {
             throw new MacroEvaluationException(String.format("Offset given (%d) is larger than the string", offset));
         }

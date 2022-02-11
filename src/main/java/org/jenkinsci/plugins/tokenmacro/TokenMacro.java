@@ -41,8 +41,8 @@ import java.util.Map;
 
 import java.io.IOException;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
 
 
@@ -244,8 +244,8 @@ public abstract class TokenMacro implements ExtensionPoint {
      * @return Retrieved workspace
      * @throws MacroEvaluationException  Workspace is inaccessible
      */
-    @Nonnull
-    protected static FilePath getWorkspace(@Nonnull AbstractBuild<?, ?> context)
+    @NonNull
+    protected static FilePath getWorkspace(@NonNull AbstractBuild<?, ?> context)
             throws MacroEvaluationException {
         final FilePath workspace = context.getWorkspace();
         if (workspace == null) {
@@ -267,7 +267,7 @@ public abstract class TokenMacro implements ExtensionPoint {
      * @return the previous run, or null if that run is missing, or is still in progress
      */
     @CheckForNull
-    public static Run<?, ?> getPreviousRun(@Nonnull Run<?, ?> run, TaskListener listener) {
+    public static Run<?, ?> getPreviousRun(@NonNull Run<?, ?> run, TaskListener listener) {
         Run<?, ?> previousRun = run.getPreviousBuild();
         if (previousRun != null && previousRun.isBuilding()) {
             listener.getLogger().println(Messages.TokenMacro_Run_still_in_progress(previousRun.getDisplayName()));

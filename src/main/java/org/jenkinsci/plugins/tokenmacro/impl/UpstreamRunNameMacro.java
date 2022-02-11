@@ -6,7 +6,7 @@ import hudson.model.*;
 import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -47,7 +47,7 @@ public class UpstreamRunNameMacro extends DataBoundTokenMacro {
         return "Unknown";
     }
 
-    @Nonnull
+    @NonNull
     @SuppressFBWarnings
     private Run<?,?> getUpstreamRun(Cause.UpstreamCause cause) throws MacroEvaluationException {
         if(cause.getUpstreamRun() == null)

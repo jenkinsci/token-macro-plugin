@@ -8,17 +8,17 @@ import hudson.model.TaskListener;
 import org.jenkinsci.plugins.workflow.steps.*;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 public class TokenMacroStep extends Step {
 
-    private final @Nonnull String stringWithMacro;
+    private final @NonNull String stringWithMacro;
 
     @DataBoundConstructor
-    public TokenMacroStep(@Nonnull String stringWithMacro) {
+    public TokenMacroStep(@NonNull String stringWithMacro) {
         this.stringWithMacro = stringWithMacro;
     }
 
