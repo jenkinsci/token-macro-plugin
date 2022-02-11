@@ -20,7 +20,7 @@ import jenkins.model.JenkinsLocationConfiguration;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.jenkinsci.plugins.tokenmacro.TokenMacro;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  *
@@ -51,7 +51,7 @@ public class AdminEmailMacro extends TokenMacro {
         return getAdminAddress();
     }
 
-    @Nonnull
+    @NonNull
     public String getAdminAddress() throws MacroEvaluationException {
         JenkinsLocationConfiguration configuration = JenkinsLocationConfiguration.get();
         if (configuration == null) {

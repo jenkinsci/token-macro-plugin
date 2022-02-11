@@ -1,7 +1,6 @@
 package org.jenkinsci.plugins.tokenmacro;
 
 import com.google.common.collect.ListMultimap;
-import com.google.common.collect.Lists;
 import hudson.Launcher;
 import hudson.model.*;
 import hudson.util.StreamTaskListener;
@@ -12,6 +11,7 @@ import org.jvnet.hudson.test.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -210,7 +210,7 @@ public class TokenMacroTest {
 
     @Test
     public void testThatATokenMacroListWithANullEntryDoesNotExplode() throws Exception {
-        List<TokenMacro> badList = Lists.newLinkedList();
+        List<TokenMacro> badList = new LinkedList<>();
         badList.add(null);
         badList.add(new PrivateTestMacro());
         badList.add(new PrivateTestMacro2());

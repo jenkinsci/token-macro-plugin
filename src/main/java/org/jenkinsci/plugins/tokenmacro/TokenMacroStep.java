@@ -1,6 +1,5 @@
 package org.jenkinsci.plugins.tokenmacro;
 
-import com.google.common.collect.ImmutableSet;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.FilePath;
@@ -9,15 +8,17 @@ import hudson.model.TaskListener;
 import org.jenkinsci.plugins.workflow.steps.*;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 public class TokenMacroStep extends Step {
 
-    private final @Nonnull String stringWithMacro;
+    private final @NonNull String stringWithMacro;
 
     @DataBoundConstructor
-    public TokenMacroStep(@Nonnull String stringWithMacro) {
+    public TokenMacroStep(@NonNull String stringWithMacro) {
         this.stringWithMacro = stringWithMacro;
     }
 
@@ -56,7 +57,9 @@ public class TokenMacroStep extends Step {
         }
 
         @Override public Set<? extends Class<?>> getRequiredContext() {
-            return ImmutableSet.of(Run.class, FilePath.class, TaskListener.class);
+            Set<Class<?>> context = new HashSet<>();
+            Collections.addAll(context, Run.class, FilePath.class, TaskListener.class);
+            return Collections.unmodifiableSet(context);
         }
     }
 }
