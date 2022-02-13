@@ -59,15 +59,16 @@ public class EnvironmentVariableMacro extends DataBoundTokenMacro {
             WorkflowRun workflowRun = (WorkflowRun) run;
 
             FlowExecution execution = workflowRun.getExecution();
-            List<StepExecution> actualExecutions = execution.getCurrentExecutions(true).get();
+            if(execution != null) {
+                List<StepExecution> actualExecutions = execution.getCurrentExecutions(true).get();
 
-            StepContext context = actualExecutions.get(0).getContext();
-            Map<String, String> vars = context.get(EnvVars.class);
-            if(vars != null && vars.containsKey(var)) {
-                return vars.get(var);
+                StepContext context = actualExecutions.get(0).getContext();
+                Map<String, String> vars = context.get(EnvVars.class);
+                if(vars != null && vars.containsKey(var)) {
+                    return vars.get(var);
+                }
             }
         } catch(Exception e) {
-            System.out.println(e.toString());
             // we don't need to do anything here...
         }
         return "";
