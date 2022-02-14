@@ -68,8 +68,8 @@ public class EnvironmentVariableMacro extends DataBoundTokenMacro {
                     return vars.get(var);
                 }
             }
-        } catch(Exception e) {
-            // we don't need to do anything here...
+        } catch (Exception e) {
+            // don't do anything here
         }
         return "";
     }

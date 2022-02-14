@@ -75,7 +75,7 @@ public class DataBoundTokenMacroTest {
         FreeStyleProject p = j.createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
-        assertEquals("0 1 2 3 4 5 6 7 8 9 10 $RECURSIVE11", TokenMacro.expand(b, TaskListener.NULL, "$RECURSIVE0"));
+        assertEquals("0 1 2 3 4 5 6 7 8 9 10 DONE!", TokenMacro.expand(b, TaskListener.NULL, "$RECURSIVE0"));
     }
     
     @TestExtension
