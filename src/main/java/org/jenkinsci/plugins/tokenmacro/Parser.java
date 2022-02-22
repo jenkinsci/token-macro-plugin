@@ -103,13 +103,20 @@ public class Parser {
             throw new MacroEvaluationException("Missing $ in macro usage");
         }
 
+        char last = c.current();
         c.next();
         if(c.current() == '$') {
             parseEscapedToken(c);
         } else if(c.current() == '{') {
             parseDelimitedToken(c);
-        } else {
+        } else if(Character.isLetter(c.current())) {
             parseNonDelimitedToken(c);
+        } else {
+            output.append(last);
+            if(c.current() != CharacterIterator.DONE) {
+                output.append(c.current());
+            }
+            c.next();
         }
     }
 
