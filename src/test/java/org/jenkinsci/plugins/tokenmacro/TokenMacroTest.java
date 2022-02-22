@@ -223,6 +223,18 @@ public class TokenMacroTest {
                 TokenMacro.expand(b, listener, "${TEST_PRIVATE}${BUILD_URL}${TEST2_PRIVATE}", true, badList));
     }
 
+    @Test
+    @Issue("JENKINS-67862")
+    public void testNoToken() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject("foo");
+        FreeStyleBuild b = p.scheduleBuild2(0).get();
+        assertEquals("^(?:.*/)?master$|^(?:.*/)?(feature|release)/.* ",TokenMacro.expandAll(b, TaskListener.NULL, "^(?:.*/)?master$|^(?:.*/)?(feature|release)/.* "));
+
+        p = j.createFreeStyleProject("foo2");
+        b = p.scheduleBuild2(0).get();
+        assertEquals("^false$",TokenMacro.expandAll(b, TaskListener.NULL, "^false$"));
+    }
+
     public class PrivateTestMacro extends TokenMacro {
         private static final String MACRO_NAME = "TEST_PRIVATE";
 
