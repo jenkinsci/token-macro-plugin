@@ -109,7 +109,7 @@ public class Parser {
             parseEscapedToken(c);
         } else if(c.current() == '{') {
             parseDelimitedToken(c);
-        } else if(Character.isLetter(c.current())) {
+        } else if(Character.isLetter(c.current()) || c.current() == '_') {
             parseNonDelimitedToken(c);
         } else {
             output.append(last);
@@ -143,6 +143,14 @@ public class Parser {
         if(c.current() == '#') {
             addTransform(new ContentLengthTransform());
             c.next();
+        }
+
+        // check for valid identifier start
+        if(!Character.isLetter(c.current()) && c.current() != '_') {
+            output.append("${");
+            output.append(c.current());
+            c.next();
+            return;
         }
 
         String token = parseIdentifier(c);
