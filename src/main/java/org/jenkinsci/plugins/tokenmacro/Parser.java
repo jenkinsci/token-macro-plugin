@@ -139,7 +139,6 @@ public class Parser {
             throw new MacroEvaluationException("Missing { in delimited macro");
         }
 
-        char last = c.current();
         c.next();
         if(c.current() == '#') {
             addTransform(new ContentLengthTransform());
