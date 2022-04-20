@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.tokenmacro.impl;
 
+import com.google.common.collect.ArrayListMultimap;
 import hudson.model.AbstractBuild;
 import hudson.model.Result;
 import hudson.model.TaskListener;
@@ -17,10 +18,12 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.TimeZone;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -183,6 +186,29 @@ public class ChangesSinceLastBuildMacroTest {
         String content = changesSinceLastBuildMacro.evaluate(currentBuild, listener, ChangesSinceLastBuildMacro.MACRO_NAME);
 
         assertEquals("another default message\n", content);
+    }
+
+    @Test
+    public void testShouldDefaultToNotEscapeHtml()
+            throws Exception {
+        AbstractBuild currentBuild = createBuild(Result.SUCCESS, 42, "<b>bold</b>");
+
+        String content = changesSinceLastBuildMacro.evaluate(currentBuild, listener, ChangesSinceLastBuildMacro.MACRO_NAME);
+
+        assertEquals("[Ash Lux] <b>bold</b>\n\n", content);
+    }
+
+    @Test
+    public void testShouldEscapeHtmlWhenArgumentEscapeHtmlSetToTrue()
+            throws Exception {
+        AbstractBuild currentBuild = createBuild(Result.SUCCESS, 42, "<b>bold</b>");
+
+        final Map<String, String> arguments = Collections.singletonMap("escapeHtml", "true");
+        final ArrayListMultimap<String, String> listMultimap = ArrayListMultimap.create();
+        listMultimap.put("escapeHtml", "true");
+        String content = changesSinceLastBuildMacro.evaluate(currentBuild, null, listener, ChangesSinceLastBuildMacro.MACRO_NAME, arguments, listMultimap);
+
+        assertEquals("[Ash Lux] &lt;b&gt;bold&lt;/b&gt;\n\n", content);
     }
 
     private AbstractBuild createBuild(Result result, int buildNumber, String message) {

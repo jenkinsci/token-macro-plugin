@@ -1,8 +1,18 @@
+import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro
+
 st = namespace("jelly:stapler")
 
 
 org.jenkinsci.plugins.tokenmacro.TokenMacro.all().each { tm ->
     st.include(it:tm, page: "help", optional: true)
+    if (tm instanceof DataBoundTokenMacro && !tm.handlesHtmlEscapeInternally()) {
+        dd() {
+            dl() {
+                dt("escapeHtml")
+                dd(_("If true, any HTML specific code will be escaped. Defaults to false."))
+            }
+        }
+    }
     br()
 }
 

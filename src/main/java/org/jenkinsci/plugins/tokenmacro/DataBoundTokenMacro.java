@@ -24,7 +24,6 @@
 package org.jenkinsci.plugins.tokenmacro;
 
 import com.google.common.collect.ListMultimap;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
@@ -45,6 +44,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.*;
+
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -85,6 +86,8 @@ public abstract class DataBoundTokenMacro extends TokenMacro {
     }
 
     private Map<String,Setter> setters;
+    @Parameter
+    public boolean escapeHtml = false;
 
     public DataBoundTokenMacro() {
         buildMap();
@@ -199,13 +202,36 @@ public abstract class DataBoundTokenMacro extends TokenMacro {
     @Override
     public String evaluate(AbstractBuild<?, ?> build, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap) throws MacroEvaluationException, IOException, InterruptedException {
         DataBoundTokenMacro copy = prepare(macroName,arguments,argumentMultimap);
-        return copy.evaluate(build,listener,macroName);
+        String res = copy.evaluate(build, listener, macroName);
+        if (copy.escapeHtml && !copy.handlesHtmlEscapeInternally()) {
+            res = StringEscapeUtils.escapeHtml(res);
+        }
+        return res;
     }
 
     @Override
     public String evaluate(Run<?,?> run, FilePath workspace, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap) throws MacroEvaluationException, IOException, InterruptedException {
         DataBoundTokenMacro copy = prepare(macroName,arguments,argumentMultimap);
-        return copy.evaluate(run, workspace, listener, macroName);
+        String res = copy.evaluate(run, workspace, listener, macroName);
+        if (copy.escapeHtml && !copy.handlesHtmlEscapeInternally()) {
+            res = StringEscapeUtils.escapeHtml(res);
+        }
+        return res;
+    }
+
+    /**
+     * Indicates whether this macro handles {@link #escapeHtml} on its own inside the <code>evaluate</code> methods.
+     *
+     * If this method returns <code>false</code> and {@link #escapeHtml} is <code>true</code> then the returned value from
+     * {@link #evaluate(AbstractBuild, TaskListener, String)} and {@link #evaluate(Run, FilePath, TaskListener, String)}
+     * will be escaped. If this method returns <code>true</code> no escaping will be performed,
+     * and it is assumed the escaping will be handled internally by the implementing class. It is then also assumed that
+     * the <code>help.jelly</code> file for that class mentions the {@link #escapeHtml} parameter.
+     *
+     * @return true if the implementing class handles its own html escaping.
+     */
+    public boolean handlesHtmlEscapeInternally() {
+        return false;
     }
 
     public abstract String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName) throws MacroEvaluationException, IOException, InterruptedException;

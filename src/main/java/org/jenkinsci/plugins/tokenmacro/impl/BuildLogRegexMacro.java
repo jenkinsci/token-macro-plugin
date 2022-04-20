@@ -53,8 +53,6 @@ public class BuildLogRegexMacro extends DataBoundTokenMacro {
     @Parameter
     public String substText = null; // insert entire line
     @Parameter
-    public boolean escapeHtml = false;
-    @Parameter
     public String matchedLineHtmlStyle = null;
     @Parameter
     public boolean addNewline = true;
@@ -322,5 +320,10 @@ public class BuildLogRegexMacro extends DataBoundTokenMacro {
         Pair(K key, V val) {
             super(key, val);
         }
+    }
+
+    @Override
+    public boolean handlesHtmlEscapeInternally() {
+        return true;
     }
 }

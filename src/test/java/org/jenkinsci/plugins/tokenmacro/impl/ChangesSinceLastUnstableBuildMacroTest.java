@@ -1,5 +1,8 @@
 package org.jenkinsci.plugins.tokenmacro.impl;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Multimaps;
 import hudson.model.AbstractBuild;
 import hudson.model.Result;
 import hudson.model.TaskListener;
@@ -8,6 +11,7 @@ import hudson.scm.ChangeLogSet;
 import hudson.util.StreamTaskListener;
 import junit.framework.Assert;
 
+import org.eclipse.jetty.util.MultiMap;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -17,6 +21,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.TimeZone;
 
 import static junit.framework.Assert.assertEquals;
@@ -266,6 +271,49 @@ public class ChangesSinceLastUnstableBuildMacroTest {
                 + "\n"
                 + "Changes for Build #42\n"
                 + "another default message\n"
+                + "\n", contentStr);
+    }
+
+    @Test
+    public void testShouldDefaultToNotEscapeHtml()
+            throws Exception {
+        AbstractBuild failureBuild = createBuild(Result.FAILURE, 41, "[DEFECT-666] Changes for a failed build. <b>bold</b>");
+
+        AbstractBuild currentBuild = createBuildWithNoChanges(Result.SUCCESS, 42);
+        when(currentBuild.getPreviousBuild()).thenReturn(failureBuild);
+        when(failureBuild.getNextBuild()).thenReturn(currentBuild);
+
+        String contentStr = content.evaluate(currentBuild, listener, ChangesSinceLastUnstableBuildMacro.MACRO_NAME);
+
+        assertEquals("Changes for Build #41\n"
+                + "[Ash Lux] [DEFECT-666] Changes for a failed build. <b>bold</b>\n"
+                + "\n"
+                + "\n"
+                + "Changes for Build #42\n"
+                + "No changes\n"
+                + "\n", contentStr);
+    }
+
+    @Test
+    public void testShouldEscapeHtmlWhenArgumentEscapeHtmlSetToTrue()
+            throws Exception {
+        AbstractBuild failureBuild = createBuild(Result.FAILURE, 41, "[DEFECT-666] Changes for a failed build. <b>bold</b>");
+
+        AbstractBuild currentBuild = createBuildWithNoChanges(Result.SUCCESS, 42);
+        when(currentBuild.getPreviousBuild()).thenReturn(failureBuild);
+        when(failureBuild.getNextBuild()).thenReturn(currentBuild);
+
+        final Map<String, String> arguments = Collections.singletonMap("escapeHtml", "true");
+        final ArrayListMultimap<String, String> listMultimap = ArrayListMultimap.create();
+        listMultimap.put("escapeHtml", "true");
+        String contentStr = content.evaluate(currentBuild, null, listener, ChangesSinceLastUnstableBuildMacro.MACRO_NAME, arguments, listMultimap);
+
+        assertEquals("Changes for Build #41\n"
+                + "[Ash Lux] [DEFECT-666] Changes for a failed build. &lt;b&gt;bold&lt;/b&gt;\n"
+                + "\n"
+                + "\n"
+                + "Changes for Build #42\n"
+                + "No changes\n"
                 + "\n", contentStr);
     }
     

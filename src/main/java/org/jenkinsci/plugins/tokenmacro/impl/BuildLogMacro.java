@@ -6,7 +6,6 @@ import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.tools.ant.taskdefs.Parallel;
 import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 
@@ -31,9 +30,6 @@ public class BuildLogMacro extends DataBoundTokenMacro {
 
     @Parameter
     public int truncTailLines = 0;
-
-    @Parameter
-    public boolean escapeHtml = false;
 
     @Parameter
     public int maxLineLength = MAX_LINE_LENGTH_DEFAULT_VALUE;
@@ -84,5 +80,10 @@ public class BuildLogMacro extends DataBoundTokenMacro {
         }
 
         return buffer.toString();
+    }
+
+    @Override
+    public boolean handlesHtmlEscapeInternally() {
+        return true;
     }
 }
