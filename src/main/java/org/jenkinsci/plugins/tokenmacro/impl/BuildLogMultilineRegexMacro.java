@@ -6,7 +6,6 @@ import hudson.console.ConsoleNote;
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import hudson.model.TaskListener;
-import org.apache.commons.lang.StringEscapeUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -14,6 +13,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.lang.StringEscapeUtils;
 import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 
@@ -39,8 +40,6 @@ public class BuildLogMultilineRegexMacro extends DataBoundTokenMacro {
     public boolean showTruncatedLines = true;
     @Parameter
     public String substText = null; // insert entire segment
-    @Parameter
-    public boolean escapeHtml = false;
     @Parameter
     public String matchedSegmentHtmlStyle = null;
 
@@ -208,6 +207,11 @@ public class BuildLogMultilineRegexMacro extends DataBoundTokenMacro {
             ++lineTerminatorCount;
         }
         return lineTerminatorCount;
+    }
+
+    @Override
+    public boolean handlesHtmlEscapeInternally() {
+        return true;
     }
 }
 

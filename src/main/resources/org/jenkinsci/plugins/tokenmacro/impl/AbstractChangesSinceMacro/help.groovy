@@ -23,6 +23,6 @@ dd {
     }
   }
   span("Following Parameters are also supported: " +
-          "showPaths, pathFormat, showDependencies, dateFormat, regex, replace, default. " +
+          "showPaths, pathFormat, showDependencies, dateFormat, regex, replace, default, escapeHtml. " +
           "See \${CHANGES_SINCE_LAST_BUILD} details.")
 }

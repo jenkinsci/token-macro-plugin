@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.tokenmacro.impl;
 
+import com.google.common.collect.ArrayListMultimap;
 import hudson.console.ConsoleNote;
 import hudson.model.AbstractBuild;
 import hudson.model.TaskListener;
@@ -11,6 +12,7 @@ import org.jvnet.hudson.test.Issue;
 
 import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.util.Collections;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -434,6 +436,24 @@ public class BuildLogRegexMacroTest {
         final String result = buildLogRegexMacro.evaluate(build, listener, BuildLogRegexMacro.MACRO_NAME);
 
         assertEquals("<pre>\n<b style=\"color: red\">error</b>\n</pre>\n", result);
+    }
+
+    @Test
+    public void testGetContent_matchedLineHtmlStyleWithHtmlEscape()
+            throws Exception {
+        when(build.getLogReader()).thenReturn(
+                new StringReader("<error>"));
+        final Map<String, String> arguments = new HashMap<>();
+        arguments.put("escapeHtml", "true");
+        arguments.put("showTruncatedLines", "false");
+        arguments.put("matchedLineHtmlStyle", "color: red");
+        final ArrayListMultimap<String, String> listMultimap = ArrayListMultimap.create();
+        listMultimap.put("escapeHtml", "true");
+        listMultimap.put("showTruncatedLines", "false");
+        listMultimap.put("matchedLineHtmlStyle", "color: red");
+        final String result = buildLogRegexMacro.evaluate(build, null, listener, BuildLogRegexMacro.MACRO_NAME, arguments, listMultimap);
+
+        assertEquals("<pre>\n<b style=\"color: red\">&lt;error&gt;</b>\n</pre>\n", result);
     }
 
     @Test

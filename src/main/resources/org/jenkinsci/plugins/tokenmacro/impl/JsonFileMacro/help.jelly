@@ -1,0 +1,9 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core">
+  <dt>$${JSON,file="FILE",path="JSON/PATH",expr="EXPRESSION"}</dt>
+  <dd>
+    Expands to the result(s) of a JSON path or expression run against the given JSON file.<br/>
+    If the path/expr evaluates to more than one value, then a semicolon-separated string is returned.<br/>
+    The file path is relative to the build workspace root.
+  </dd>
+</j:jelly>
