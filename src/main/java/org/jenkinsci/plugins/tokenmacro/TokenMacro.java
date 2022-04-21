@@ -99,9 +99,6 @@ public abstract class TokenMacro implements ExtensionPoint {
     /**
      * Evaluates the macro and produces the token.
      *
-     *
-     * <h3>Locale</h3>
-     * <p>
      * If the token is to produce a human readable text, it should do so by using the implicit locale associated
      * with the calling thread &mdash; see {@code Functions.getCurrentLocale()}.
      *
