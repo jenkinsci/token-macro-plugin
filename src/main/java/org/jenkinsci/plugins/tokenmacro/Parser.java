@@ -175,7 +175,7 @@ public class Parser {
             throw new MacroEvaluationException("Missing } in macro usage");
         }
 
-        processToken(c.getIndex());
+        processToken(c.getIndex(), true);
         c.next();
     }
 
@@ -183,7 +183,7 @@ public class Parser {
         String token = parseIdentifier(c);
         if(StringUtils.isNotBlank(token)) {
             startToken(token);
-            processToken(c.getIndex());
+            processToken(c.getIndex(), false);
         }
     }
 
@@ -450,7 +450,7 @@ public class Parser {
         return true;
     }
 
-    boolean processToken(int currentIndex) throws IOException, InterruptedException, MacroEvaluationException {
+    boolean processToken(int currentIndex, boolean isDelimited) throws IOException, InterruptedException, MacroEvaluationException {
         String replacement = null;
 
         List<TokenMacro> all = new ArrayList<TokenMacro>(TokenMacro.all());
@@ -492,7 +492,7 @@ public class Parser {
             throw new MacroEvaluationException(String.format("Unrecognized macro '%s' in '%s'", tokenName, stringWithMacro));
 
         if (replacement == null && !throwException) { // just put the token back in since we don't want to throw the exception
-            output.append(stringWithMacro.substring(tokenStartIndex, currentIndex+1));
+            output.append(stringWithMacro.substring(tokenStartIndex, currentIndex+(isDelimited ? 1 : 0)));
         } else if (replacement != null) {
             while(transforms != null && transforms.size() > 0) {
                 Transform t = transforms.pop();
