@@ -235,6 +235,17 @@ public class TokenMacroTest {
         assertEquals("^false$",TokenMacro.expandAll(b, TaskListener.NULL, "^false$"));
     }
 
+    @Test
+    @Issue("JENKINS-68219")
+    public void testAddedCharacter() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject("foo");
+        FreeStyleBuild b = p.scheduleBuild2(0).get();
+
+        listener = StreamTaskListener.fromStdout();
+        assertEquals("\"$hello/$dear\"",
+                TokenMacro.expand(b,listener,"\"$hello/$dear\"", false, Collections.EMPTY_LIST));
+    }
+
     public class PrivateTestMacro extends TokenMacro {
         private static final String MACRO_NAME = "TEST_PRIVATE";
 
