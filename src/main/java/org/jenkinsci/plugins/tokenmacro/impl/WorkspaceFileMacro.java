@@ -31,12 +31,18 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.ObjectUtils;
 import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 
@@ -48,6 +54,8 @@ public class WorkspaceFileMacro extends DataBoundTokenMacro  {
     public String fileNotFoundMessage = "ERROR: File '%s' does not exist";
     @Parameter
     public int maxLines = -1;
+    @Parameter
+    public String charSet = Charset.defaultCharset().name();
     
 
     public static final String MACRO_NAME = "FILE";
@@ -83,30 +91,15 @@ public class WorkspaceFileMacro extends DataBoundTokenMacro  {
         }
 
         try {
-            if(maxLines > 0) {
-                int lines = 0;
-
-                StringBuilder result = new StringBuilder();
-                BufferedReader reader = null;
-                try {
-                    String line;
-                    reader = new BufferedReader(new InputStreamReader(workspace.child(path).read(), Charset.defaultCharset()));
-                    while (lines < maxLines && (line = reader.readLine()) != null) {
-                        result.append(line);
-                        result.append('\n');
-                        lines++;
-                    }
-                } finally {
-                    if(reader != null) {
-                        reader.close();
-                    }
+            Charset charset = Charset.forName(charSet);
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(workspace.child(path).read(), charset))) {
+                if (maxLines > 0) {
+                    return reader.lines().limit(maxLines).collect(Collectors.joining("\n"));
+                } else {
+                    return reader.lines().collect(Collectors.joining("\n"));
                 }
-
-                return result.toString();
-            } else {
-                return workspace.child(path).readToString();
             }
-        } catch (IOException e) {
+        } catch (IOException | NullPointerException e) {
             return "ERROR: File '" + path + "' could not be read";
         }
     }
