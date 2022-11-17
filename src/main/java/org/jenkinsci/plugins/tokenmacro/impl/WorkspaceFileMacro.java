@@ -99,7 +99,7 @@ public class WorkspaceFileMacro extends DataBoundTokenMacro  {
                     return reader.lines().collect(Collectors.joining("\n"));
                 }
             }
-        } catch (IOException | NullPointerException e) {
+        } catch (IOException e) {
             return "ERROR: File '" + path + "' could not be read";
         }
     }
