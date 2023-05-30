@@ -95,7 +95,6 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins.workflow</groupId>
       <artifactId>workflow-step-api</artifactId>
-      <optional>true</optional>
     </dependency>
 
     <!-- Test Deps -->
