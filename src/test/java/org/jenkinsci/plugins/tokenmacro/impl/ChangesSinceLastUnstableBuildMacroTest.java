@@ -24,7 +24,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 
-import static junit.framework.Assert.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.matchesPattern;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -151,10 +153,10 @@ public class ChangesSinceLastUnstableBuildMacroTest {
 
         String contentStr = content.evaluate(currentBuild, listener, ChangesSinceLastUnstableBuildMacro.MACRO_NAME);
 
-        // Date format changed in Java 9, so we have to accomodate the potential additional comma
-        // See https://www.oracle.com/technetwork/java/javase/9-relnote-issues-3704069.html#JDK-8008577
-        Assert.assertTrue(contentStr.matches(
-                "Changes for Build #41\n" + "Oct 21, 2013,? 7:39:00 PM\n" + "Changes for Build #42\n" + "Oct 21, 2013,? 7:39:00 PM\n"));
+        // Date format changed in Java 21, so we have to accomodate the potential narrow no-break space
+        // See https://bugs.openjdk.org/browse/JDK-8225245
+        assertThat(contentStr, matchesPattern(
+                "Changes for Build #41\n" + "Oct 21, 2013, 7:39:00\\hPM\n" + "Changes for Build #42\n" + "Oct 21, 2013, 7:39:00\\hPM\n"));
     }
 
     @Test

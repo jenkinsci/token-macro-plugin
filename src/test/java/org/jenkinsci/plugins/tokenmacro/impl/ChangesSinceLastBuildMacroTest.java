@@ -21,9 +21,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.anyInt;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.matchesPattern;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -74,8 +74,8 @@ public class ChangesSinceLastBuildMacroTest {
 
         String content = changesSinceLastBuildMacro.evaluate(currentBuild, listener, ChangesSinceLastBuildMacro.MACRO_NAME);
 
-        // Java 9 changed the SHORT date format... https://www.oracle.com/technetwork/java/javase/9-relnote-issues-3704069.html#JDK-8008577
-        assertTrue(content.matches("Oct 21, 2013,? 7:39:00 PM"));
+        // Java 21 changed the SHORT date format... https://bugs.openjdk.org/browse/JDK-8225245
+        assertThat(content, matchesPattern("Oct 21, 2013, 7:39:00\\hPM"));
     }
 
     @Test
