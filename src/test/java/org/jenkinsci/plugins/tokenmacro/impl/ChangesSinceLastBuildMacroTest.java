@@ -54,11 +54,9 @@ public class ChangesSinceLastBuildMacroTest {
     @Test
     public void testShouldGetChangesForLatestBuildEvenWhenPreviousBuildsExist()
             throws Exception {
-        AbstractBuild failureBuild = createBuild(Result.FAILURE, 41, "Changes for a failed build.");
+        AbstractBuild failureBuild = createBuild2(Result.FAILURE, 41, "Changes for a failed build.");
 
         AbstractBuild currentBuild = createBuild(Result.SUCCESS, 42, "Changes for a successful build.");
-        when(currentBuild.getPreviousBuild()).thenReturn(failureBuild);
-        when(failureBuild.getNextBuild()).thenReturn(currentBuild);
 
         String content = changesSinceLastBuildMacro.evaluate(currentBuild, listener, ChangesSinceLastBuildMacro.MACRO_NAME);
 
@@ -224,11 +222,8 @@ public class ChangesSinceLastBuildMacroTest {
     
     private AbstractBuild createBuildWithAffectedFiles(Result result, int buildNumber, String message) {
         AbstractBuild build = mock(AbstractBuild.class);
-        when(build.getResult()).thenReturn(result);
         ChangeLogSet changes1 = createChangeLogWithAffectedFiles(message);
-        when(build.getChangeSet()).thenReturn(changes1);
         when(build.getChangeSets()).thenReturn(Collections.singletonList(changes1));
-        when(build.getNumber()).thenReturn(buildNumber);
 
         return build;
     }
@@ -246,11 +241,8 @@ public class ChangesSinceLastBuildMacroTest {
     
     private AbstractBuild createBuildWithNoChanges(Result result, int buildNumber) {
         AbstractBuild build = mock(AbstractBuild.class);
-        when(build.getResult()).thenReturn(result);
         ChangeLogSet changes1 = createEmptyChangeLog();
-        when(build.getChangeSet()).thenReturn(changes1);
         when(build.getChangeSets()).thenReturn(Collections.singletonList(changes1));
-        when(build.getNumber()).thenReturn(buildNumber);
 
         return build;
     }
@@ -258,7 +250,6 @@ public class ChangesSinceLastBuildMacroTest {
     public ChangeLogSet createEmptyChangeLog() {
         ChangeLogSet changes = mock(ChangeLogSet.class);
         List<ChangeLogSet.Entry> entries = Collections.emptyList();
-        when(changes.iterator()).thenReturn(entries.iterator());
         when(changes.isEmptySet()).thenReturn(true);
 
         return changes;
@@ -357,5 +348,20 @@ public class ChangesSinceLastBuildMacroTest {
                 }
             };
         }                
+    }
+
+    private AbstractBuild createBuild2(Result result, int buildNumber, String message) {
+        AbstractBuild build = mock(AbstractBuild.class);
+        ChangeLogSet changes1 = createChangeLog2(message);
+
+        return build;
+    }
+
+    public ChangeLogSet createChangeLog2(String message) {
+        ChangeLogSet changes = mock(ChangeLogSet.class);
+        List<ChangeLogSet.Entry> entries = new LinkedList<ChangeLogSet.Entry>();
+        ChangeLogSet.Entry entry = new ChangeLogEntry(message, "Ash Lux");
+        entries.add(entry);
+        return changes;
     }
 }
