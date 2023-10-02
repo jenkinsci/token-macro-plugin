@@ -53,7 +53,7 @@ public class ChangesSinceLastSuccessfulBuildMacroTest {
             throws Exception {
         AbstractBuild failureBuild = createBuild(Result.FAILURE, 41, "Changes for a failed build.");
 
-        AbstractBuild currentBuild = createBuild(Result.SUCCESS, 42, "Changes for a successful build.");
+        AbstractBuild currentBuild = createBuild3(Result.SUCCESS, 42, "Changes for a successful build.");
         when(currentBuild.getPreviousBuild()).thenReturn(failureBuild);
         when(failureBuild.getNextBuild()).thenReturn(currentBuild);
 
@@ -76,9 +76,8 @@ public class ChangesSinceLastSuccessfulBuildMacroTest {
 
         AbstractBuild failureBuild = createBuild(Result.FAILURE, 41, "Changes for a failed build.");
 
-        AbstractBuild currentBuild = createBuild(Result.SUCCESS, 42, "Changes for a successful build.");
+        AbstractBuild currentBuild = createBuild3(Result.SUCCESS, 42, "Changes for a successful build.");
         when(currentBuild.getPreviousBuild()).thenReturn(failureBuild);
-        when(failureBuild.getNextBuild()).thenReturn(currentBuild);
 
         String contentStr = content.evaluate(currentBuild, listener, ChangesSinceLastSuccessfulBuildMacro.MACRO_NAME);
 
@@ -91,11 +90,10 @@ public class ChangesSinceLastSuccessfulBuildMacroTest {
             throws Exception {
         // Test for HUDSON-3519
 
-        AbstractBuild successfulBuild = createBuild(Result.SUCCESS, 2, "Changes for a successful build.");
+        AbstractBuild successfulBuild = createBuild2(Result.SUCCESS, 2, "Changes for a successful build.");
 
         AbstractBuild unstableBuild = createBuild(Result.UNSTABLE, 3, "Changes for an unstable build.");
         when(unstableBuild.getPreviousBuild()).thenReturn(successfulBuild);
-        when(successfulBuild.getNextBuild()).thenReturn(unstableBuild);
 
         AbstractBuild abortedBuild = createBuild(Result.ABORTED, 4, "Changes for an aborted build.");
         when(abortedBuild.getPreviousBuild()).thenReturn(unstableBuild);
@@ -109,7 +107,7 @@ public class ChangesSinceLastSuccessfulBuildMacroTest {
         when(notBuiltBuild.getPreviousBuild()).thenReturn(failureBuild);
         when(failureBuild.getNextBuild()).thenReturn(notBuiltBuild);
 
-        AbstractBuild currentBuild = createBuild(Result.SUCCESS, 7, "Changes for a successful build.");
+        AbstractBuild currentBuild = createBuild3(Result.SUCCESS, 7, "Changes for a successful build.");
         when(currentBuild.getPreviousBuild()).thenReturn(notBuiltBuild);
         when(notBuiltBuild.getNextBuild()).thenReturn(currentBuild);
 
@@ -144,7 +142,7 @@ public class ChangesSinceLastSuccessfulBuildMacroTest {
 
         AbstractBuild failureBuild = createBuild(Result.FAILURE, 41, "Changes for a failed build.");
 
-        AbstractBuild currentBuild = createBuild(Result.SUCCESS, 42, "Changes for a successful build.");
+        AbstractBuild currentBuild = createBuild3(Result.SUCCESS, 42, "Changes for a successful build.");
         when(currentBuild.getPreviousBuild()).thenReturn(failureBuild);
         when(failureBuild.getNextBuild()).thenReturn(currentBuild);
 
@@ -162,7 +160,7 @@ public class ChangesSinceLastSuccessfulBuildMacroTest {
         content.changesFormat = "%r";
 
         AbstractBuild failureBuild = createBuild(Result.FAILURE, 41, "Changes for a failed build.");
-        AbstractBuild currentBuild = createBuild(Result.SUCCESS, 42, "Changes for a successful build.");
+        AbstractBuild currentBuild = createBuild3(Result.SUCCESS, 42, "Changes for a successful build.");
         when(currentBuild.getPreviousBuild()).thenReturn(failureBuild);
         when(failureBuild.getNextBuild()).thenReturn(currentBuild);
 
@@ -177,7 +175,7 @@ public class ChangesSinceLastSuccessfulBuildMacroTest {
         content.changesFormat = "%p";
 
         AbstractBuild failureBuild = createBuild(Result.FAILURE, 41, "Changes for a failed build.");
-        AbstractBuild currentBuild = createBuild(Result.SUCCESS, 42, "Changes for a successful build.");
+        AbstractBuild currentBuild = createBuild3(Result.SUCCESS, 42, "Changes for a successful build.");
         when(currentBuild.getPreviousBuild()).thenReturn(failureBuild);
         when(failureBuild.getNextBuild()).thenReturn(currentBuild);
 
@@ -193,7 +191,7 @@ public class ChangesSinceLastSuccessfulBuildMacroTest {
 
         AbstractBuild failureBuild = createBuild(Result.FAILURE, 41, "Changes for a failed build.");
 
-        AbstractBuild currentBuild = createBuild(Result.SUCCESS, 42, "Changes for a successful build.");
+        AbstractBuild currentBuild = createBuild3(Result.SUCCESS, 42, "Changes for a successful build.");
         when(currentBuild.getPreviousBuild()).thenReturn(failureBuild);
         when(failureBuild.getNextBuild()).thenReturn(currentBuild);
 
@@ -213,7 +211,7 @@ public class ChangesSinceLastSuccessfulBuildMacroTest {
 
         AbstractBuild failureBuild = createBuild(Result.FAILURE, 41, "<defectId>DEFECT-666</defectId><message>Changes for a failed build.</message>");
 
-        AbstractBuild currentBuild = createBuild(Result.SUCCESS, 42, "<defectId>DEFECT-666</defectId><message>Changes for a successful build.</message>");
+        AbstractBuild currentBuild = createBuild3(Result.SUCCESS, 42, "<defectId>DEFECT-666</defectId><message>Changes for a successful build.</message>");
         when(currentBuild.getPreviousBuild()).thenReturn(failureBuild);
         when(failureBuild.getNextBuild()).thenReturn(currentBuild);
 
@@ -336,9 +334,7 @@ public class ChangesSinceLastSuccessfulBuildMacroTest {
 
     private AbstractBuild createBuildWithNoChanges(Result result, int buildNumber) {
         AbstractBuild build = mock(AbstractBuild.class);
-        when(build.getResult()).thenReturn(result);
         ChangeLogSet changes1 = createEmptyChangeLog();
-        when(build.getChangeSet()).thenReturn(changes1);
         when(build.getChangeSets()).thenReturn(Collections.singletonList(changes1));
         when(build.getNumber()).thenReturn(buildNumber);
         return build;
@@ -346,7 +342,6 @@ public class ChangesSinceLastSuccessfulBuildMacroTest {
 
     private AbstractBuild createBuildWithNoChangeSets(Result result, int buildNumber) {
         AbstractBuild build = mock(AbstractBuild.class);
-        when(build.getResult()).thenReturn(result);
         when(build.getChangeSets()).thenReturn(Collections.EMPTY_LIST);
         when(build.getNumber()).thenReturn(buildNumber);
 
@@ -367,7 +362,6 @@ public class ChangesSinceLastSuccessfulBuildMacroTest {
     public ChangeLogSet createEmptyChangeLog() {
         ChangeLogSet changes = mock(ChangeLogSet.class);
         List<ChangeLogSet.Entry> entries = Collections.emptyList();
-        when(changes.iterator()).thenReturn(entries.iterator());
         when(changes.isEmptySet()).thenReturn(true);
 
         return changes;
@@ -428,5 +422,28 @@ public class ChangesSinceLastSuccessfulBuildMacroTest {
             // 10/21/13 7:39 PM
             return 1382409540000L;
         }
+    }
+
+    public ChangeLogSet createChangeLog2(String message) {
+        ChangeLogSet changes = mock(ChangeLogSet.class);
+        List<ChangeLogSet.Entry> entries = new LinkedList<ChangeLogSet.Entry>();
+        ChangeLogSet.Entry entry = new ChangeLogEntry(message, "Ash Lux");
+        entries.add(entry);
+        return changes;
+    }
+
+    private AbstractBuild createBuild2(Result result, int buildNumber, String message) {
+        AbstractBuild build = mock(AbstractBuild.class);
+        ChangeLogSet changes1 = createChangeLog2(message);
+        when(build.getResult()).thenReturn(result);
+        return build;
+    }
+
+    private AbstractBuild createBuild3(Result result, int buildNumber, String message) {
+        AbstractBuild build = mock(AbstractBuild.class);
+        ChangeLogSet changes1 = createChangeLog(message);
+        when(build.getChangeSets()).thenReturn(Collections.singletonList(changes1));
+        when(build.getNumber()).thenReturn(buildNumber);
+        return build;
     }
 }
