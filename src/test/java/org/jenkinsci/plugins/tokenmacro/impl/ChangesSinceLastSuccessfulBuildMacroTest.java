@@ -352,7 +352,6 @@ public class ChangesSinceLastSuccessfulBuildMacroTest {
         AbstractBuild build = mock(AbstractBuild.class);
         when(build.getResult()).thenReturn(result);
         ChangeLogSet changes1 = createChangeLog(message);
-        when(build.getChangeSet()).thenReturn(changes1);
         when(build.getChangeSets()).thenReturn(Collections.singletonList(changes1));
         when(build.getNumber()).thenReturn(buildNumber);
 
