@@ -350,7 +350,6 @@ public class ChangesSinceLastBuildMacroTest {
     private AbstractBuild createBuild2(Result result, int buildNumber, String message) {
         AbstractBuild build = mock(AbstractBuild.class);
         ChangeLogSet changes1 = createChangeLog2(message);
-
         return build;
     }
 
