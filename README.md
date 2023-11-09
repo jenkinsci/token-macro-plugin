@@ -58,7 +58,7 @@ variables](http://ci.jenkins-ci.org/env-vars.html) using `TokenMacro.expandAll`.
 ```java
 String template = "My revision is ${SUBVERSION_REVISION} at #${BUILD_NUMBER} and was executed on node ${NODE_NAME}"
 String text = TokenMacro.expandAll( build, listener, template );
-System.out.println(text); // something like "My revision is 125 at #12 and was executed on controller node"
+System.out.println(text); // something like "My revision is 125 at #12 and was executed on node Controller"
 ```
 
 ## Databinding Token Macro
