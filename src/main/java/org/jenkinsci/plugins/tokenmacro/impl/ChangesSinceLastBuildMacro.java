@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.tokenmacro.impl;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
@@ -37,8 +38,10 @@ public class ChangesSinceLastBuildMacro extends DataBoundTokenMacro {
     @Parameter
     public boolean showPaths = false;
     @Parameter
+    @SuppressFBWarnings(value="PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification="Retain API compatibility.")
     public String format;
     @Parameter
+    @SuppressFBWarnings(value="PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification="Retain API compatibility.")
     public String pathFormat = PATH_FORMAT_DEFAULT_VALUE;
     @Parameter
     public boolean showDependencies = false;

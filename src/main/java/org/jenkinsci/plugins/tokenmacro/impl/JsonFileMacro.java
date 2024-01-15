@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.tokenmacro.impl;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import hudson.Extension;
@@ -40,6 +41,7 @@ public class JsonFileMacro extends DataBoundTokenMacro {
     public String file = null;
 
     @Parameter
+    @SuppressFBWarnings(value="PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification="Retain API compatibility.")
     public String path = null;
 
     @Parameter

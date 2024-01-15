@@ -23,6 +23,7 @@
  */
 package org.jenkinsci.plugins.tokenmacro.impl;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -49,6 +50,7 @@ import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 @Extension
 public class WorkspaceFileMacro extends DataBoundTokenMacro  {
     @Parameter(required=true)
+    @SuppressFBWarnings(value="PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification="Retain API compatibility.")
     public String path = "";
     @Parameter
     public String fileNotFoundMessage = "ERROR: File '%s' does not exist";
