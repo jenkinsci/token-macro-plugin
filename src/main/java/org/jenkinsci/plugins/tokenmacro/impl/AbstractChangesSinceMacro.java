@@ -4,6 +4,7 @@ import hudson.FilePath;
 import hudson.model.*;
 import java.io.IOException;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
@@ -16,12 +17,14 @@ abstract public class AbstractChangesSinceMacro
     @Parameter
     public boolean reverse = false;
     @Parameter
+    @SuppressFBWarnings(value="PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification="Retain API compatibility.")
     public String format;
     @Parameter
     public boolean showPaths = false;
     @Parameter
     public String changesFormat;
     @Parameter
+    @SuppressFBWarnings(value="PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification="Retain API compatibility.")
     public String pathFormat = "\\t%p\\n";
     @Parameter
     public boolean showDependencies = false;
