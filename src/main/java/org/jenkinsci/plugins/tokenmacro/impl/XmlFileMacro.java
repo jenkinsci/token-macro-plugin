@@ -1,16 +1,12 @@
 package org.jenkinsci.plugins.tokenmacro.impl;
 
 import hudson.Extension;
-import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.remoting.Callable;
-import java.io.Closeable;
-import java.io.Reader;
-import java.io.BufferedReader;
+
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Collections;
@@ -21,6 +17,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jenkins.security.MasterToSlaveCallable;
+
+import org.jenkinsci.plugins.tokenmacro.WorkspaceDependentMacro;
 import org.w3c.dom.*;
 
 import javax.xml.XMLConstants;
@@ -30,7 +28,6 @@ import javax.xml.parsers.*;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 
 /**
@@ -38,7 +35,7 @@ import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
  * If xpath evaluates to more than one value then a semicolon separted string is returned.
  */
 @Extension
-public class XmlFileMacro extends DataBoundTokenMacro {
+public class XmlFileMacro extends WorkspaceDependentMacro {
 
     public static final Logger LOGGER = Logger.getLogger(XmlFileMacro.class.getName());
     
@@ -66,9 +63,8 @@ public class XmlFileMacro extends DataBoundTokenMacro {
     }
 
     @Override
-    public String evaluate(Run<?,?> run, FilePath workspace, TaskListener listener, String macroName)  throws MacroEvaluationException, IOException, InterruptedException {
-        String root = workspace.getRemote();
-        return workspace.act(new ReadXML(root,file,xpath));
+    public Callable<String, IOException> getCallable(Run<?,?> run, String root, TaskListener listener) {
+        return new ReadXML(root, file, xpath);
     }
 
     private static class ReadXML extends MasterToSlaveCallable<String, IOException> {

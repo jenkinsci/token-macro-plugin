@@ -1,13 +1,14 @@
 package org.jenkinsci.plugins.tokenmacro.impl;
 
 import hudson.Extension;
-import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import hudson.remoting.Callable;
 import jenkins.security.MasterToSlaveCallable;
-import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
+
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
+import org.jenkinsci.plugins.tokenmacro.WorkspaceDependentMacro;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -19,7 +20,7 @@ import java.util.Properties;
  * Expands to a property from a property file relative to the workspace root.
  */
 @Extension
-public class PropertyFromFileMacro extends DataBoundTokenMacro {
+public class PropertyFromFileMacro extends WorkspaceDependentMacro {
 
     private static final String MACRO_NAME = "PROPFILE";
 
@@ -45,9 +46,8 @@ public class PropertyFromFileMacro extends DataBoundTokenMacro {
     }
 
     @Override
-    public String evaluate(Run<?,?> run, FilePath workspace, TaskListener listener, String macroName) throws MacroEvaluationException, IOException, InterruptedException {
-        String root = workspace.getRemote();
-        return workspace.act(new ReadProperty(root, file, property));
+    public Callable<String, IOException> getCallable(Run<?,?> run, String root, TaskListener listener) {
+        return new ReadProperty(root, file, property);
     }
 
     private static class ReadProperty extends MasterToSlaveCallable<String,IOException> {
