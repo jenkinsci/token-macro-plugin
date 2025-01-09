@@ -26,29 +26,26 @@ package org.jenkinsci.plugins.tokenmacro.impl;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
 import hudson.Extension;
-import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import jenkins.security.MasterToSlaveCallable;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.ObjectUtils;
-import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
+import org.jenkinsci.plugins.tokenmacro.WorkspaceDependentMacro;
 
 @Extension
-public class WorkspaceFileMacro extends DataBoundTokenMacro  {
+public class WorkspaceFileMacro extends WorkspaceDependentMacro {
     @Parameter(required=true)
     @SuppressFBWarnings(value="PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification="Retain API compatibility.")
     public String path = "";
@@ -78,32 +75,38 @@ public class WorkspaceFileMacro extends DataBoundTokenMacro  {
         return evaluate(context,getWorkspace(context),listener,macroName);
     }
 
-    public String evaluate(Run<?,?> run, FilePath workspace, TaskListener listener, String macroName)
-            throws MacroEvaluationException, IOException, InterruptedException {
+    @Override
+    public MasterToSlaveCallable<String, IOException> getCallable(Run<?,?> run, String root, TaskListener listener) {
         // do some environment variable substitution
         try {
             EnvVars env = run.getEnvironment(listener);
             path = env.expand(path);
-        } catch(Exception e) {
+        } catch (Exception e) {
             listener.error("Error retrieving environment: %s", e.getMessage());
         }
+        return new MasterToSlaveCallable<String, IOException>() {
+            @Override
+            public String call() throws IOException {
 
-        if(!workspace.child(path).exists()) {
-            return String.format(fileNotFoundMessage, path);
-        }
+                File file = new File(root, path);
+                if (!file.exists()) {
+                    return String.format(fileNotFoundMessage, path);
+                }
 
-        try {
-            Charset charset = Charset.forName(charSet);
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(workspace.child(path).read(), charset))) {
-                if (maxLines > 0) {
-                    return reader.lines().limit(maxLines).collect(Collectors.joining("\n"));
-                } else {
-                    return reader.lines().collect(Collectors.joining("\n"));
+                try {
+                    Charset charset = Charset.forName(charSet);
+                    try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), charset))) {
+                        if (maxLines > 0) {
+                            return reader.lines().limit(maxLines).collect(Collectors.joining("\n"));
+                        } else {
+                            return reader.lines().collect(Collectors.joining("\n"));
+                        }
+                    }
+                } catch (IOException e) {
+                    return "ERROR: File '" + path + "' could not be read";
                 }
             }
-        } catch (IOException e) {
-            return "ERROR: File '" + path + "' could not be read";
-        }
+        };
     }
 
     @Override

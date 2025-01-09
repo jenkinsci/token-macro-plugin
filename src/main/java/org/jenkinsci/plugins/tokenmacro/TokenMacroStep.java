@@ -58,7 +58,7 @@ public class TokenMacroStep extends Step {
 
         @Override public Set<? extends Class<?>> getRequiredContext() {
             Set<Class<?>> context = new HashSet<>();
-            Collections.addAll(context, Run.class, FilePath.class, TaskListener.class);
+            Collections.addAll(context, Run.class, TaskListener.class);
             return Collections.unmodifiableSet(context);
         }
     }

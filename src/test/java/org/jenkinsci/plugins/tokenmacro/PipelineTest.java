@@ -4,9 +4,13 @@ import com.google.common.collect.ListMultimap;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.model.Label;
+import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import hudson.remoting.Callable;
 import hudson.util.StreamTaskListener;
+import jenkins.security.MasterToSlaveCallable;
+
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.junit.Before;
@@ -15,6 +19,7 @@ import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -40,21 +45,33 @@ public class PipelineTest {
     @Test
     public void testEnvironmentVariables() throws Exception {
         WorkflowJob job = j.jenkins.createProject(WorkflowJob.class, "foo");
-        job.setDefinition(new CpsFlowDefinition("pipeline {\n" +
-                "  agent any\n" +
-                "  environment {\n" +
-                "    VERSION = \"1.0.0\"\n" +
-                "  }\n\n" +
-                "  stages {\n" +
-                "    stage('Cool') {\n" +
-                "      steps {\n" +
-                "        echo \"VERSION=\" + tm('${ENV, var=\"VERSION\"}')\n" +
-                "      }\n" +
-                "    }\n" +
-                "  }\n" +
-                "}", true));
+        job.setDefinition(new CpsFlowDefinition(getPipeline("any", "${ENV, var=\"VERSION\"}"), true));
         Run<?,?> run = j.assertBuildStatusSuccess(job.scheduleBuild2(0));
         j.assertLogContains("VERSION=1.0.0", run);
+    }
+
+    @Test
+    public void testEnvironmentVariablesNoAgent() throws Exception {
+        WorkflowJob job = j.jenkins.createProject(WorkflowJob.class, "foo");
+        job.setDefinition(new CpsFlowDefinition(getPipeline("none", "${ENV, var=\"VERSION\"}"), true));
+        Run<?,?> run = j.assertBuildStatusSuccess(job.scheduleBuild2(0));
+        j.assertLogContains("VERSION=1.0.0", run);
+    }
+
+    @Test
+    public void testWorkspaceNeededNoAgent() throws Exception {
+        WorkflowJob job = j.jenkins.createProject(WorkflowJob.class, "foo");
+        job.setDefinition(new CpsFlowDefinition(getPipeline("none", "${TEST_WS}"), true));
+        Run<?,?> run = j.assertBuildStatus(Result.FAILURE, job.scheduleBuild2(0));
+        j.assertLogContains("Macro 'TEST_WS' can ony be evaluated in a workspace", run);
+    }
+
+    @Test
+    public void testWorkspaceNeededWithAgent() throws Exception {
+        WorkflowJob job = j.jenkins.createProject(WorkflowJob.class, "foo");
+        job.setDefinition(new CpsFlowDefinition(getPipeline("any", "${TEST_WS}"), true));
+        Run<?,?> run = j.assertBuildStatusSuccess(job.scheduleBuild2(0));
+        j.assertLogContains("Workspace: foo", run);
     }
 
     @Test
@@ -99,6 +116,22 @@ public class PipelineTest {
         listener = StreamTaskListener.fromStdout();
 
         assertEquals("TEST_2 is not supported in this context", TokenMacro.expand(run,null,listener,"${TEST_2}"));
+    }
+
+    private String getPipeline(String agent, String macro) {
+        return "pipeline {\n" +
+                "  agent " + agent + "\n" +
+                "  environment {\n" +
+                "    VERSION = \"1.0.0\"\n" +
+                "  }\n\n" +
+                "  stages {\n" +
+                "    stage('Cool') {\n" +
+                "      steps {\n" +
+                "        echo \"VERSION=\" + tm('" + macro + "')\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}";
     }
 
     @TestExtension
@@ -166,6 +199,36 @@ public class PipelineTest {
         @Override
         public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap) throws MacroEvaluationException, IOException, InterruptedException {
             return argumentMultimap.toString();
+        }
+    }
+
+    @TestExtension
+    public static class TestMacroWS extends WorkspaceDependentMacro {
+        private static final String MACRO_NAME = "TEST_WS";
+
+        @Override
+        public boolean acceptsMacroName(String macroName) {
+            return macroName.equals(MACRO_NAME);
+        }
+
+        @Override
+        public List<String> getAcceptedMacroNames() {
+            return Collections.singletonList(MACRO_NAME);
+        }
+
+        @Override
+        public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap) throws MacroEvaluationException, IOException, InterruptedException {
+            return evaluate(context, context.getWorkspace(), listener, macroName, arguments, argumentMultimap);
+        }
+
+        @Override
+        public Callable<String, IOException> getCallable(Run<?,?> run, String root, TaskListener listener) {
+            return new MasterToSlaveCallable<String, IOException>() {
+                @Override
+                public String call() throws IOException {
+                    return "Workspace: " + new File(root).getName();
+                }
+            };
         }
     }
 }
