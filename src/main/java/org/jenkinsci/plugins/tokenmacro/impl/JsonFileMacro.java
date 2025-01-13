@@ -4,8 +4,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import hudson.Extension;
-import hudson.FilePath;
-import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import java.io.File;
@@ -13,6 +11,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
+import hudson.remoting.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,15 +22,15 @@ import net.sf.json.JSONObject;
 import jenkins.security.MasterToSlaveCallable;
 
 import org.apache.commons.io.FileUtils;
-import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
+import org.jenkinsci.plugins.tokenmacro.WorkspaceDependentMacro;
 
 /**
  * Expands to a xml value(s) from a xml file relative to the workspace root.
  * If xpath evaluates to more than one value then a semicolon separted string is returned.
  */
 @Extension
-public class JsonFileMacro extends DataBoundTokenMacro {
+public class JsonFileMacro extends WorkspaceDependentMacro {
 
     public static final Logger LOGGER = Logger.getLogger(JsonFileMacro.class.getName());
     
@@ -58,23 +57,12 @@ public class JsonFileMacro extends DataBoundTokenMacro {
     }
 
     @Override
-    public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName) throws MacroEvaluationException, IOException, InterruptedException {
-        return evaluate(context,getWorkspace(context),listener,macroName);
-    }
-
-    @Override
-    public String evaluate(Run<?,?> run, FilePath workspace, TaskListener listener, String macroName)  throws MacroEvaluationException, IOException, InterruptedException {
-        if(path == null && expr == null) {
-            return "You must specify the path or expr parameter";
-        }
-
+    public Callable<String, IOException> getCallable(Run<?,?> run, String root, TaskListener listener) {
         // jsonPath takes precedence
-        if(path != null && expr != null) {
+        if (path != null && expr != null) {
             path = null;
         }
-
-        String root = workspace.getRemote();
-        return workspace.act(new ReadJSON(root,file,path,expr,run.getCharset()));
+        return new ReadJSON(root,file,path,expr,run.getCharset());
     }
 
     private static class ReadJSON extends MasterToSlaveCallable<String, IOException> {
@@ -141,6 +129,9 @@ public class JsonFileMacro extends DataBoundTokenMacro {
         }
 
         public String call() throws IOException {
+            if (path == null && expr == null) {
+                return "You must specify the path or expr parameter";
+            }
             File file = new File(root, filename);
             String result = "";
             if (file.exists()) {

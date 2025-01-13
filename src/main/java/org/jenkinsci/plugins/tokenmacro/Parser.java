@@ -2,6 +2,8 @@ package org.jenkinsci.plugins.tokenmacro;
 
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimaps;
+
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
@@ -28,7 +30,7 @@ public class Parser {
     private StringBuilder output;
 
     private Run<?, ?> run;
-    private FilePath workspace;
+    private @CheckForNull FilePath workspace;
     private TaskListener listener;
     private boolean throwException;
     private String stringWithMacro;
@@ -40,7 +42,7 @@ public class Parser {
     private String tokenName;
     private ListMultimap<String,String> args;
 
-    public Parser(Run<?,?> run, FilePath workspace, TaskListener listener, String stringWithMacro, boolean throwException) {
+    public Parser(Run<?,?> run, @CheckForNull FilePath workspace, TaskListener listener, String stringWithMacro, boolean throwException) {
         this.run = run;
         this.workspace = workspace;
         this.listener = listener;
@@ -50,7 +52,7 @@ public class Parser {
         this.recursionLevel = 0;
     }
 
-    public Parser(Run<?,?> run, FilePath workspace, TaskListener listener, String stringWithMacro, boolean throwException, int recursionLevel) {
+    public Parser(Run<?,?> run, @CheckForNull FilePath workspace, TaskListener listener, String stringWithMacro, boolean throwException, int recursionLevel) {
         this.run = run;
         this.workspace = workspace;
         this.listener = listener;
@@ -64,11 +66,11 @@ public class Parser {
         return process(build,build.getWorkspace(),listener,stringWithMacro,throwException,privateTokens);
     }
 
-    public static String process(Run<?, ?> run, FilePath workspace, TaskListener listener, String stringWithMacro, boolean throwException, List<TokenMacro> privateTokens) throws MacroEvaluationException {
+    public static String process(Run<?, ?> run, @CheckForNull FilePath workspace, TaskListener listener, String stringWithMacro, boolean throwException, List<TokenMacro> privateTokens) throws MacroEvaluationException {
         return process(run, workspace, listener, stringWithMacro, throwException, privateTokens, 0);
     }
 
-    private static String process(Run<?,?> run, FilePath workspace, TaskListener listener, String stringWithMacro, boolean throwException, List<TokenMacro> privateTokens, int recursionLevel) throws MacroEvaluationException {
+    private static String process(Run<?,?> run, @CheckForNull FilePath workspace, TaskListener listener, String stringWithMacro, boolean throwException, List<TokenMacro> privateTokens, int recursionLevel) throws MacroEvaluationException {
         if ( StringUtils.isBlank( stringWithMacro ) ) return stringWithMacro;
 
         Parser p = new Parser(run, workspace, listener, stringWithMacro, throwException);

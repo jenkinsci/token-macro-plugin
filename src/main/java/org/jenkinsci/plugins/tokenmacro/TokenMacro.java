@@ -131,7 +131,7 @@ public abstract class TokenMacro implements ExtensionPoint {
     public abstract String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap)
             throws MacroEvaluationException, IOException, InterruptedException;
 
-    public String evaluate(Run<?, ?> run, FilePath workspace, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap)
+    public String evaluate(Run<?, ?> run, @CheckForNull FilePath workspace, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap)
             throws MacroEvaluationException, IOException, InterruptedException
     {
         return macroName + " is not supported in this context";
@@ -188,11 +188,11 @@ public abstract class TokenMacro implements ExtensionPoint {
         return Parser.process(context,listener,stringWithMacro,throwException,privateTokens);
     }
 
-    public static String expand(Run<?, ?> run, FilePath workspace, TaskListener listener, String stringWithMacro) throws MacroEvaluationException, IOException, InterruptedException {
+    public static String expand(Run<?, ?> run, @CheckForNull FilePath workspace, TaskListener listener, String stringWithMacro) throws MacroEvaluationException, IOException, InterruptedException {
         return expand(run, workspace, listener, stringWithMacro, true, null);
     }
 
-    public static String expand(Run<?, ?> run, FilePath workspace, TaskListener listener, String stringWithMacro, boolean throwException, List<TokenMacro> privateTokens) throws MacroEvaluationException, IOException, InterruptedException {
+    public static String expand(Run<?, ?> run, @CheckForNull FilePath workspace, TaskListener listener, String stringWithMacro, boolean throwException, List<TokenMacro> privateTokens) throws MacroEvaluationException, IOException, InterruptedException {
         return Parser.process(run,workspace,listener,stringWithMacro,throwException,privateTokens);
     }
 
@@ -200,7 +200,7 @@ public abstract class TokenMacro implements ExtensionPoint {
         return expandAll(context,listener,stringWithMacro,true,null);
     }
 
-    public static String expandAll(Run<?,?> run, FilePath workspace, TaskListener listener, String stringWithMacro) throws MacroEvaluationException, IOException, InterruptedException {
+    public static String expandAll(Run<?,?> run, @CheckForNull FilePath workspace, TaskListener listener, String stringWithMacro) throws MacroEvaluationException, IOException, InterruptedException {
         return expandAll(run,workspace,listener,stringWithMacro,true,null);
     }
 
@@ -208,7 +208,7 @@ public abstract class TokenMacro implements ExtensionPoint {
         return expandAll(context,getWorkspace(context),listener,stringWithMacro,throwException,privateTokens);
     }
 
-    public static String expandAll(Run<?,?> run, FilePath workspace, TaskListener listener, String stringWithMacro, boolean throwException, List<TokenMacro> privateTokens) throws MacroEvaluationException, IOException, InterruptedException {
+    public static String expandAll(Run<?,?> run, @CheckForNull FilePath workspace, TaskListener listener, String stringWithMacro, boolean throwException, List<TokenMacro> privateTokens) throws MacroEvaluationException, IOException, InterruptedException {
         // Do nothing for an empty String
         if (stringWithMacro==null || stringWithMacro.length()==0) return stringWithMacro;
 
