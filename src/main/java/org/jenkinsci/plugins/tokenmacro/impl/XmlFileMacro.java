@@ -5,7 +5,6 @@ import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.remoting.Callable;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
@@ -15,20 +14,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+import javax.xml.XMLConstants;
+import javax.xml.parsers.*;
+import javax.xml.xpath.*;
 import jenkins.security.MasterToSlaveCallable;
-
+import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.jenkinsci.plugins.tokenmacro.WorkspaceDependentMacro;
 import org.w3c.dom.*;
-
-import javax.xml.XMLConstants;
-import javax.xml.xpath.*;
-import javax.xml.parsers.*;
-
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 
 /**
  * Expands to a xml value(s) from a xml file relative to the workspace root.
@@ -38,13 +33,13 @@ import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 public class XmlFileMacro extends WorkspaceDependentMacro {
 
     public static final Logger LOGGER = Logger.getLogger(XmlFileMacro.class.getName());
-    
+
     private static final String MACRO_NAME = "XML";
 
-    @Parameter(required=true)
+    @Parameter(required = true)
     public String file = null;
 
-    @Parameter(required=true)
+    @Parameter(required = true)
     public String xpath = null;
 
     @Override
@@ -58,12 +53,13 @@ public class XmlFileMacro extends WorkspaceDependentMacro {
     }
 
     @Override
-    public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName) throws MacroEvaluationException, IOException, InterruptedException {
-        return evaluate(context,getWorkspace(context),listener,macroName);
+    public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName)
+            throws MacroEvaluationException, IOException, InterruptedException {
+        return evaluate(context, getWorkspace(context), listener, macroName);
     }
 
     @Override
-    public Callable<String, IOException> getCallable(Run<?,?> run, String root, TaskListener listener) {
+    public Callable<String, IOException> getCallable(Run<?, ?> run, String root, TaskListener listener) {
         return new ReadXML(root, file, xpath);
     }
 
@@ -75,13 +71,15 @@ public class XmlFileMacro extends WorkspaceDependentMacro {
 
         private static final String DISALLOW_DOCTYPE_DECL = "http://apache.org/xml/features/disallow-doctype-decl";
         private static final String EXTERNAL_GENERAL_ENTITIES = "http://xml.org/sax/features/external-general-entities";
-        private static final String EXTERNAL_PARAMETER_ENTITIES = "http://xml.org/sax/features/external-parameter-entities";
-        private static final String LOAD_EXTERNAL_DTD = "http://apache.org/xml/features/nonvalidating/load-external-dtd";
+        private static final String EXTERNAL_PARAMETER_ENTITIES =
+                "http://xml.org/sax/features/external-parameter-entities";
+        private static final String LOAD_EXTERNAL_DTD =
+                "http://apache.org/xml/features/nonvalidating/load-external-dtd";
 
-        public ReadXML(String root, String filename, String xpath){
-            this.root=root;
-            this.filename=filename;
-            this.xpathexpression=xpath;
+        public ReadXML(String root, String filename, String xpath) {
+            this.root = root;
+            this.filename = filename;
+            this.xpathexpression = xpath;
         }
 
         private DocumentBuilderFactory createFactory() {
@@ -92,10 +90,10 @@ public class XmlFileMacro extends WorkspaceDependentMacro {
             features.put(EXTERNAL_PARAMETER_ENTITIES, false);
             features.put(LOAD_EXTERNAL_DTD, false);
 
-            for(Map.Entry<String, Boolean> feature : features.entrySet()) {
+            for (Map.Entry<String, Boolean> feature : features.entrySet()) {
                 try {
                     dFactory.setFeature(feature.getKey(), feature.getValue());
-                } catch(ParserConfigurationException e) {
+                } catch (ParserConfigurationException e) {
                     LOGGER.log(Level.INFO, "Could not enable/disable feature: " + feature);
                 }
             }
@@ -105,10 +103,10 @@ public class XmlFileMacro extends WorkspaceDependentMacro {
             attributes.put(XMLConstants.ACCESS_EXTERNAL_DTD, "");
             attributes.put(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
             attributes.put(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
-            for(Map.Entry<String, String> attribute : attributes.entrySet()) {
+            for (Map.Entry<String, String> attribute : attributes.entrySet()) {
                 try {
                     dFactory.setAttribute(attribute.getKey(), attribute.getValue());
-                } catch(IllegalArgumentException e) {
+                } catch (IllegalArgumentException e) {
                     LOGGER.log(Level.INFO, "Could not set attribute: " + attribute);
                 }
             }
@@ -144,19 +142,19 @@ public class XmlFileMacro extends WorkspaceDependentMacro {
                     }
 
                     result = result.substring(0, result.length() - 1); // trim the last ';'
-                }
-                catch (IOException e) {
+                } catch (IOException e) {
                     result = "Error: ".concat(filename).concat(" - Could not read XML file.");
-                }
-                catch (SAXException e) {
+                } catch (SAXException e) {
                     result = "Error: ".concat(filename).concat(" - XML not well formed.");
-                }
-                catch (Throwable e) {
+                } catch (Throwable e) {
                     LOGGER.log(Level.WARNING, "Unhandled exception during the macro evaluation", e);
-                    result = "Error: ".concat(filename).concat(" - '").concat(xpathexpression).concat("' invalid syntax or path maybe?");
+                    result = "Error: "
+                            .concat(filename)
+                            .concat(" - '")
+                            .concat(xpathexpression)
+                            .concat("' invalid syntax or path maybe?");
                 }
-            }
-            else {
+            } else {
                 result = "Error: ".concat(filename).concat(" not found");
             }
 

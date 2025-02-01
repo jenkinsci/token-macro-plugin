@@ -9,8 +9,7 @@ package org.jenkinsci.plugins.tokenmacro;
 public class Util {
 
     // Prevent instantiation.
-    private Util() {
-    }
+    private Util() {}
 
     /**
      * Replaces all the printf-style escape sequences in a string
@@ -103,4 +102,3 @@ public class Util {
         }
     }
 }
-

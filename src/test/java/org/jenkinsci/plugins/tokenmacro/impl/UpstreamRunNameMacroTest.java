@@ -1,5 +1,7 @@
 package org.jenkinsci.plugins.tokenmacro.impl;
 
+import static org.junit.Assert.assertEquals;
+
 import hudson.model.Cause;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
@@ -9,8 +11,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * Created by acearl on 10/23/2015.

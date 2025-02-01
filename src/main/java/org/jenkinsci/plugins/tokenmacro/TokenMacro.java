@@ -24,6 +24,8 @@
 package org.jenkinsci.plugins.tokenmacro;
 
 import com.google.common.collect.ListMultimap;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
@@ -33,18 +35,12 @@ import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.util.VariableResolver;
-
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
-import java.io.IOException;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
-
 
 /**
  * A macro that expands to text values in the context of a {@link AbstractBuild}.
@@ -128,12 +124,22 @@ public abstract class TokenMacro implements ExtensionPoint {
      *      If the evaluation involves some remoting operation, user might cancel the build, which results
      *      in an {@link InterruptedException}. Don't catch it, just propagate.
      */
-    public abstract String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap)
+    public abstract String evaluate(
+            AbstractBuild<?, ?> context,
+            TaskListener listener,
+            String macroName,
+            Map<String, String> arguments,
+            ListMultimap<String, String> argumentMultimap)
             throws MacroEvaluationException, IOException, InterruptedException;
 
-    public String evaluate(Run<?, ?> run, @CheckForNull FilePath workspace, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap)
-            throws MacroEvaluationException, IOException, InterruptedException
-    {
+    public String evaluate(
+            Run<?, ?> run,
+            @CheckForNull FilePath workspace,
+            TaskListener listener,
+            String macroName,
+            Map<String, String> arguments,
+            ListMultimap<String, String> argumentMultimap)
+            throws MacroEvaluationException, IOException, InterruptedException {
         return macroName + " is not supported in this context";
     }
 
@@ -153,12 +159,11 @@ public abstract class TokenMacro implements ExtensionPoint {
 
     public static List<String> getAutoCompleteList(String input) {
         List<String> result = new ArrayList<>();
-        for(TokenMacro m : all()) {
-            for(String name : m.getAcceptedMacroNames()) {
-                if(name.isEmpty())
-                    continue;
+        for (TokenMacro m : all()) {
+            for (String name : m.getAcceptedMacroNames()) {
+                if (name.isEmpty()) continue;
 
-                if(name.startsWith(input)) {
+                if (name.startsWith(input)) {
                     result.add(name);
                 }
             }
@@ -168,7 +173,7 @@ public abstract class TokenMacro implements ExtensionPoint {
 
     /**
      * All registered extension points.
-     * 
+     *
      * @return All registered token macro classes.
      */
     public static ExtensionList<TokenMacro> all() {
@@ -180,61 +185,93 @@ public abstract class TokenMacro implements ExtensionPoint {
         }
     }
 
-    public static String expand(AbstractBuild<?,?> context, TaskListener listener, String stringWithMacro) throws MacroEvaluationException, IOException, InterruptedException {
+    public static String expand(AbstractBuild<?, ?> context, TaskListener listener, String stringWithMacro)
+            throws MacroEvaluationException, IOException, InterruptedException {
         return expand(context, listener, stringWithMacro, true, null);
     }
 
-    public static String expand(AbstractBuild<?,?> context, TaskListener listener, String stringWithMacro, boolean throwException, List<TokenMacro> privateTokens) throws MacroEvaluationException, IOException, InterruptedException {
-        return Parser.process(context,listener,stringWithMacro,throwException,privateTokens);
+    public static String expand(
+            AbstractBuild<?, ?> context,
+            TaskListener listener,
+            String stringWithMacro,
+            boolean throwException,
+            List<TokenMacro> privateTokens)
+            throws MacroEvaluationException, IOException, InterruptedException {
+        return Parser.process(context, listener, stringWithMacro, throwException, privateTokens);
     }
 
-    public static String expand(Run<?, ?> run, @CheckForNull FilePath workspace, TaskListener listener, String stringWithMacro) throws MacroEvaluationException, IOException, InterruptedException {
+    public static String expand(
+            Run<?, ?> run, @CheckForNull FilePath workspace, TaskListener listener, String stringWithMacro)
+            throws MacroEvaluationException, IOException, InterruptedException {
         return expand(run, workspace, listener, stringWithMacro, true, null);
     }
 
-    public static String expand(Run<?, ?> run, @CheckForNull FilePath workspace, TaskListener listener, String stringWithMacro, boolean throwException, List<TokenMacro> privateTokens) throws MacroEvaluationException, IOException, InterruptedException {
-        return Parser.process(run,workspace,listener,stringWithMacro,throwException,privateTokens);
+    public static String expand(
+            Run<?, ?> run,
+            @CheckForNull FilePath workspace,
+            TaskListener listener,
+            String stringWithMacro,
+            boolean throwException,
+            List<TokenMacro> privateTokens)
+            throws MacroEvaluationException, IOException, InterruptedException {
+        return Parser.process(run, workspace, listener, stringWithMacro, throwException, privateTokens);
     }
 
-    public static String expandAll(AbstractBuild<?,?> context, TaskListener listener, String stringWithMacro) throws MacroEvaluationException, IOException, InterruptedException {
-        return expandAll(context,listener,stringWithMacro,true,null);
+    public static String expandAll(AbstractBuild<?, ?> context, TaskListener listener, String stringWithMacro)
+            throws MacroEvaluationException, IOException, InterruptedException {
+        return expandAll(context, listener, stringWithMacro, true, null);
     }
 
-    public static String expandAll(Run<?,?> run, @CheckForNull FilePath workspace, TaskListener listener, String stringWithMacro) throws MacroEvaluationException, IOException, InterruptedException {
-        return expandAll(run,workspace,listener,stringWithMacro,true,null);
+    public static String expandAll(
+            Run<?, ?> run, @CheckForNull FilePath workspace, TaskListener listener, String stringWithMacro)
+            throws MacroEvaluationException, IOException, InterruptedException {
+        return expandAll(run, workspace, listener, stringWithMacro, true, null);
     }
 
-    public static String expandAll(AbstractBuild<?,?> context, TaskListener listener, String stringWithMacro, boolean throwException, List<TokenMacro> privateTokens) throws MacroEvaluationException, IOException, InterruptedException {
-        return expandAll(context,getWorkspace(context),listener,stringWithMacro,throwException,privateTokens);
+    public static String expandAll(
+            AbstractBuild<?, ?> context,
+            TaskListener listener,
+            String stringWithMacro,
+            boolean throwException,
+            List<TokenMacro> privateTokens)
+            throws MacroEvaluationException, IOException, InterruptedException {
+        return expandAll(context, getWorkspace(context), listener, stringWithMacro, throwException, privateTokens);
     }
 
-    public static String expandAll(Run<?,?> run, @CheckForNull FilePath workspace, TaskListener listener, String stringWithMacro, boolean throwException, List<TokenMacro> privateTokens) throws MacroEvaluationException, IOException, InterruptedException {
+    public static String expandAll(
+            Run<?, ?> run,
+            @CheckForNull FilePath workspace,
+            TaskListener listener,
+            String stringWithMacro,
+            boolean throwException,
+            List<TokenMacro> privateTokens)
+            throws MacroEvaluationException, IOException, InterruptedException {
         // Do nothing for an empty String
-        if (stringWithMacro==null || stringWithMacro.length()==0) return stringWithMacro;
+        if (stringWithMacro == null || stringWithMacro.length() == 0) return stringWithMacro;
 
         // Expand environment variables
         stringWithMacro = stringWithMacro.replaceAll("\\$\\$", "\\$\\$\\$\\$");
         EnvVars env = run.getEnvironment(listener);
         String s = stringWithMacro;
-        if(env != null) {
+        if (env != null) {
             s = run.getEnvironment(listener).expand(s);
         }
 
-        if(run instanceof AbstractBuild) {
+        if (run instanceof AbstractBuild) {
             // Expand build variables
             s = s.replaceAll("\\$\\$", "\\$\\$\\$\\$");
-            AbstractBuild<?,?> build = (AbstractBuild<?, ?>)run;
+            AbstractBuild<?, ?> build = (AbstractBuild<?, ?>) run;
             VariableResolver<String> resolver = build.getBuildVariableResolver();
-            if(resolver != null) {
+            if (resolver != null) {
                 s = Util.replaceMacro(s, build.getBuildVariableResolver());
             }
         }
 
         // Expand Macros
-        s = expand(run,workspace,listener,s,throwException,privateTokens);
+        s = expand(run, workspace, listener, s, throwException, privateTokens);
         return s;
     }
-    
+
     /**
      * Gets a workspace of the build in the macro.
      * @param context Build
@@ -242,8 +279,7 @@ public abstract class TokenMacro implements ExtensionPoint {
      * @throws MacroEvaluationException  Workspace is inaccessible
      */
     @NonNull
-    protected static FilePath getWorkspace(@NonNull AbstractBuild<?, ?> context)
-            throws MacroEvaluationException {
+    protected static FilePath getWorkspace(@NonNull AbstractBuild<?, ?> context) throws MacroEvaluationException {
         final FilePath workspace = context.getWorkspace();
         if (workspace == null) {
             throw new MacroEvaluationException("Workspace is not accessible");

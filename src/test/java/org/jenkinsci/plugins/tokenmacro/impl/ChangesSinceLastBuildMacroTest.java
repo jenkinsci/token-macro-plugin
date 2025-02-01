@@ -1,5 +1,11 @@
 package org.jenkinsci.plugins.tokenmacro.impl;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.matchesPattern;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.google.common.collect.ArrayListMultimap;
 import hudson.model.AbstractBuild;
 import hudson.model.Result;
@@ -9,9 +15,6 @@ import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.AffectedFile;
 import hudson.scm.EditType;
 import hudson.util.StreamTaskListener;
-import org.junit.Before;
-import org.junit.Test;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -20,12 +23,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.matchesPattern;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import org.junit.Before;
+import org.junit.Test;
 
 @SuppressWarnings({"unchecked"})
 public class ChangesSinceLastBuildMacroTest {
@@ -42,169 +41,179 @@ public class ChangesSinceLastBuildMacroTest {
     }
 
     @Test
-    public void testShouldGetChangesForLatestBuild()
-            throws Exception {
+    public void testShouldGetChangesForLatestBuild() throws Exception {
         AbstractBuild currentBuild = createBuild(Result.SUCCESS, 42, "Changes for a successful build.");
 
-        String content = changesSinceLastBuildMacro.evaluate(currentBuild, listener, ChangesSinceLastBuildMacro.MACRO_NAME);
+        String content =
+                changesSinceLastBuildMacro.evaluate(currentBuild, listener, ChangesSinceLastBuildMacro.MACRO_NAME);
 
         assertEquals("[Ash Lux] Changes for a successful build.\n\n", content);
     }
 
     @Test
-    public void testShouldGetChangesForLatestBuildEvenWhenPreviousBuildsExist()
-            throws Exception {
+    public void testShouldGetChangesForLatestBuildEvenWhenPreviousBuildsExist() throws Exception {
         AbstractBuild failureBuild = createBuild2(Result.FAILURE, 41, "Changes for a failed build.");
 
         AbstractBuild currentBuild = createBuild(Result.SUCCESS, 42, "Changes for a successful build.");
 
-        String content = changesSinceLastBuildMacro.evaluate(currentBuild, listener, ChangesSinceLastBuildMacro.MACRO_NAME);
+        String content =
+                changesSinceLastBuildMacro.evaluate(currentBuild, listener, ChangesSinceLastBuildMacro.MACRO_NAME);
 
         assertEquals("[Ash Lux] Changes for a successful build.\n\n", content);
     }
 
     @Test
-    public void testShouldPrintDate()
-            throws Exception {
+    public void testShouldPrintDate() throws Exception {
         changesSinceLastBuildMacro.format = "%d";
 
         AbstractBuild currentBuild = createBuild(Result.SUCCESS, 42, "Changes for a successful build.");
 
-        String content = changesSinceLastBuildMacro.evaluate(currentBuild, listener, ChangesSinceLastBuildMacro.MACRO_NAME);
+        String content =
+                changesSinceLastBuildMacro.evaluate(currentBuild, listener, ChangesSinceLastBuildMacro.MACRO_NAME);
 
         // Java 21 changed the SHORT date format... https://bugs.openjdk.org/browse/JDK-8225245
         assertThat(content, matchesPattern("Oct 21, 2013, 7:39:00\\hPM"));
     }
 
     @Test
-    public void testShouldPrintRevision()
-            throws Exception {
+    public void testShouldPrintRevision() throws Exception {
         changesSinceLastBuildMacro.format = "%r";
 
         AbstractBuild currentBuild = createBuild(Result.SUCCESS, 42, "Changes for a successful build.");
 
-        String content = changesSinceLastBuildMacro.evaluate(currentBuild, listener, ChangesSinceLastBuildMacro.MACRO_NAME);
+        String content =
+                changesSinceLastBuildMacro.evaluate(currentBuild, listener, ChangesSinceLastBuildMacro.MACRO_NAME);
 
         assertEquals("REVISION", content);
     }
 
     @Test
-    public void testShouldPrintPath()
-            throws Exception {
+    public void testShouldPrintPath() throws Exception {
         changesSinceLastBuildMacro.format = "%p";
 
         AbstractBuild currentBuild = createBuild(Result.SUCCESS, 42, "Changes for a successful build.");
 
-        String content = changesSinceLastBuildMacro.evaluate(currentBuild, listener, ChangesSinceLastBuildMacro.MACRO_NAME);
+        String content =
+                changesSinceLastBuildMacro.evaluate(currentBuild, listener, ChangesSinceLastBuildMacro.MACRO_NAME);
 
         assertEquals("\tPATH1\n\tPATH2\n\tPATH3\n", content);
     }
 
     @Test
-    public void testWhenShowPathsIsTrueShouldPrintPath()
-            throws Exception {
+    public void testWhenShowPathsIsTrueShouldPrintPath() throws Exception {
         changesSinceLastBuildMacro.showPaths = true;
 
         AbstractBuild currentBuild = createBuild(Result.SUCCESS, 42, "Changes for a successful build.");
 
-        String content = changesSinceLastBuildMacro.evaluate(currentBuild, listener, ChangesSinceLastBuildMacro.MACRO_NAME);
+        String content =
+                changesSinceLastBuildMacro.evaluate(currentBuild, listener, ChangesSinceLastBuildMacro.MACRO_NAME);
 
-        assertEquals("[Ash Lux] Changes for a successful build.\n" + "\tPATH1\n" + "\tPATH2\n" + "\tPATH3\n" + "\n", content);
+        assertEquals(
+                "[Ash Lux] Changes for a successful build.\n" + "\tPATH1\n" + "\tPATH2\n" + "\tPATH3\n" + "\n",
+                content);
     }
 
     @Test
-    public void testDateFormatString()
-        throws Exception {
+    public void testDateFormatString() throws Exception {
         changesSinceLastBuildMacro.format = "%d";
         changesSinceLastBuildMacro.dateFormat = "MMM d, yyyy HH:mm:ss";
 
         AbstractBuild currentBuild = createBuild(Result.SUCCESS, 42, "Changes for a successful build.");
 
-        String content = changesSinceLastBuildMacro.evaluate(currentBuild, listener, ChangesSinceLastBuildMacro.MACRO_NAME);
+        String content =
+                changesSinceLastBuildMacro.evaluate(currentBuild, listener, ChangesSinceLastBuildMacro.MACRO_NAME);
 
         assertEquals("Oct 21, 2013 19:39:00", content);
     }
-    
+
     @Test
-    public void testTypeFormatStringWithNoGetAffectedFiles()
-        throws Exception {
+    public void testTypeFormatStringWithNoGetAffectedFiles() throws Exception {
         changesSinceLastBuildMacro.showPaths = true;
         changesSinceLastBuildMacro.pathFormat = "\t%p\t%a\n";
 
         AbstractBuild currentBuild = createBuild(Result.SUCCESS, 42, "Changes for a successful build.");
 
-        String content = changesSinceLastBuildMacro.evaluate(currentBuild, listener, ChangesSinceLastBuildMacro.MACRO_NAME);
+        String content =
+                changesSinceLastBuildMacro.evaluate(currentBuild, listener, ChangesSinceLastBuildMacro.MACRO_NAME);
 
-        assertEquals("[Ash Lux] Changes for a successful build.\n" + "\tPATH1\tUnknown\n" + "\tPATH2\tUnknown\n" + "\tPATH3\tUnknown\n" + "\n", content);
+        assertEquals(
+                "[Ash Lux] Changes for a successful build.\n" + "\tPATH1\tUnknown\n" + "\tPATH2\tUnknown\n"
+                        + "\tPATH3\tUnknown\n" + "\n",
+                content);
     }
-    
+
     @Test
-    public void testTypeFormatStringWithAffectedFiles()
-        throws Exception {
+    public void testTypeFormatStringWithAffectedFiles() throws Exception {
         changesSinceLastBuildMacro.showPaths = true;
         changesSinceLastBuildMacro.pathFormat = "\t%p\t%a - %d\n";
 
-        AbstractBuild currentBuild = createBuildWithAffectedFiles(Result.SUCCESS, 42, "Changes for a successful build.");
+        AbstractBuild currentBuild =
+                createBuildWithAffectedFiles(Result.SUCCESS, 42, "Changes for a successful build.");
 
-        String content = changesSinceLastBuildMacro.evaluate(currentBuild, listener, ChangesSinceLastBuildMacro.MACRO_NAME);
+        String content =
+                changesSinceLastBuildMacro.evaluate(currentBuild, listener, ChangesSinceLastBuildMacro.MACRO_NAME);
 
-        assertEquals("[Ash Lux] Changes for a successful build.\n" + "\tPATH1\tadd - The file was added\n" + "\tPATH2\tdelete - The file was removed\n" + "\tPATH3\tedit - The file was modified\n" + "\n", content);
+        assertEquals(
+                "[Ash Lux] Changes for a successful build.\n" + "\tPATH1\tadd - The file was added\n"
+                        + "\tPATH2\tdelete - The file was removed\n" + "\tPATH3\tedit - The file was modified\n" + "\n",
+                content);
     }
 
     @Test
-    public void testRegexReplace()
-            throws Exception {
+    public void testRegexReplace() throws Exception {
         changesSinceLastBuildMacro.regex = "<defectId>(DEFECT-[0-9]+)</defectId><message>(.*)</message>";
         changesSinceLastBuildMacro.replace = "[$1] $2";
         changesSinceLastBuildMacro.format = "%m\\n";
 
-        AbstractBuild currentBuild = createBuildWithAffectedFiles(Result.SUCCESS, 42, "<defectId>DEFECT-666</defectId><message>Initial commit</message>");
+        AbstractBuild currentBuild = createBuildWithAffectedFiles(
+                Result.SUCCESS, 42, "<defectId>DEFECT-666</defectId><message>Initial commit</message>");
 
-        String content = changesSinceLastBuildMacro.evaluate(currentBuild, listener, ChangesSinceLastBuildMacro.MACRO_NAME);
+        String content =
+                changesSinceLastBuildMacro.evaluate(currentBuild, listener, ChangesSinceLastBuildMacro.MACRO_NAME);
 
         assertEquals("[DEFECT-666] Initial commit\n\n", content);
     }
 
     @Test
-    public void testShouldPrintDefaultMessageWhenNoChanges()
-            throws Exception {
+    public void testShouldPrintDefaultMessageWhenNoChanges() throws Exception {
         AbstractBuild currentBuild = createBuildWithNoChanges(Result.SUCCESS, 42);
 
-        String content = changesSinceLastBuildMacro.evaluate(currentBuild, listener, ChangesSinceLastBuildMacro.MACRO_NAME);
+        String content =
+                changesSinceLastBuildMacro.evaluate(currentBuild, listener, ChangesSinceLastBuildMacro.MACRO_NAME);
 
         assertEquals(ChangesSinceLastBuildMacro.DEFAULT_DEFAULT_VALUE, content);
     }
 
     @Test
-    public void testShouldPrintMessageWhenNoChanges()
-            throws Exception {
+    public void testShouldPrintMessageWhenNoChanges() throws Exception {
         changesSinceLastBuildMacro.def = "another default message\n";
         AbstractBuild currentBuild = createBuildWithNoChanges(Result.SUCCESS, 42);
 
-        String content = changesSinceLastBuildMacro.evaluate(currentBuild, listener, ChangesSinceLastBuildMacro.MACRO_NAME);
+        String content =
+                changesSinceLastBuildMacro.evaluate(currentBuild, listener, ChangesSinceLastBuildMacro.MACRO_NAME);
 
         assertEquals("another default message\n", content);
     }
 
     @Test
-    public void testShouldDefaultToNotEscapeHtml()
-            throws Exception {
+    public void testShouldDefaultToNotEscapeHtml() throws Exception {
         AbstractBuild currentBuild = createBuild(Result.SUCCESS, 42, "<b>bold</b>");
 
-        String content = changesSinceLastBuildMacro.evaluate(currentBuild, listener, ChangesSinceLastBuildMacro.MACRO_NAME);
+        String content =
+                changesSinceLastBuildMacro.evaluate(currentBuild, listener, ChangesSinceLastBuildMacro.MACRO_NAME);
 
         assertEquals("[Ash Lux] <b>bold</b>\n\n", content);
     }
 
     @Test
-    public void testShouldEscapeHtmlWhenArgumentEscapeHtmlSetToTrue()
-            throws Exception {
+    public void testShouldEscapeHtmlWhenArgumentEscapeHtmlSetToTrue() throws Exception {
         AbstractBuild currentBuild = createBuild(Result.SUCCESS, 42, "<b>bold</b>");
 
         final Map<String, String> arguments = Collections.singletonMap("escapeHtml", "true");
         final ArrayListMultimap<String, String> listMultimap = ArrayListMultimap.create();
         listMultimap.put("escapeHtml", "true");
-        String content = changesSinceLastBuildMacro.evaluate(currentBuild, null, listener, ChangesSinceLastBuildMacro.MACRO_NAME, arguments, listMultimap);
+        String content = changesSinceLastBuildMacro.evaluate(
+                currentBuild, null, listener, ChangesSinceLastBuildMacro.MACRO_NAME, arguments, listMultimap);
 
         assertEquals("[Ash Lux] &lt;b&gt;bold&lt;/b&gt;\n\n", content);
     }
@@ -216,7 +225,7 @@ public class ChangesSinceLastBuildMacroTest {
 
         return build;
     }
-    
+
     private AbstractBuild createBuildWithAffectedFiles(Result result, int buildNumber, String message) {
         AbstractBuild build = mock(AbstractBuild.class);
         ChangeLogSet changes1 = createChangeLogWithAffectedFiles(message);
@@ -235,7 +244,7 @@ public class ChangesSinceLastBuildMacroTest {
 
         return changes;
     }
-    
+
     private AbstractBuild createBuildWithNoChanges(Result result, int buildNumber) {
         AbstractBuild build = mock(AbstractBuild.class);
         ChangeLogSet changes1 = createEmptyChangeLog();
@@ -251,7 +260,7 @@ public class ChangesSinceLastBuildMacroTest {
 
         return changes;
     }
-    
+
     public ChangeLogSet createChangeLogWithAffectedFiles(String message) {
         ChangeLogSet changes = mock(ChangeLogSet.class);
 
@@ -262,9 +271,8 @@ public class ChangesSinceLastBuildMacroTest {
 
         return changes;
     }
-    
-    public static class ChangeLogEntry
-            extends ChangeLogSet.Entry {
+
+    public static class ChangeLogEntry extends ChangeLogSet.Entry {
 
         final String message;
         final String author;
@@ -296,7 +304,7 @@ public class ChangesSinceLastBuildMacroTest {
                 }
             };
         }
-        
+
         @Override
         public String getCommitId() {
             return "REVISION";
@@ -308,12 +316,12 @@ public class ChangesSinceLastBuildMacroTest {
             return 1382409540000L;
         }
     }
-    
+
     public static class TestAffectedFile implements AffectedFile {
-        
+
         private final String path;
         private final EditType type;
-        
+
         public TestAffectedFile(String path, EditType type) {
             this.path = path;
             this.type = type;
@@ -325,16 +333,15 @@ public class ChangesSinceLastBuildMacroTest {
 
         public EditType getEditType() {
             return type;
-        }        
+        }
     }
-    
-    public static class ChangeLogEntryWithAffectedFiles
-            extends ChangeLogEntry {
+
+    public static class ChangeLogEntryWithAffectedFiles extends ChangeLogEntry {
 
         public ChangeLogEntryWithAffectedFiles(String message, String author) {
             super(message, author);
         }
-        
+
         @Override
         public Collection<AffectedFile> getAffectedFiles() {
             return new ArrayList<AffectedFile>() {
@@ -344,7 +351,7 @@ public class ChangesSinceLastBuildMacroTest {
                     add(new TestAffectedFile("PATH3", EditType.EDIT));
                 }
             };
-        }                
+        }
     }
 
     private AbstractBuild createBuild2(Result result, int buildNumber, String message) {

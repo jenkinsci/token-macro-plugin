@@ -27,17 +27,15 @@ import com.google.common.collect.ListMultimap;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
-import hudson.model.Hudson;
 import hudson.model.Run;
 import hudson.model.TaskListener;
-import jenkins.model.Jenkins;
-import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
-import org.jenkinsci.plugins.tokenmacro.TokenMacro;
-
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import jenkins.model.Jenkins;
+import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
+import org.jenkinsci.plugins.tokenmacro.TokenMacro;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -57,12 +55,25 @@ public class BuildUrlMacro extends TokenMacro {
     }
 
     @Override
-    public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap) throws MacroEvaluationException, IOException, InterruptedException {
-        return evaluate(context,null,listener,macroName,arguments,argumentMultimap);
+    public String evaluate(
+            AbstractBuild<?, ?> context,
+            TaskListener listener,
+            String macroName,
+            Map<String, String> arguments,
+            ListMultimap<String, String> argumentMultimap)
+            throws MacroEvaluationException, IOException, InterruptedException {
+        return evaluate(context, null, listener, macroName, arguments, argumentMultimap);
     }
 
     @Override
-    public String evaluate(Run<?, ?> run, FilePath workspace, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap) throws MacroEvaluationException, IOException, InterruptedException {
+    public String evaluate(
+            Run<?, ?> run,
+            FilePath workspace,
+            TaskListener listener,
+            String macroName,
+            Map<String, String> arguments,
+            ListMultimap<String, String> argumentMultimap)
+            throws MacroEvaluationException, IOException, InterruptedException {
         final Jenkins jenkins = Jenkins.getInstance();
         if (jenkins != null) {
             return jenkins.getRootUrl() + run.getUrl();

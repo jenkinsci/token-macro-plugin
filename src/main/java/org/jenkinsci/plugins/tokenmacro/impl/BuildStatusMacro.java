@@ -9,7 +9,6 @@ import hudson.model.TaskListener;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-
 import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.jenkinsci.plugins.tokenmacro.TokenMacro;
@@ -32,48 +31,51 @@ public class BuildStatusMacro extends DataBoundTokenMacro {
     @Override
     public String evaluate(AbstractBuild<?, ?> build, TaskListener listener, String macroName)
             throws MacroEvaluationException, IOException, InterruptedException {
-        return evaluate(build,null,listener,macroName);
+        return evaluate(build, null, listener, macroName);
     }
 
     @Override
-    public String evaluate(Run<?,?> run, FilePath workspace, TaskListener listener, String macroName)
+    public String evaluate(Run<?, ?> run, FilePath workspace, TaskListener listener, String macroName)
             throws MacroEvaluationException, IOException, InterruptedException {
 
-        // In the case of pipeline jobs, if the status hasn't been set to a non-null value, then it is considered "success"
+        // In the case of pipeline jobs, if the status hasn't been set to a non-null value, then it is considered
+        // "success"
         if (!(run instanceof AbstractBuild) && null == run.getResult()) {
             // TODO this makes little sense. Why not just use Building as below?
             return Result.SUCCESS.toString();
         }
 
-        // Build can be "building" when the pre-build trigger is used. (and in this case there is not result set yet for the build)
+        // Build can be "building" when the pre-build trigger is used. (and in this case there is not result set yet for
+        // the build)
         // Reporting "success", "still failing", etc doesn't make sense in this case.
-        // When using on matrix build, the build is still in building stage when matrix aggregator end build trigger is fired, though
-        if ( (run.isBuilding()) && (null == run.getResult())) {
+        // When using on matrix build, the build is still in building stage when matrix aggregator end build trigger is
+        // fired, though
+        if ((run.isBuilding()) && (null == run.getResult())) {
             return "Building";
         }
 
         Result buildResult = run.getResult();
         if (buildResult == Result.FAILURE) {
-            Run<?,?> prevBuild = TokenMacro.getPreviousRun(run, listener);
+            Run<?, ?> prevBuild = TokenMacro.getPreviousRun(run, listener);
             if (prevBuild != null && (prevBuild.getResult() == Result.FAILURE)) {
                 return "Still Failing";
             } else {
                 return "Failure";
             }
         } else if (buildResult == Result.UNSTABLE) {
-            Run<?,?> prevRun = TokenMacro.getPreviousRun(run, listener);
+            Run<?, ?> prevRun = TokenMacro.getPreviousRun(run, listener);
             if (prevRun != null) {
                 if (prevRun.getResult() == Result.UNSTABLE) {
                     return "Still Unstable";
                 } else if (prevRun.getResult() == Result.SUCCESS) {
                     return "Unstable";
-                } else if (prevRun.getResult() == Result.FAILURE ||
-                        prevRun.getResult() == Result.ABORTED ||
-                        prevRun.getResult() == Result.NOT_BUILT) {
-                    //iterate through previous builds
-                    //(fail_or_aborted)* and then an unstable : return still unstable
-                    //(fail_or_aborted)* and then successful : return unstable
-                    Run<?,?> previous = TokenMacro.getPreviousRun(prevRun, listener);
+                } else if (prevRun.getResult() == Result.FAILURE
+                        || prevRun.getResult() == Result.ABORTED
+                        || prevRun.getResult() == Result.NOT_BUILT) {
+                    // iterate through previous builds
+                    // (fail_or_aborted)* and then an unstable : return still unstable
+                    // (fail_or_aborted)* and then successful : return unstable
+                    Run<?, ?> previous = TokenMacro.getPreviousRun(prevRun, listener);
                     while (previous != null) {
                         if (previous.getResult() == Result.SUCCESS) {
                             return "Unstable";
@@ -89,8 +91,9 @@ public class BuildStatusMacro extends DataBoundTokenMacro {
                 return "Unstable";
             }
         } else if (buildResult == Result.SUCCESS) {
-            Run<?,?> prevBuild = TokenMacro.getPreviousRun(run, listener);
-            if (prevBuild != null && (prevBuild.getResult() == Result.UNSTABLE || prevBuild.getResult() == Result.FAILURE)) {
+            Run<?, ?> prevBuild = TokenMacro.getPreviousRun(run, listener);
+            if (prevBuild != null
+                    && (prevBuild.getResult() == Result.UNSTABLE || prevBuild.getResult() == Result.FAILURE)) {
                 return "Fixed";
             } else {
                 return "Successful";

@@ -6,9 +6,6 @@ import hudson.console.ConsoleNote;
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import hudson.model.TaskListener;
-
-import org.apache.commons.lang.StringEscapeUtils;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.AbstractMap;
@@ -17,9 +14,10 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.Stack;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 
@@ -42,26 +40,37 @@ public class BuildLogRegexMacro extends DataBoundTokenMacro {
 
     @Parameter
     public String regex = "(?i)\\b(error|exception|fatal|fail(ed|ure)|un(defined|resolved))\\b";
+
     @Parameter
     public int linesBefore = LINES_BEFORE_DEFAULT_VALUE;
+
     @Parameter
     public int linesAfter = LINES_AFTER_DEFAULT_VALUE;
+
     @Parameter
     public int maxMatches = MAX_MATCHES_DEFAULT_VALUE;
+
     @Parameter
     public boolean showTruncatedLines = true;
+
     @Parameter
     public String substText = null; // insert entire line
+
     @Parameter
     public String matchedLineHtmlStyle = null;
+
     @Parameter
     public boolean addNewline = true;
+
     @Parameter
     public String defaultValue = "";
+
     @Parameter
     public boolean greedy = true;
+
     @Parameter
     public int maxTailMatches = MAX_TAIL_MATCHES_DEFAULT_VALUE;
+
     @Parameter
     public int maxLineLength = MAX_LINE_LENGTH_DEFAULT_VALUE;
 
@@ -99,10 +108,11 @@ public class BuildLogRegexMacro extends DataBoundTokenMacro {
         if (escapeHtml) {
             line = StringEscapeUtils.escapeHtml(line);
         }
-        matchResults.add(line+'\n');
+        matchResults.add(line + '\n');
     }
 
-    private void appendMatchedLine(List<String> matchResults, String line, boolean escapeHtml, String style, boolean addNewline) {
+    private void appendMatchedLine(
+            List<String> matchResults, String line, boolean escapeHtml, String style, boolean addNewline) {
         if (maxLineLength != MAX_LINE_LENGTH_DEFAULT_VALUE && line.length() > maxLineLength) {
             line = line.substring(0, maxLineLength) + "...";
         }
@@ -149,11 +159,11 @@ public class BuildLogRegexMacro extends DataBoundTokenMacro {
     @Override
     public String evaluate(AbstractBuild<?, ?> build, TaskListener listener, String macroName)
             throws MacroEvaluationException, IOException, InterruptedException {
-        return evaluate(build,null,listener,macroName);
+        return evaluate(build, null, listener, macroName);
     }
 
     @Override
-    public String evaluate(Run<?,?> run, FilePath workspace, TaskListener listener, String macroName)
+    public String evaluate(Run<?, ?> run, FilePath workspace, TaskListener listener, String macroName)
             throws MacroEvaluationException, IOException, InterruptedException {
         try {
             BufferedReader reader = new BufferedReader(run.getLogReader());
@@ -166,8 +176,7 @@ public class BuildLogRegexMacro extends DataBoundTokenMacro {
         }
     }
 
-    String getContent(BufferedReader reader)
-            throws IOException {
+    String getContent(BufferedReader reader) throws IOException {
 
         final boolean asHtml = matchedLineHtmlStyle != null;
         escapeHtml = asHtml || escapeHtml;
@@ -268,7 +277,7 @@ public class BuildLogRegexMacro extends DataBoundTokenMacro {
                 // The fundamental assumption here is that between the pre blocks, there are only truncated lines.
                 tailStartLocation = matchResults.size() - 1;
                 int resultsNeeded = maxTailMatches;
-                while (! preRanges.empty()) {
+                while (!preRanges.empty()) {
                     Pair<Integer, Integer> range = preRanges.pop();
                     int preStart = range.getKey();
                     int preEnd = range.getValue();
@@ -276,8 +285,7 @@ public class BuildLogRegexMacro extends DataBoundTokenMacro {
                     if (resultsNeeded > resultsInPreBlock) {
                         resultsNeeded -= resultsInPreBlock;
                         tailStartLocation = preStart;
-                    }
-                    else {
+                    } else {
                         tailStartLocation = preEnd - resultsNeeded;
                         // If we stopped short of the <pre> start tag, then insert one into the range.
                         if (preStart != tailStartLocation) {
@@ -291,20 +299,18 @@ public class BuildLogRegexMacro extends DataBoundTokenMacro {
                 if (resultsNeeded != 0) {
                     tailStartLocation = 0;
                 }
-            }
-            else {
+            } else {
                 if (showTruncatedLines) {
                     int resultsNeeded = maxTailMatches;
                     for (tailStartLocation = matchResults.size(); resultsNeeded > 0 && tailStartLocation > 0; ) {
                         --tailStartLocation;
-                        if (! matchResults.get(tailStartLocation).contains("...truncated ")) --resultsNeeded;
+                        if (!matchResults.get(tailStartLocation).contains("...truncated ")) --resultsNeeded;
                     }
                     // This means we went past all lines and haven't found enough results.
                     if (resultsNeeded != 0) {
                         tailStartLocation = 0;
                     }
-                }
-                else {
+                } else {
                     // This is the simplest case, with no extraneous lines in the results.
                     tailStartLocation = matchResults.size() - maxTailMatches;
                 }
@@ -315,8 +321,7 @@ public class BuildLogRegexMacro extends DataBoundTokenMacro {
     }
 
     // Poor man's substitution of the Apache Common's Pair.
-    private static class Pair<K,V> extends AbstractMap.SimpleEntry<K,V>
-    {
+    private static class Pair<K, V> extends AbstractMap.SimpleEntry<K, V> {
         Pair(K key, V val) {
             super(key, val);
         }

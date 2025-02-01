@@ -10,12 +10,6 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.AffectedFile;
-import org.apache.commons.lang.StringUtils;
-import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
-import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
-import org.jenkinsci.plugins.tokenmacro.TokenMacro;
-import org.jenkinsci.plugins.tokenmacro.Util;
-
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -23,6 +17,11 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Map.Entry;
+import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
+import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
+import org.jenkinsci.plugins.tokenmacro.TokenMacro;
+import org.jenkinsci.plugins.tokenmacro.Util;
 
 @Extension
 public class ChangesSinceLastBuildMacro extends DataBoundTokenMacro {
@@ -34,29 +33,33 @@ public class ChangesSinceLastBuildMacro extends DataBoundTokenMacro {
     public static final String MACRO_NAME = "CHANGES_SINCE_LAST_BUILD";
     public static final String ALTERNATE_MACRO_NAME = "CHANGES";
 
-
     @Parameter
     public boolean showPaths = false;
+
     @Parameter
-    @SuppressFBWarnings(value="PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification="Retain API compatibility.")
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Retain API compatibility.")
     public String format;
+
     @Parameter
-    @SuppressFBWarnings(value="PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification="Retain API compatibility.")
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Retain API compatibility.")
     public String pathFormat = PATH_FORMAT_DEFAULT_VALUE;
+
     @Parameter
     public boolean showDependencies = false;
+
     @Parameter
     public String dateFormat;
+
     @Parameter
     public String regex;
+
     @Parameter
     public String replace;
-    @Parameter(alias="default")
+
+    @Parameter(alias = "default")
     public String def = DEFAULT_DEFAULT_VALUE;
 
-    public ChangesSinceLastBuildMacro() {
-
-    }
+    public ChangesSinceLastBuildMacro() {}
 
     public ChangesSinceLastBuildMacro(String format, String pathFormat, boolean showPaths) {
         this.format = format;
@@ -79,7 +82,7 @@ public class ChangesSinceLastBuildMacro extends DataBoundTokenMacro {
     @Override
     public String evaluate(AbstractBuild<?, ?> build, TaskListener listener, String macroName)
             throws MacroEvaluationException, IOException, InterruptedException {
-        return evaluate(build,null,listener,macroName);
+        return evaluate(build, null, listener, macroName);
     }
 
     @Override
@@ -99,7 +102,7 @@ public class ChangesSinceLastBuildMacro extends DataBoundTokenMacro {
 
         format = TokenMacro.expandAll(run, workspace, listener, format);
 
-        if(StringUtils.isNotEmpty(pathFormat)) {
+        if (StringUtils.isNotEmpty(pathFormat)) {
             pathFormat = TokenMacro.expandAll(run, workspace, listener, pathFormat);
         }
 
@@ -108,20 +111,19 @@ public class ChangesSinceLastBuildMacro extends DataBoundTokenMacro {
         try {
             Method getChangeSets = run.getClass().getMethod("getChangeSets");
             changeSets = (List<ChangeLogSet<?>>) getChangeSets.invoke(run);
-        } catch(NoSuchMethodException e) {
+        } catch (NoSuchMethodException e) {
             changeSets = Collections.EMPTY_LIST;
-        } catch(InvocationTargetException e) {
+        } catch (InvocationTargetException e) {
             changeSets = Collections.EMPTY_LIST;
-        } catch(IllegalAccessException e) {
+        } catch (IllegalAccessException e) {
             changeSets = Collections.EMPTY_LIST;
         }
 
-        if(changeSets.size() > 0) {
+        if (changeSets.size() > 0) {
             for (ChangeLogSet<?> changeSet : changeSets) {
                 if (!changeSet.isEmptySet()) {
                     for (ChangeLogSet.Entry entry : changeSet) {
-                        Util.printf(buf, format, new ChangesSincePrintfSpec(entry,
-                                pathFormat, dateFormatter));
+                        Util.printf(buf, format, new ChangesSincePrintfSpec(entry, pathFormat, dateFormatter));
                     }
                 } else {
                     buf.append(def);
@@ -130,16 +132,20 @@ public class ChangesSinceLastBuildMacro extends DataBoundTokenMacro {
                     Run<?, ?> previousRun = TokenMacro.getPreviousRun(run, listener);
                     if (previousRun instanceof AbstractBuild) {
                         AbstractBuild<?, ?> build = (AbstractBuild<?, ?>) previousRun;
-                        for (Entry<AbstractProject, DependencyChange> e : build.getDependencyChanges((AbstractBuild) previousRun).entrySet()) {
+                        for (Entry<AbstractProject, DependencyChange> e : build.getDependencyChanges(
+                                        (AbstractBuild) previousRun)
+                                .entrySet()) {
                             buf.append("\n=======================\n");
-                            buf.append("\nChanges in ").append(e.getKey().getName())
+                            buf.append("\nChanges in ")
+                                    .append(e.getKey().getName())
                                     .append(":\n");
                             for (AbstractBuild<?, ?> b : e.getValue().getBuilds()) {
                                 if (!b.getChangeSet().isEmptySet()) {
                                     for (ChangeLogSet.Entry entry : b.getChangeSet()) {
-                                        Util.printf(buf, format,
-                                                new ChangesSincePrintfSpec(entry,
-                                                        pathFormat, dateFormatter));
+                                        Util.printf(
+                                                buf,
+                                                format,
+                                                new ChangesSincePrintfSpec(entry, pathFormat, dateFormatter));
                                     }
                                 } else {
                                     buf.append(def);
@@ -156,12 +162,11 @@ public class ChangesSinceLastBuildMacro extends DataBoundTokenMacro {
         return buf.toString();
     }
 
-    public class ChangesSincePrintfSpec
-            implements Util.PrintfSpec {
+    public class ChangesSincePrintfSpec implements Util.PrintfSpec {
 
-        final private ChangeLogSet.Entry entry;
-        final private String pathFormatString;
-        final private DateFormat dateFormatter;
+        private final ChangeLogSet.Entry entry;
+        private final String pathFormatString;
+        private final DateFormat dateFormatter;
 
         public ChangesSincePrintfSpec(ChangeLogSet.Entry entry, String pathFormatString, DateFormat dateFormatter) {
             this.entry = entry;
@@ -184,7 +189,7 @@ public class ChangesSinceLastBuildMacro extends DataBoundTokenMacro {
                 }
                 case 'm': {
                     String m = entry.getMsg();
-                    if(!StringUtils.isEmpty(regex) && !StringUtils.isEmpty(replace)) {
+                    if (!StringUtils.isEmpty(regex) && !StringUtils.isEmpty(replace)) {
                         m = m.replaceAll(regex, replace);
                     }
                     buf.append(m);
@@ -202,10 +207,10 @@ public class ChangesSinceLastBuildMacro extends DataBoundTokenMacro {
                                     if (formatChar == 'p') {
                                         buf.append(file.getPath());
                                         return true;
-                                    } else if(formatChar == 'a') {
+                                    } else if (formatChar == 'a') {
                                         buf.append(file.getEditType().getName());
                                         return true;
-                                    } else if(formatChar == 'd') {
+                                    } else if (formatChar == 'd') {
                                         buf.append(file.getEditType().getDescription());
                                         return true;
                                     } else {
@@ -214,7 +219,7 @@ public class ChangesSinceLastBuildMacro extends DataBoundTokenMacro {
                                 }
                             });
                         }
-                    } catch(UnsupportedOperationException e) {
+                    } catch (UnsupportedOperationException e) {
                         Collection<String> affectedPaths = entry.getAffectedPaths();
                         for (final String affectedPath : affectedPaths) {
                             Util.printf(buf, pathFormatString, new Util.PrintfSpec() {
@@ -222,10 +227,10 @@ public class ChangesSinceLastBuildMacro extends DataBoundTokenMacro {
                                     if (formatChar == 'p') {
                                         buf.append(affectedPath);
                                         return true;
-                                    } else if(formatChar == 'a') {
+                                    } else if (formatChar == 'a') {
                                         buf.append("Unknown");
                                         return true;
-                                    } else if(formatChar == 'd') {
+                                    } else if (formatChar == 'd') {
                                         buf.append("Unknown");
                                         return true;
                                     } else {
@@ -251,4 +256,3 @@ public class ChangesSinceLastBuildMacro extends DataBoundTokenMacro {
         }
     }
 }
-

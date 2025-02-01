@@ -10,9 +10,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import jenkins.model.Jenkins;
-
 import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 
@@ -37,7 +35,7 @@ public class JenkinsUrlMacro extends DataBoundTokenMacro {
     @Override
     public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName)
             throws MacroEvaluationException, IOException, InterruptedException {
-        return evaluate(context,null,listener,macroName);
+        return evaluate(context, null, listener, macroName);
     }
 
     @Override

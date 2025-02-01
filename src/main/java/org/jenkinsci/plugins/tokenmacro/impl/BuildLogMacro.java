@@ -5,13 +5,12 @@ import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import hudson.model.TaskListener;
-import org.apache.commons.lang.StringEscapeUtils;
-import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
-import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
-
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import org.apache.commons.lang.StringEscapeUtils;
+import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
+import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 
 /**
  * An EmailContent for build log. Shows last 250 lines of the build log file.
@@ -47,11 +46,11 @@ public class BuildLogMacro extends DataBoundTokenMacro {
     @Override
     public String evaluate(AbstractBuild<?, ?> build, TaskListener listener, String macroName)
             throws MacroEvaluationException, IOException, InterruptedException {
-        return evaluate(build,null,listener,macroName);
+        return evaluate(build, null, listener, macroName);
     }
 
     @Override
-    public String evaluate(Run<?,?> run, FilePath workspace, TaskListener listener, String macroName)
+    public String evaluate(Run<?, ?> run, FilePath workspace, TaskListener listener, String macroName)
             throws MacroEvaluationException, IOException, InterruptedException {
         if (maxLines <= 0) {
             throw new MacroEvaluationException("Invalid maxLines value: " + maxLines);

@@ -33,13 +33,13 @@ import edu.umd.cs.findbugs.annotations.NonNull;
  * @author Kohsuke Kawaguchi
  */
 public class MacroEvaluationException extends Exception {
-    
+
     private final @CheckForNull String macroName;
-    
+
     public MacroEvaluationException(@NonNull String message) {
         this(message, null, null);
     }
-    
+
     public MacroEvaluationException(@NonNull String message, @CheckForNull Throwable cause) {
         this(message, null, cause);
     }
@@ -47,8 +47,9 @@ public class MacroEvaluationException extends Exception {
     public MacroEvaluationException(@CheckForNull String message, @NonNull String macroName) {
         this(message, macroName, null);
     }
-    
-    public MacroEvaluationException(@CheckForNull String message, @CheckForNull String macroName, @CheckForNull Throwable cause) {
+
+    public MacroEvaluationException(
+            @CheckForNull String message, @CheckForNull String macroName, @CheckForNull Throwable cause) {
         super(message, cause);
         this.macroName = macroName;
     }

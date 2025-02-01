@@ -11,8 +11,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
-
 import jenkins.model.Jenkins;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
@@ -30,10 +28,10 @@ public class EnvironmentVariableMacro extends DataBoundTokenMacro {
 
     public static final String MACRO_NAME = "ENV";
 
-    @Parameter(required=true)
+    @Parameter(required = true)
     public String var = "";
 
-    @Parameter(alias="default")
+    @Parameter(alias = "default")
     public String def = "";
 
     @Override
@@ -44,7 +42,7 @@ public class EnvironmentVariableMacro extends DataBoundTokenMacro {
     @Override
     public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName)
             throws MacroEvaluationException, IOException, InterruptedException {
-        return evaluate(context,null,listener,macroName);
+        return evaluate(context, null, listener, macroName);
     }
 
     /*
@@ -54,17 +52,18 @@ public class EnvironmentVariableMacro extends DataBoundTokenMacro {
      * @returns The environment variable value or empty string on error
      */
     @SuppressFBWarnings("REC_CATCH_EXCEPTION")
-    private String getEnvVarFromWorkflowRun(Run<?,?> run) {
+    private String getEnvVarFromWorkflowRun(Run<?, ?> run) {
         try {
             WorkflowRun workflowRun = (WorkflowRun) run;
 
             FlowExecution execution = workflowRun.getExecution();
-            if(execution != null) {
-                List<StepExecution> actualExecutions = execution.getCurrentExecutions(true).get();
+            if (execution != null) {
+                List<StepExecution> actualExecutions =
+                        execution.getCurrentExecutions(true).get();
 
                 StepContext context = actualExecutions.get(0).getContext();
                 Map<String, String> vars = context.get(EnvVars.class);
-                if(vars != null && vars.containsKey(var)) {
+                if (vars != null && vars.containsKey(var)) {
                     return vars.get(var);
                 }
             }
@@ -83,14 +82,14 @@ public class EnvironmentVariableMacro extends DataBoundTokenMacro {
             res = getEnvVarFromWorkflowRun(run);
         }
 
-        if(StringUtils.isBlank(res)) {
+        if (StringUtils.isBlank(res)) {
             Map<String, String> env = run.getEnvironment(listener);
             if (env.containsKey(var)) {
                 return env.get(var);
             }
         }
 
-        if(StringUtils.isBlank(res) && StringUtils.isNotBlank(def)) {
+        if (StringUtils.isBlank(res) && StringUtils.isNotBlank(def)) {
             res = def;
         }
 
@@ -101,5 +100,4 @@ public class EnvironmentVariableMacro extends DataBoundTokenMacro {
     public boolean acceptsMacroName(String macroName) {
         return MACRO_NAME.equals(macroName);
     }
-
 }

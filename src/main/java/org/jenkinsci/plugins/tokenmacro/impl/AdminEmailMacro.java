@@ -7,6 +7,7 @@
 package org.jenkinsci.plugins.tokenmacro.impl;
 
 import com.google.common.collect.ListMultimap;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
@@ -20,15 +21,13 @@ import jenkins.model.JenkinsLocationConfiguration;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.jenkinsci.plugins.tokenmacro.TokenMacro;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
-
 /**
  *
  * @author acearl
  */
 @Extension
 public class AdminEmailMacro extends TokenMacro {
-    
+
     public static final String MACRO_NAME = "ADMIN_EMAIL";
 
     @Override
@@ -42,12 +41,25 @@ public class AdminEmailMacro extends TokenMacro {
     }
 
     @Override
-    public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap) throws MacroEvaluationException, IOException, InterruptedException {
-        return evaluate(context,null,listener,macroName,arguments,argumentMultimap);
+    public String evaluate(
+            AbstractBuild<?, ?> context,
+            TaskListener listener,
+            String macroName,
+            Map<String, String> arguments,
+            ListMultimap<String, String> argumentMultimap)
+            throws MacroEvaluationException, IOException, InterruptedException {
+        return evaluate(context, null, listener, macroName, arguments, argumentMultimap);
     }
 
     @Override
-    public String evaluate(Run<?,?> run, FilePath workspace, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap) throws MacroEvaluationException, IOException, InterruptedException {
+    public String evaluate(
+            Run<?, ?> run,
+            FilePath workspace,
+            TaskListener listener,
+            String macroName,
+            Map<String, String> arguments,
+            ListMultimap<String, String> argumentMultimap)
+            throws MacroEvaluationException, IOException, InterruptedException {
         return getAdminAddress();
     }
 

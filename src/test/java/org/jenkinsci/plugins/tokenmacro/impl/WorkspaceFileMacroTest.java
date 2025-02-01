@@ -1,5 +1,7 @@
 package org.jenkinsci.plugins.tokenmacro.impl;
 
+import static org.junit.Assert.*;
+
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
@@ -8,23 +10,16 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.TaskListener;
 import hudson.util.StreamTaskListener;
-import org.apache.commons.io.IOUtils;
-import org.jvnet.hudson.test.TestBuilder;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.HashMap;
-import java.util.Map;
-
+import org.apache.commons.io.IOUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.when;
+import org.jvnet.hudson.test.TestBuilder;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -39,7 +34,8 @@ public class WorkspaceFileMacroTest {
         TaskListener listener = StreamTaskListener.fromStdout();
         project.getBuildersList().add(new TestBuilder() {
             @Override
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
+                    throws InterruptedException, IOException {
                 build.getWorkspace().child("foo").write("Hello, world!", "UTF-8");
                 return true;
             }
@@ -50,7 +46,9 @@ public class WorkspaceFileMacroTest {
         content.path = "foo";
         assertEquals("Hello, world!", content.evaluate(build, listener, WorkspaceFileMacro.MACRO_NAME));
         content.path = "no-such-file";
-        assertEquals("ERROR: File 'no-such-file' does not exist", content.evaluate(build, listener, WorkspaceFileMacro.MACRO_NAME));
+        assertEquals(
+                "ERROR: File 'no-such-file' does not exist",
+                content.evaluate(build, listener, WorkspaceFileMacro.MACRO_NAME));
         content.fileNotFoundMessage = "No '%s' for you!";
         assertEquals("No 'no-such-file' for you!", content.evaluate(build, listener, WorkspaceFileMacro.MACRO_NAME));
     }
@@ -61,10 +59,11 @@ public class WorkspaceFileMacroTest {
         TaskListener listener = StreamTaskListener.fromStdout();
         project.getBuildersList().add(new TestBuilder() {
             @Override
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
+                    throws InterruptedException, IOException {
                 FilePath file = build.getWorkspace().child("foo");
-                try(BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(file.write()))) {
-                    for(int i = 0; i < 1000; i++) {
+                try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(file.write()))) {
+                    for (int i = 0; i < 1000; i++) {
                         writer.write("Hello, world! " + i + "\n");
                     }
                 }
@@ -79,29 +78,30 @@ public class WorkspaceFileMacroTest {
         String output = content.evaluate(build, listener, WorkspaceFileMacro.MACRO_NAME);
         String[] lines = output.split("\n");
         assertEquals(10, lines.length);
-        for(int i = 0; i < 10; i++) {
+        for (int i = 0; i < 10; i++) {
             assertEquals("Hello, world! " + i, lines[i]);
         }
     }
 
     @Test
     public void testUtfEncodings() throws Exception {
-        String[] expected = { "première is first",
-                "première is slightly different",
-                "Кириллица is Cyrillic",
-                "\uD801\uDC00 am Deseret" };
+        String[] expected = {
+            "première is first", "première is slightly different", "Кириллица is Cyrillic", "\uD801\uDC00 am Deseret"
+        };
 
-        String[] encodings = { "utf8", "utf16" };
+        String[] encodings = {"utf8", "utf16"};
 
-        for(String encoding : encodings) {
+        for (String encoding : encodings) {
             FreeStyleProject project = j.createFreeStyleProject();
             TaskListener listener = StreamTaskListener.fromStdout();
             project.getBuildersList().add(new TestBuilder() {
                 @Override
-                public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
+                        throws InterruptedException, IOException {
                     FilePath file = build.getWorkspace().child(encoding + ".txt");
-                    try(BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(file.write(), encoding))) {
-                        try(BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream(encoding + ".txt"), encoding))) {
+                    try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(file.write(), encoding))) {
+                        try (BufferedReader reader = new BufferedReader(
+                                new InputStreamReader(getClass().getResourceAsStream(encoding + ".txt"), encoding))) {
                             IOUtils.copy(reader, writer);
                         }
                     }
@@ -130,15 +130,18 @@ public class WorkspaceFileMacroTest {
         TaskListener listener = StreamTaskListener.fromStdout();
 
         String expected;
-        try(BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("Chinese-Simplified.txt"), "utf16"))) {
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(getClass().getResourceAsStream("Chinese-Simplified.txt"), "utf16"))) {
             expected = IOUtils.toString(reader);
         }
         project.getBuildersList().add(new TestBuilder() {
             @Override
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
+                    throws InterruptedException, IOException {
                 FilePath file = build.getWorkspace().child("Chinese-Simplified.txt");
-                try(BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(file.write(), "utf16"))) {
-                    try(BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("Chinese-Simplified.txt"), "utf16"))) {
+                try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(file.write(), "utf16"))) {
+                    try (BufferedReader reader = new BufferedReader(
+                            new InputStreamReader(getClass().getResourceAsStream("Chinese-Simplified.txt"), "utf16"))) {
                         IOUtils.copy(reader, writer);
                     }
                 }

@@ -6,7 +6,6 @@ import hudson.console.ConsoleNote;
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import hudson.model.TaskListener;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Collections;
@@ -24,10 +23,10 @@ public class BuildLogExcerptMacro extends DataBoundTokenMacro {
 
     public static final String MACRO_NAME = "BUILD_LOG_EXCERPT";
 
-    @Parameter(required=true)
+    @Parameter(required = true)
     public String start;
 
-    @Parameter(required=true)
+    @Parameter(required = true)
     public String end;
 
     @Override
@@ -43,11 +42,11 @@ public class BuildLogExcerptMacro extends DataBoundTokenMacro {
     @Override
     public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName)
             throws MacroEvaluationException, IOException, InterruptedException {
-        return evaluate(context,null,listener,macroName);
+        return evaluate(context, null, listener, macroName);
     }
 
     @Override
-    public String evaluate(Run<?,?> run, FilePath workspace, TaskListener listener, String macroName)
+    public String evaluate(Run<?, ?> run, FilePath workspace, TaskListener listener, String macroName)
             throws MacroEvaluationException, IOException, InterruptedException {
         try {
             BufferedReader reader = new BufferedReader(run.getLogReader());
@@ -78,8 +77,8 @@ public class BuildLogExcerptMacro extends DataBoundTokenMacro {
             }
 
             if (started) {
-            	if (endPattern.matcher(line).matches()) break;
-            	buffer.append(line).append('\n');
+                if (endPattern.matcher(line).matches()) break;
+                buffer.append(line).append('\n');
             }
         }
         return buffer.toString();

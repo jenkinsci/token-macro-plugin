@@ -1,52 +1,57 @@
 package org.jenkinsci.plugins.tokenmacro.impl;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath;
 import hudson.model.*;
 import java.io.IOException;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.jenkinsci.plugins.tokenmacro.TokenMacro;
 import org.jenkinsci.plugins.tokenmacro.Util;
 
-abstract public class AbstractChangesSinceMacro
-        extends DataBoundTokenMacro {
+public abstract class AbstractChangesSinceMacro extends DataBoundTokenMacro {
 
     @Parameter
     public boolean reverse = false;
+
     @Parameter
-    @SuppressFBWarnings(value="PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification="Retain API compatibility.")
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Retain API compatibility.")
     public String format;
+
     @Parameter
     public boolean showPaths = false;
+
     @Parameter
     public String changesFormat;
+
     @Parameter
-    @SuppressFBWarnings(value="PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification="Retain API compatibility.")
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Retain API compatibility.")
     public String pathFormat = "\\t%p\\n";
+
     @Parameter
     public boolean showDependencies = false;
+
     @Parameter
     public String dateFormat;
+
     @Parameter
     public String regex;
+
     @Parameter
     public String replace;
-    @Parameter(alias="default")
+
+    @Parameter(alias = "default")
     public String def = ChangesSinceLastBuildMacro.DEFAULT_DEFAULT_VALUE;
-
-
 
     @Override
     public String evaluate(AbstractBuild<?, ?> build, TaskListener listener, String macroName)
             throws MacroEvaluationException, IOException, InterruptedException {
-        return evaluate(build,null,listener,macroName);
+        return evaluate(build, null, listener, macroName);
     }
 
     @Override
-    public String evaluate(Run<?,?> run, FilePath workspace, TaskListener listener, String macroName)
+    public String evaluate(Run<?, ?> run, FilePath workspace, TaskListener listener, String macroName)
             throws MacroEvaluationException, IOException, InterruptedException {
         // No previous build so bail
         if (TokenMacro.getPreviousRun(run, listener) == null) {
@@ -59,7 +64,7 @@ abstract public class AbstractChangesSinceMacro
 
         format = TokenMacro.expandAll(run, workspace, listener, format);
 
-        if(StringUtils.isNotEmpty(pathFormat)) {
+        if (StringUtils.isNotEmpty(pathFormat)) {
             pathFormat = TokenMacro.expandAll(run, workspace, listener, pathFormat);
         }
 
@@ -90,9 +95,7 @@ abstract public class AbstractChangesSinceMacro
         return sb.toString();
     }
 
-    private void appendBuild(StringBuffer buf,
-                             final TaskListener listener,
-                             final Run<?, ?> currentRun)
+    private void appendBuild(StringBuffer buf, final TaskListener listener, final Run<?, ?> currentRun)
             throws MacroEvaluationException {
         // Use this object since it already formats the changes per build
         final ChangesSinceLastBuildMacro changes = new ChangesSinceLastBuildMacro(changesFormat, pathFormat, showPaths);
@@ -107,7 +110,8 @@ abstract public class AbstractChangesSinceMacro
                 switch (formatChar) {
                     case 'c':
                         try {
-                            buf.append(changes.evaluate(currentRun, null, listener, ChangesSinceLastBuildMacro.MACRO_NAME));
+                            buf.append(changes.evaluate(
+                                    currentRun, null, listener, ChangesSinceLastBuildMacro.MACRO_NAME));
                         } catch (MacroEvaluationException e) {
                             // ignore this
                         } catch (IOException e) {
@@ -130,6 +134,5 @@ abstract public class AbstractChangesSinceMacro
 
     public abstract String getShortHelpDescription();
 
-    public abstract Run<?,?> getFirstIncludedRun(Run<?,?> build, TaskListener listener);
+    public abstract Run<?, ?> getFirstIncludedRun(Run<?, ?> build, TaskListener listener);
 }
-
