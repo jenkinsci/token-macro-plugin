@@ -1,14 +1,14 @@
 package org.jenkinsci.plugins.tokenmacro.impl;
 
+import static junit.framework.TestCase.assertEquals;
+
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
-import hudson.model.TaskListener;
 import hudson.util.StreamTaskListener;
 import java.io.IOException;
-import static junit.framework.TestCase.assertEquals;
 import org.jenkinsci.plugins.tokenmacro.*;
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,13 +28,18 @@ public class PropertyFromFileMacroTest {
         FreeStyleProject project = j.createFreeStyleProject("foo");
         project.getBuildersList().add(new TestBuilder() {
             @Override
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-                build.getWorkspace().child("test.properties").write("test.property=success","UTF-8");
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
+                    throws InterruptedException, IOException {
+                build.getWorkspace().child("test.properties").write("test.property=success", "UTF-8");
                 return true;
             }
         });
         FreeStyleBuild b = project.scheduleBuild2(0).get();
-        assertEquals("success",TokenMacro.expand(b, StreamTaskListener.fromStdout(), 
-                "${PROPFILE,file=\"test.properties\",property=\"test.property\"}"));
+        assertEquals(
+                "success",
+                TokenMacro.expand(
+                        b,
+                        StreamTaskListener.fromStdout(),
+                        "${PROPFILE,file=\"test.properties\",property=\"test.property\"}"));
     }
 }

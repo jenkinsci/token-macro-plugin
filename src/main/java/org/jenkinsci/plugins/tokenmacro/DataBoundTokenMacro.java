@@ -23,13 +23,14 @@
  */
 package org.jenkinsci.plugins.tokenmacro;
 
+import static java.lang.annotation.ElementType.*;
+import static java.lang.annotation.RetentionPolicy.*;
+
 import com.google.common.collect.ListMultimap;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import hudson.model.TaskListener;
-import org.apache.commons.beanutils.ConvertUtils;
-
 import java.beans.Introspector;
 import java.io.IOException;
 import java.lang.annotation.Retention;
@@ -41,10 +42,7 @@ import java.text.MessageFormat;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static java.lang.annotation.ElementType.*;
-import static java.lang.annotation.RetentionPolicy.*;
-
+import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -64,11 +62,11 @@ import org.apache.commons.lang.StringUtils;
 public abstract class DataBoundTokenMacro extends TokenMacro {
 
     @Retention(RUNTIME)
-    @Target({FIELD,METHOD})
+    @Target({FIELD, METHOD})
     public @interface Parameter {
         boolean required() default false;
 
-	    String alias() default "";
+        String alias() default "";
     }
 
     private interface Setter {
@@ -85,7 +83,8 @@ public abstract class DataBoundTokenMacro extends TokenMacro {
         boolean required();
     }
 
-    private Map<String,Setter> setters;
+    private Map<String, Setter> setters;
+
     @Parameter
     public boolean escapeHtml = false;
 
@@ -97,27 +96,27 @@ public abstract class DataBoundTokenMacro extends TokenMacro {
      * Builds up the {@link #setters} map that encapsulates where/how to set the value.
      */
     private void buildMap() {
-        if (setters!=null)  return;
+        if (setters != null) return;
 
         setters = new ConcurrentHashMap<>();
         for (final Field f : getClass().getFields()) {
             final Parameter p = f.getAnnotation(Parameter.class);
-            if (p !=null) {
+            if (p != null) {
                 String name = f.getName();
                 if (StringUtils.isNotEmpty(p.alias())) {
                     name = p.alias();
                 }
 
-                setters.put(name,new Setter() {
+                setters.put(name, new Setter() {
                     public Class<?> getType() {
                         return f.getType();
                     }
 
                     public void set(Object target, Object value) {
                         try {
-                            f.set(target,value);
+                            f.set(target, value);
                         } catch (IllegalAccessException e) {
-                            throw (IllegalAccessError)new IllegalAccessError(e.getMessage()).initCause(e);
+                            throw (IllegalAccessError) new IllegalAccessError(e.getMessage()).initCause(e);
                         }
                     }
 
@@ -130,10 +129,11 @@ public abstract class DataBoundTokenMacro extends TokenMacro {
 
         for (final Method m : getClass().getMethods()) {
             final Parameter p = m.getAnnotation(Parameter.class);
-            if (p !=null) {
+            if (p != null) {
                 final Class<?>[] pt = m.getParameterTypes();
-                if (pt.length!=1)
-                    throw new IllegalArgumentException("Expecting one-arg method for @Parameter but found "+m+" instead");
+                if (pt.length != 1)
+                    throw new IllegalArgumentException(
+                            "Expecting one-arg method for @Parameter but found " + m + " instead");
 
                 String name = m.getName();
                 if (name.startsWith("set")) {
@@ -144,16 +144,16 @@ public abstract class DataBoundTokenMacro extends TokenMacro {
                     name = p.alias();
                 }
 
-                setters.put(name,new Setter() {
+                setters.put(name, new Setter() {
                     public Class<?> getType() {
                         return pt[0];
                     }
 
                     public void set(Object target, Object value) {
                         try {
-                            m.invoke(target,value);
+                            m.invoke(target, value);
                         } catch (IllegalAccessException e) {
-                            throw (IllegalAccessError)new IllegalAccessError(e.getMessage()).initCause(e);
+                            throw (IllegalAccessError) new IllegalAccessError(e.getMessage()).initCause(e);
                         } catch (InvocationTargetException e) {
                             throw new Error(e);
                         }
@@ -167,28 +167,30 @@ public abstract class DataBoundTokenMacro extends TokenMacro {
         }
     }
 
-    private DataBoundTokenMacro prepare(String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap) throws MacroEvaluationException {
+    private DataBoundTokenMacro prepare(
+            String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap)
+            throws MacroEvaluationException {
         DataBoundTokenMacro copy;
         try {
             copy = getClass().newInstance();
 
             for (Entry<String, String> e : argumentMultimap.entries()) {
                 Setter s = setters.get(e.getKey());
-                if (s==null)
-                    throw new MacroEvaluationException(MessageFormat.format("Undefined parameter {0} in token {1}", e.getKey(),macroName));
+                if (s == null)
+                    throw new MacroEvaluationException(
+                            MessageFormat.format("Undefined parameter {0} in token {1}", e.getKey(), macroName));
 
                 Object v;
-                if (s.getType()==boolean.class && e.getValue()==null)
-                    v = true;
-                else
-                    v = ConvertUtils.convert(e.getValue(), s.getType());
+                if (s.getType() == boolean.class && e.getValue() == null) v = true;
+                else v = ConvertUtils.convert(e.getValue(), s.getType());
 
                 s.set(copy, v);
             }
 
             for (Entry<String, Setter> e : setters.entrySet()) {
                 if (!arguments.containsKey(e.getKey()) && e.getValue().required())
-                    throw new MacroEvaluationException(MessageFormat.format("Parameter {0} in token {1} is required but was not specfified", e.getKey(), macroName));
+                    throw new MacroEvaluationException(MessageFormat.format(
+                            "Parameter {0} in token {1} is required but was not specfified", e.getKey(), macroName));
             }
         } catch (InstantiationException e) {
             throw new Error(e);
@@ -200,8 +202,14 @@ public abstract class DataBoundTokenMacro extends TokenMacro {
     }
 
     @Override
-    public String evaluate(AbstractBuild<?, ?> build, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap) throws MacroEvaluationException, IOException, InterruptedException {
-        DataBoundTokenMacro copy = prepare(macroName,arguments,argumentMultimap);
+    public String evaluate(
+            AbstractBuild<?, ?> build,
+            TaskListener listener,
+            String macroName,
+            Map<String, String> arguments,
+            ListMultimap<String, String> argumentMultimap)
+            throws MacroEvaluationException, IOException, InterruptedException {
+        DataBoundTokenMacro copy = prepare(macroName, arguments, argumentMultimap);
         String res = copy.evaluate(build, listener, macroName);
         if (copy.escapeHtml && !copy.handlesHtmlEscapeInternally()) {
             res = StringEscapeUtils.escapeHtml(res);
@@ -210,8 +218,15 @@ public abstract class DataBoundTokenMacro extends TokenMacro {
     }
 
     @Override
-    public String evaluate(Run<?,?> run, FilePath workspace, TaskListener listener, String macroName, Map<String, String> arguments, ListMultimap<String, String> argumentMultimap) throws MacroEvaluationException, IOException, InterruptedException {
-        DataBoundTokenMacro copy = prepare(macroName,arguments,argumentMultimap);
+    public String evaluate(
+            Run<?, ?> run,
+            FilePath workspace,
+            TaskListener listener,
+            String macroName,
+            Map<String, String> arguments,
+            ListMultimap<String, String> argumentMultimap)
+            throws MacroEvaluationException, IOException, InterruptedException {
+        DataBoundTokenMacro copy = prepare(macroName, arguments, argumentMultimap);
         String res = copy.evaluate(run, workspace, listener, macroName);
         if (copy.escapeHtml && !copy.handlesHtmlEscapeInternally()) {
             res = StringEscapeUtils.escapeHtml(res);
@@ -234,9 +249,11 @@ public abstract class DataBoundTokenMacro extends TokenMacro {
         return false;
     }
 
-    public abstract String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName) throws MacroEvaluationException, IOException, InterruptedException;
+    public abstract String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName)
+            throws MacroEvaluationException, IOException, InterruptedException;
 
-    public String evaluate(Run<?,?> run, FilePath workspace, TaskListener listener, String macroName) throws MacroEvaluationException, IOException, InterruptedException {
+    public String evaluate(Run<?, ?> run, FilePath workspace, TaskListener listener, String macroName)
+            throws MacroEvaluationException, IOException, InterruptedException {
         return macroName + " is not supported in this context";
     }
 

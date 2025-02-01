@@ -6,6 +6,8 @@
 
 package org.jenkinsci.plugins.tokenmacro.impl;
 
+import static junit.framework.TestCase.assertEquals;
+
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.util.StreamTaskListener;
@@ -13,8 +15,6 @@ import org.jenkinsci.plugins.tokenmacro.TokenMacro;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import static junit.framework.TestCase.assertEquals;
 
 /**
  *
@@ -31,6 +31,6 @@ public class BuildNumberMacroTest {
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
         String expectedBuildNumber = String.valueOf(b.getNumber());
-        assertEquals(expectedBuildNumber, TokenMacro.expand(b, StreamTaskListener.fromStdout(),"${BUILD_NUMBER}"));
+        assertEquals(expectedBuildNumber, TokenMacro.expand(b, StreamTaskListener.fromStdout(), "${BUILD_NUMBER}"));
     }
 }

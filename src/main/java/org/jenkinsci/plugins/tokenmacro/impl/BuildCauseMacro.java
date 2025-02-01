@@ -3,14 +3,12 @@ package org.jenkinsci.plugins.tokenmacro.impl;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.*;
-
 import java.io.IOException;
-import org.apache.commons.lang.StringUtils;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 
@@ -38,11 +36,11 @@ public class BuildCauseMacro extends DataBoundTokenMacro {
     @Override
     public String evaluate(AbstractBuild<?, ?> build, TaskListener listener, String macroName)
             throws MacroEvaluationException, IOException, InterruptedException {
-        return evaluate(build,null,listener,macroName);
+        return evaluate(build, null, listener, macroName);
     }
 
     @Override
-    public String evaluate(Run<?,?> run, FilePath workspace, TaskListener listener, String macroName)
+    public String evaluate(Run<?, ?> run, FilePath workspace, TaskListener listener, String macroName)
             throws MacroEvaluationException, IOException, InterruptedException {
         List<Cause> causes = new LinkedList<Cause>();
         CauseAction causeAction = run.getAction(CauseAction.class);
@@ -60,8 +58,8 @@ public class BuildCauseMacro extends DataBoundTokenMacro {
 
         List<String> causeData = new LinkedList<String>();
         for (Cause cause : causes) {
-            if(data != null) {
-                if(cause instanceof Cause.UpstreamCause) {
+            if (data != null) {
+                if (cause instanceof Cause.UpstreamCause) {
                     Cause.UpstreamCause upstreamCause = (Cause.UpstreamCause) cause;
                     if (data.equals("BUILD_URL")) {
                         causeData.add(upstreamCause.getUpstreamUrl());
@@ -79,4 +77,3 @@ public class BuildCauseMacro extends DataBoundTokenMacro {
         return StringUtils.join(causeData, ", ");
     }
 }
-

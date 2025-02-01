@@ -6,14 +6,12 @@ import hudson.console.ConsoleNote;
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import hudson.model.TaskListener;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.apache.commons.lang.StringEscapeUtils;
 import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
@@ -32,14 +30,18 @@ public class BuildLogMultilineRegexMacro extends DataBoundTokenMacro {
     public static final String MACRO_NAME = "BUILD_LOG_MULTILINE_REGEX";
     public static final int MAX_MATCHES_DEFAULT_VALUE = 0;
 
-    @Parameter(required=true)
+    @Parameter(required = true)
     public String regex;
+
     @Parameter
     public int maxMatches = MAX_MATCHES_DEFAULT_VALUE;
+
     @Parameter
     public boolean showTruncatedLines = true;
+
     @Parameter
     public String substText = null; // insert entire segment
+
     @Parameter
     public String matchedSegmentHtmlStyle = null;
 
@@ -71,8 +73,7 @@ public class BuildLogMultilineRegexMacro extends DataBoundTokenMacro {
         return insidePre;
     }
 
-    private void appendMatchedSegment(StringBuilder buffer, String segment,
-                                      boolean escapeHtml, String style) {
+    private void appendMatchedSegment(StringBuilder buffer, String segment, boolean escapeHtml, String style) {
         if (escapeHtml) {
             segment = StringEscapeUtils.escapeHtml(segment);
         }
@@ -109,10 +110,10 @@ public class BuildLogMultilineRegexMacro extends DataBoundTokenMacro {
     @Override
     public String evaluate(AbstractBuild<?, ?> build, TaskListener listener, String macroName)
             throws MacroEvaluationException, IOException, InterruptedException {
-        return evaluate(build,null,listener,macroName);
+        return evaluate(build, null, listener, macroName);
     }
 
-    public String evaluate(Run<?,?> run, FilePath workspace, TaskListener listener, String macroName)
+    public String evaluate(Run<?, ?> run, FilePath workspace, TaskListener listener, String macroName)
             throws MacroEvaluationException, IOException, InterruptedException {
         try {
             BufferedReader reader = new BufferedReader(run.getLogReader());
@@ -214,4 +215,3 @@ public class BuildLogMultilineRegexMacro extends DataBoundTokenMacro {
         return true;
     }
 }
-

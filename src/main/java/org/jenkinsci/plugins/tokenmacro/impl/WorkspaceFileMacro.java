@@ -29,8 +29,6 @@ import hudson.Extension;
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import hudson.model.TaskListener;
-import jenkins.security.MasterToSlaveCallable;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -40,22 +38,24 @@ import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-
+import jenkins.security.MasterToSlaveCallable;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.jenkinsci.plugins.tokenmacro.WorkspaceDependentMacro;
 
 @Extension
 public class WorkspaceFileMacro extends WorkspaceDependentMacro {
-    @Parameter(required=true)
-    @SuppressFBWarnings(value="PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification="Retain API compatibility.")
+    @Parameter(required = true)
+    @SuppressFBWarnings(value = "PA_PUBLIC_PRIMITIVE_ATTRIBUTE", justification = "Retain API compatibility.")
     public String path = "";
+
     @Parameter
     public String fileNotFoundMessage = "ERROR: File '%s' does not exist";
+
     @Parameter
     public int maxLines = -1;
+
     @Parameter
     public String charSet = Charset.defaultCharset().name();
-    
 
     public static final String MACRO_NAME = "FILE";
 
@@ -71,12 +71,12 @@ public class WorkspaceFileMacro extends WorkspaceDependentMacro {
 
     @Override
     public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName)
-            throws MacroEvaluationException, IOException, InterruptedException {        
-        return evaluate(context,getWorkspace(context),listener,macroName);
+            throws MacroEvaluationException, IOException, InterruptedException {
+        return evaluate(context, getWorkspace(context), listener, macroName);
     }
 
     @Override
-    public MasterToSlaveCallable<String, IOException> getCallable(Run<?,?> run, String root, TaskListener listener) {
+    public MasterToSlaveCallable<String, IOException> getCallable(Run<?, ?> run, String root, TaskListener listener) {
         // do some environment variable substitution
         try {
             EnvVars env = run.getEnvironment(listener);
@@ -95,7 +95,8 @@ public class WorkspaceFileMacro extends WorkspaceDependentMacro {
 
                 try {
                     Charset charset = Charset.forName(charSet);
-                    try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), charset))) {
+                    try (BufferedReader reader =
+                            new BufferedReader(new InputStreamReader(new FileInputStream(file), charset))) {
                         if (maxLines > 0) {
                             return reader.lines().limit(maxLines).collect(Collectors.joining("\n"));
                         } else {

@@ -5,14 +5,12 @@ import hudson.Extension;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.TaskListener;
-import org.jenkinsci.plugins.tokenmacro.TokenMacro;
-
 import java.util.Collections;
 import java.util.List;
+import org.jenkinsci.plugins.tokenmacro.TokenMacro;
 
 @Extension
-public class ChangesSinceLastUnstableBuildMacro
-        extends AbstractChangesSinceMacro {
+public class ChangesSinceLastUnstableBuildMacro extends AbstractChangesSinceMacro {
 
     public static final String MACRO_NAME = "CHANGES_SINCE_LAST_UNSTABLE";
     private static final String FORMAT_DEFAULT_VALUE = "Changes for Build #%n\\n%c\\n";
@@ -39,10 +37,10 @@ public class ChangesSinceLastUnstableBuildMacro
 
     @Override
     @SuppressFBWarnings
-    public Run<?,?> getFirstIncludedRun(Run<?,?> run, TaskListener listener) {
-        Run<?,?> firstIncludedBuild = run;
+    public Run<?, ?> getFirstIncludedRun(Run<?, ?> run, TaskListener listener) {
+        Run<?, ?> firstIncludedBuild = run;
 
-        Run<?,?> prev = TokenMacro.getPreviousRun(firstIncludedBuild, listener);
+        Run<?, ?> prev = TokenMacro.getPreviousRun(firstIncludedBuild, listener);
         while (prev != null && prev.getResult() != null && prev.getResult().isWorseThan(Result.UNSTABLE)) {
             firstIncludedBuild = prev;
             prev = TokenMacro.getPreviousRun(firstIncludedBuild, listener);
@@ -51,4 +49,3 @@ public class ChangesSinceLastUnstableBuildMacro
         return firstIncludedBuild;
     }
 }
-

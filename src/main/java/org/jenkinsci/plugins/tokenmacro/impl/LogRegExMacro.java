@@ -1,4 +1,3 @@
-
 package org.jenkinsci.plugins.tokenmacro.impl;
 
 import hudson.Extension;
@@ -7,13 +6,11 @@ import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 
@@ -28,12 +25,12 @@ import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 public final class LogRegExMacro extends DataBoundTokenMacro {
     private static final String MACRO_NAME = "LOG_REGEX";
 
-    @Parameter(required=true)
+    @Parameter(required = true)
     public String regex = null;
 
-    @Parameter(required=true)
+    @Parameter(required = true)
     public String replacement = null;
-    
+
     @Override
     public boolean acceptsMacroName(String macroName) {
         return MACRO_NAME.equals(macroName);
@@ -45,12 +42,14 @@ public final class LogRegExMacro extends DataBoundTokenMacro {
     }
 
     @Override
-    public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName) throws MacroEvaluationException, IOException, InterruptedException {
-        return evaluate(context,null,listener,macroName);
+    public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName)
+            throws MacroEvaluationException, IOException, InterruptedException {
+        return evaluate(context, null, listener, macroName);
     }
 
     @Override
-    public String evaluate(Run<?, ?> run, FilePath workspace, TaskListener listener, String macroName) throws MacroEvaluationException, IOException, InterruptedException {
+    public String evaluate(Run<?, ?> run, FilePath workspace, TaskListener listener, String macroName)
+            throws MacroEvaluationException, IOException, InterruptedException {
         return readLogFile(run);
     }
 
@@ -62,7 +61,7 @@ public final class LogRegExMacro extends DataBoundTokenMacro {
         // Prepare patterns and encodings
         String line;
         Pattern pattern = Pattern.compile(regex);
-                
+
         try (BufferedReader reader = new BufferedReader(run.getLogReader())) {
             while ((line = reader.readLine()) != null) {
                 Matcher matcher = pattern.matcher(line);
