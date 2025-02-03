@@ -11,9 +11,12 @@ import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.remoting.Callable;
+import hudson.slaves.DumbSlave;
 import hudson.util.StreamTaskListener;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -35,9 +38,11 @@ public class PipelineTest {
     @Rule
     public final JenkinsRule j = new JenkinsRule();
 
+    private DumbSlave agent;
+
     @Before
     public void setup() throws Exception {
-        j.createOnlineSlave(Label.get("agents"));
+        agent = j.createOnlineSlave(Label.get("agents"));
     }
 
     @Test
@@ -70,6 +75,19 @@ public class PipelineTest {
         job.setDefinition(new CpsFlowDefinition(getPipeline("any", "${TEST_WS}"), true));
         Run<?, ?> run = j.assertBuildStatusSuccess(job.scheduleBuild2(0));
         j.assertLogContains("Workspace: foo", run);
+    }
+
+    @Test
+    public void testFileNeededWithAgent() throws Exception {
+        WorkflowJob job = j.jenkins.createProject(WorkflowJob.class, "foo");
+        FilePath workspace = agent.getWorkspaceFor(job);
+        workspace.mkdirs();
+        try (OutputStream of = new FilePath(workspace, "in.txt").write()) {
+            of.write("42".getBytes(StandardCharsets.UTF_8));
+        }
+        job.setDefinition(new CpsFlowDefinition(getPipeline("{label 'agents'}", "${FILE,path=\"in.txt\"}"), true));
+        Run<?, ?> run = j.assertBuildStatusSuccess(job.scheduleBuild2(0));
+        j.assertLogContains("VERSION=42", run);
     }
 
     @Test

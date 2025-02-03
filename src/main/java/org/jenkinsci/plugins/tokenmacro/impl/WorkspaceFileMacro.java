@@ -84,34 +84,51 @@ public class WorkspaceFileMacro extends WorkspaceDependentMacro {
         } catch (Exception e) {
             listener.error("Error retrieving environment: %s", e.getMessage());
         }
-        return new MasterToSlaveCallable<String, IOException>() {
-            @Override
-            public String call() throws IOException {
-
-                File file = new File(root, path);
-                if (!file.exists()) {
-                    return String.format(fileNotFoundMessage, path);
-                }
-
-                try {
-                    Charset charset = Charset.forName(charSet);
-                    try (BufferedReader reader =
-                            new BufferedReader(new InputStreamReader(new FileInputStream(file), charset))) {
-                        if (maxLines > 0) {
-                            return reader.lines().limit(maxLines).collect(Collectors.joining("\n"));
-                        } else {
-                            return reader.lines().collect(Collectors.joining("\n"));
-                        }
-                    }
-                } catch (IOException e) {
-                    return "ERROR: File '" + path + "' could not be read";
-                }
-            }
-        };
+        return new WorkspaceFileMasterToSlaveCallable(root, path, fileNotFoundMessage, charSet, maxLines);
     }
 
     @Override
     public boolean hasNestedContent() {
         return true;
+    }
+
+    private static class WorkspaceFileMasterToSlaveCallable extends MasterToSlaveCallable<String, IOException> {
+        private final String root;
+        private final String path;
+        private final String fileNotFoundMessage;
+        private final String charSet;
+        private final int maxLines;
+
+        public WorkspaceFileMasterToSlaveCallable(
+                String root, String path, String fileNotFoundMessage, String charSet, int maxLines) {
+            this.root = root;
+            this.path = path;
+            this.fileNotFoundMessage = fileNotFoundMessage;
+            this.charSet = charSet;
+            this.maxLines = maxLines;
+        }
+
+        @Override
+        public String call() throws IOException {
+
+            File file = new File(root, path);
+            if (!file.exists()) {
+                return String.format(fileNotFoundMessage, path);
+            }
+
+            try {
+                Charset charset = Charset.forName(charSet);
+                try (BufferedReader reader =
+                        new BufferedReader(new InputStreamReader(new FileInputStream(file), charset))) {
+                    if (maxLines > 0) {
+                        return reader.lines().limit(maxLines).collect(Collectors.joining("\n"));
+                    } else {
+                        return reader.lines().collect(Collectors.joining("\n"));
+                    }
+                }
+            } catch (IOException e) {
+                return "ERROR: File '" + path + "' could not be read";
+            }
+        }
     }
 }
