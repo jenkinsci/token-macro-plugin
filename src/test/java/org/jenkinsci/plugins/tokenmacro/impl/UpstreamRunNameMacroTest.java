@@ -1,27 +1,26 @@
 package org.jenkinsci.plugins.tokenmacro.impl;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.model.Cause;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.TaskListener;
 import hudson.util.StreamTaskListener;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * Created by acearl on 10/23/2015.
  */
-public class UpstreamRunNameMacroTest {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class UpstreamRunNameMacroTest {
 
     @Test
     @Issue("JENKINS-27542")
-    public void testNoUpstreamJob() throws Exception {
+    void testNoUpstreamJob(JenkinsRule j) throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         TaskListener listener = StreamTaskListener.fromStdout();
         FreeStyleBuild build = project.scheduleBuild2(0).get();
@@ -32,7 +31,7 @@ public class UpstreamRunNameMacroTest {
 
     @Test
     @Issue("JENKINS-27542")
-    public void testUpstreamJob() throws Exception {
+    void testUpstreamJob(JenkinsRule j) throws Exception {
         FreeStyleProject upstream = j.createFreeStyleProject("FOO");
         TaskListener listener = StreamTaskListener.fromStdout();
 

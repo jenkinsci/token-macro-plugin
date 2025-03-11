@@ -2,7 +2,7 @@ package org.jenkinsci.plugins.tokenmacro.impl;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.matchesPattern;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -23,17 +23,16 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-@SuppressWarnings({"unchecked"})
-public class ChangesSinceLastBuildMacroTest {
+class ChangesSinceLastBuildMacroTest {
 
     private ChangesSinceLastBuildMacro changesSinceLastBuildMacro;
     private TaskListener listener;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         changesSinceLastBuildMacro = new ChangesSinceLastBuildMacro();
         listener = StreamTaskListener.fromStdout();
         Locale.setDefault(Locale.US);
@@ -41,7 +40,7 @@ public class ChangesSinceLastBuildMacroTest {
     }
 
     @Test
-    public void testShouldGetChangesForLatestBuild() throws Exception {
+    void testShouldGetChangesForLatestBuild() throws Exception {
         AbstractBuild currentBuild = createBuild(Result.SUCCESS, 42, "Changes for a successful build.");
 
         String content =
@@ -51,7 +50,7 @@ public class ChangesSinceLastBuildMacroTest {
     }
 
     @Test
-    public void testShouldGetChangesForLatestBuildEvenWhenPreviousBuildsExist() throws Exception {
+    void testShouldGetChangesForLatestBuildEvenWhenPreviousBuildsExist() throws Exception {
         AbstractBuild failureBuild = createBuild2(Result.FAILURE, 41, "Changes for a failed build.");
 
         AbstractBuild currentBuild = createBuild(Result.SUCCESS, 42, "Changes for a successful build.");
@@ -63,7 +62,7 @@ public class ChangesSinceLastBuildMacroTest {
     }
 
     @Test
-    public void testShouldPrintDate() throws Exception {
+    void testShouldPrintDate() throws Exception {
         changesSinceLastBuildMacro.format = "%d";
 
         AbstractBuild currentBuild = createBuild(Result.SUCCESS, 42, "Changes for a successful build.");
@@ -76,7 +75,7 @@ public class ChangesSinceLastBuildMacroTest {
     }
 
     @Test
-    public void testShouldPrintRevision() throws Exception {
+    void testShouldPrintRevision() throws Exception {
         changesSinceLastBuildMacro.format = "%r";
 
         AbstractBuild currentBuild = createBuild(Result.SUCCESS, 42, "Changes for a successful build.");
@@ -88,7 +87,7 @@ public class ChangesSinceLastBuildMacroTest {
     }
 
     @Test
-    public void testShouldPrintPath() throws Exception {
+    void testShouldPrintPath() throws Exception {
         changesSinceLastBuildMacro.format = "%p";
 
         AbstractBuild currentBuild = createBuild(Result.SUCCESS, 42, "Changes for a successful build.");
@@ -100,7 +99,7 @@ public class ChangesSinceLastBuildMacroTest {
     }
 
     @Test
-    public void testWhenShowPathsIsTrueShouldPrintPath() throws Exception {
+    void testWhenShowPathsIsTrueShouldPrintPath() throws Exception {
         changesSinceLastBuildMacro.showPaths = true;
 
         AbstractBuild currentBuild = createBuild(Result.SUCCESS, 42, "Changes for a successful build.");
@@ -109,12 +108,18 @@ public class ChangesSinceLastBuildMacroTest {
                 changesSinceLastBuildMacro.evaluate(currentBuild, listener, ChangesSinceLastBuildMacro.MACRO_NAME);
 
         assertEquals(
-                "[Ash Lux] Changes for a successful build.\n" + "\tPATH1\n" + "\tPATH2\n" + "\tPATH3\n" + "\n",
+		        """
+                        [Ash Lux] Changes for a successful build.
+                        \tPATH1
+                        \tPATH2
+                        \tPATH3
+				        
+                        """,
                 content);
     }
 
     @Test
-    public void testDateFormatString() throws Exception {
+    void testDateFormatString() throws Exception {
         changesSinceLastBuildMacro.format = "%d";
         changesSinceLastBuildMacro.dateFormat = "MMM d, yyyy HH:mm:ss";
 
@@ -127,7 +132,7 @@ public class ChangesSinceLastBuildMacroTest {
     }
 
     @Test
-    public void testTypeFormatStringWithNoGetAffectedFiles() throws Exception {
+    void testTypeFormatStringWithNoGetAffectedFiles() throws Exception {
         changesSinceLastBuildMacro.showPaths = true;
         changesSinceLastBuildMacro.pathFormat = "\t%p\t%a\n";
 
@@ -137,13 +142,18 @@ public class ChangesSinceLastBuildMacroTest {
                 changesSinceLastBuildMacro.evaluate(currentBuild, listener, ChangesSinceLastBuildMacro.MACRO_NAME);
 
         assertEquals(
-                "[Ash Lux] Changes for a successful build.\n" + "\tPATH1\tUnknown\n" + "\tPATH2\tUnknown\n"
-                        + "\tPATH3\tUnknown\n" + "\n",
+		        """
+                        [Ash Lux] Changes for a successful build.
+                        \tPATH1\tUnknown
+                        \tPATH2\tUnknown
+                        \tPATH3\tUnknown
+				        
+                        """,
                 content);
     }
 
     @Test
-    public void testTypeFormatStringWithAffectedFiles() throws Exception {
+    void testTypeFormatStringWithAffectedFiles() throws Exception {
         changesSinceLastBuildMacro.showPaths = true;
         changesSinceLastBuildMacro.pathFormat = "\t%p\t%a - %d\n";
 
@@ -154,13 +164,18 @@ public class ChangesSinceLastBuildMacroTest {
                 changesSinceLastBuildMacro.evaluate(currentBuild, listener, ChangesSinceLastBuildMacro.MACRO_NAME);
 
         assertEquals(
-                "[Ash Lux] Changes for a successful build.\n" + "\tPATH1\tadd - The file was added\n"
-                        + "\tPATH2\tdelete - The file was removed\n" + "\tPATH3\tedit - The file was modified\n" + "\n",
+		        """
+                        [Ash Lux] Changes for a successful build.
+                        \tPATH1\tadd - The file was added
+                        \tPATH2\tdelete - The file was removed
+                        \tPATH3\tedit - The file was modified
+				        
+                        """,
                 content);
     }
 
     @Test
-    public void testRegexReplace() throws Exception {
+    void testRegexReplace() throws Exception {
         changesSinceLastBuildMacro.regex = "<defectId>(DEFECT-[0-9]+)</defectId><message>(.*)</message>";
         changesSinceLastBuildMacro.replace = "[$1] $2";
         changesSinceLastBuildMacro.format = "%m\\n";
@@ -175,7 +190,7 @@ public class ChangesSinceLastBuildMacroTest {
     }
 
     @Test
-    public void testShouldPrintDefaultMessageWhenNoChanges() throws Exception {
+    void testShouldPrintDefaultMessageWhenNoChanges() throws Exception {
         AbstractBuild currentBuild = createBuildWithNoChanges(Result.SUCCESS, 42);
 
         String content =
@@ -185,7 +200,7 @@ public class ChangesSinceLastBuildMacroTest {
     }
 
     @Test
-    public void testShouldPrintMessageWhenNoChanges() throws Exception {
+    void testShouldPrintMessageWhenNoChanges() throws Exception {
         changesSinceLastBuildMacro.def = "another default message\n";
         AbstractBuild currentBuild = createBuildWithNoChanges(Result.SUCCESS, 42);
 
@@ -196,7 +211,7 @@ public class ChangesSinceLastBuildMacroTest {
     }
 
     @Test
-    public void testShouldDefaultToNotEscapeHtml() throws Exception {
+    void testShouldDefaultToNotEscapeHtml() throws Exception {
         AbstractBuild currentBuild = createBuild(Result.SUCCESS, 42, "<b>bold</b>");
 
         String content =
@@ -206,7 +221,7 @@ public class ChangesSinceLastBuildMacroTest {
     }
 
     @Test
-    public void testShouldEscapeHtmlWhenArgumentEscapeHtmlSetToTrue() throws Exception {
+    void testShouldEscapeHtmlWhenArgumentEscapeHtmlSetToTrue() throws Exception {
         AbstractBuild currentBuild = createBuild(Result.SUCCESS, 42, "<b>bold</b>");
 
         final Map<String, String> arguments = Collections.singletonMap("escapeHtml", "true");
@@ -234,10 +249,10 @@ public class ChangesSinceLastBuildMacroTest {
         return build;
     }
 
-    public ChangeLogSet createChangeLog(String message) {
+    private ChangeLogSet createChangeLog(String message) {
         ChangeLogSet changes = mock(ChangeLogSet.class);
 
-        List<ChangeLogSet.Entry> entries = new LinkedList<ChangeLogSet.Entry>();
+        List<ChangeLogSet.Entry> entries = new LinkedList<>();
         ChangeLogSet.Entry entry = new ChangeLogEntry(message, "Ash Lux");
         entries.add(entry);
         when(changes.iterator()).thenReturn(entries.iterator());
@@ -253,7 +268,7 @@ public class ChangesSinceLastBuildMacroTest {
         return build;
     }
 
-    public ChangeLogSet createEmptyChangeLog() {
+    private ChangeLogSet createEmptyChangeLog() {
         ChangeLogSet changes = mock(ChangeLogSet.class);
         List<ChangeLogSet.Entry> entries = Collections.emptyList();
         when(changes.isEmptySet()).thenReturn(true);
@@ -261,10 +276,10 @@ public class ChangesSinceLastBuildMacroTest {
         return changes;
     }
 
-    public ChangeLogSet createChangeLogWithAffectedFiles(String message) {
+    private ChangeLogSet createChangeLogWithAffectedFiles(String message) {
         ChangeLogSet changes = mock(ChangeLogSet.class);
 
-        List<ChangeLogSet.Entry> entries = new LinkedList<ChangeLogSet.Entry>();
+        List<ChangeLogSet.Entry> entries = new LinkedList<>();
         ChangeLogSet.Entry entry = new ChangeLogEntryWithAffectedFiles(message, "Ash Lux");
         entries.add(entry);
         when(changes.iterator()).thenReturn(entries.iterator());
@@ -272,7 +287,7 @@ public class ChangesSinceLastBuildMacroTest {
         return changes;
     }
 
-    public static class ChangeLogEntry extends ChangeLogSet.Entry {
+    private static class ChangeLogEntry extends ChangeLogSet.Entry {
 
         final String message;
         final String author;
@@ -296,12 +311,12 @@ public class ChangesSinceLastBuildMacroTest {
 
         @Override
         public Collection<String> getAffectedPaths() {
-            return new ArrayList<String>() {
-                {
-                    add("PATH1");
-                    add("PATH2");
-                    add("PATH3");
-                }
+            return new ArrayList<>() {
+	            {
+		            add("PATH1");
+		            add("PATH2");
+		            add("PATH3");
+	            }
             };
         }
 
@@ -317,7 +332,7 @@ public class ChangesSinceLastBuildMacroTest {
         }
     }
 
-    public static class TestAffectedFile implements AffectedFile {
+    private static class TestAffectedFile implements AffectedFile {
 
         private final String path;
         private final EditType type;
@@ -336,7 +351,7 @@ public class ChangesSinceLastBuildMacroTest {
         }
     }
 
-    public static class ChangeLogEntryWithAffectedFiles extends ChangeLogEntry {
+    private static class ChangeLogEntryWithAffectedFiles extends ChangeLogEntry {
 
         public ChangeLogEntryWithAffectedFiles(String message, String author) {
             super(message, author);
@@ -344,12 +359,12 @@ public class ChangesSinceLastBuildMacroTest {
 
         @Override
         public Collection<AffectedFile> getAffectedFiles() {
-            return new ArrayList<AffectedFile>() {
-                {
-                    add(new TestAffectedFile("PATH1", EditType.ADD));
-                    add(new TestAffectedFile("PATH2", EditType.DELETE));
-                    add(new TestAffectedFile("PATH3", EditType.EDIT));
-                }
+            return new ArrayList<>() {
+	            {
+		            add(new TestAffectedFile("PATH1", EditType.ADD));
+		            add(new TestAffectedFile("PATH2", EditType.DELETE));
+		            add(new TestAffectedFile("PATH3", EditType.EDIT));
+	            }
             };
         }
     }
@@ -362,7 +377,7 @@ public class ChangesSinceLastBuildMacroTest {
 
     public ChangeLogSet createChangeLog2(String message) {
         ChangeLogSet changes = mock(ChangeLogSet.class);
-        List<ChangeLogSet.Entry> entries = new LinkedList<ChangeLogSet.Entry>();
+        List<ChangeLogSet.Entry> entries = new LinkedList<>();
         ChangeLogSet.Entry entry = new ChangeLogEntry(message, "Ash Lux");
         entries.add(entry);
         return changes;

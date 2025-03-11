@@ -1,6 +1,6 @@
 package org.jenkinsci.plugins.tokenmacro.impl;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -10,33 +10,32 @@ import hudson.model.CauseAction;
 import hudson.model.TaskListener;
 import hudson.util.StreamTaskListener;
 import java.util.LinkedList;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-@SuppressWarnings({"unchecked"})
-public class BuildCauseMacroTest {
+class BuildCauseMacroTest {
     private BuildCauseMacro buildCauseMacro;
 
     private Build build;
 
     private TaskListener listener;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         buildCauseMacro = new BuildCauseMacro();
         build = mock(Build.class);
         listener = StreamTaskListener.fromStdout();
     }
 
     @Test
-    public void shouldReturnNA_whenNoCauseActionIsFound() throws Exception {
+    void shouldReturnNA_whenNoCauseActionIsFound() throws Exception {
         when(build.getAction(CauseAction.class)).thenReturn(null);
 
         assertEquals("N/A", buildCauseMacro.evaluate(build, listener, BuildCauseMacro.MACRO_NAME));
     }
 
     @Test
-    public void shouldReturnNA_whenThereIsNoCause() throws Exception {
+    void shouldReturnNA_whenThereIsNoCause() throws Exception {
         CauseAction causeAction = mock(CauseAction.class);
         when(build.getAction(CauseAction.class)).thenReturn(causeAction);
 
@@ -44,7 +43,7 @@ public class BuildCauseMacroTest {
     }
 
     @Test
-    public void shouldReturnSingleCause() throws Exception {
+    void shouldReturnSingleCause() throws Exception {
         CauseAction causeAction = new CauseAction(new CauseStub("Cause1"));
         when(build.getAction(CauseAction.class)).thenReturn(causeAction);
 
@@ -52,14 +51,14 @@ public class BuildCauseMacroTest {
     }
 
     @Test
-    public void shouldReturnMultipleCausesSeperatedByCommas() throws Exception {
+    void shouldReturnMultipleCausesSeperatedByCommas() throws Exception {
         CauseAction causeAction = mock(CauseAction.class);
-        when(causeAction.getCauses()).thenReturn(new LinkedList<Cause>() {
-            {
-                add(new CauseStub("Cause1"));
-                add(new CauseStub("Cause2"));
-                add(new CauseStub("Cause3"));
-            }
+        when(causeAction.getCauses()).thenReturn(new LinkedList<>() {
+	        {
+		        add(new CauseStub("Cause1"));
+		        add(new CauseStub("Cause2"));
+		        add(new CauseStub("Cause3"));
+	        }
         });
         when(build.getAction(CauseAction.class)).thenReturn(causeAction);
 
@@ -67,7 +66,7 @@ public class BuildCauseMacroTest {
     }
 
     @Test
-    public void testCauseData() throws Exception {
+    void testCauseData() throws Exception {
         CauseAction causeAction = mock(CauseAction.class);
         final Cause.UpstreamCause upstreamCause = mock(Cause.UpstreamCause.class);
 
@@ -75,10 +74,10 @@ public class BuildCauseMacroTest {
         when(upstreamCause.getUpstreamProject()).thenReturn("Upstream");
         when(upstreamCause.getUpstreamUrl()).thenReturn("http://localhost/jenkins/jobs/Upstream/3");
 
-        when(causeAction.getCauses()).thenReturn(new LinkedList<Cause>() {
-            {
-                add(upstreamCause);
-            }
+        when(causeAction.getCauses()).thenReturn(new LinkedList<>() {
+	        {
+		        add(upstreamCause);
+	        }
         });
 
         when(build.getAction(CauseAction.class)).thenReturn(causeAction);
@@ -92,8 +91,8 @@ public class BuildCauseMacroTest {
                 buildCauseMacro.evaluate(build, listener, BuildCauseMacro.MACRO_NAME));
     }
 
-    private class CauseStub extends Cause {
-        private String name;
+    private static class CauseStub extends Cause {
+        private final String name;
 
         private CauseStub(String name) {
             this.name = name;

@@ -1,7 +1,8 @@
 package org.jenkinsci.plugins.tokenmacro;
 
-import static junit.framework.TestCase.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.google.common.collect.ListMultimap;
 import hudson.FilePath;
@@ -23,30 +24,31 @@ import java.util.Map;
 import jenkins.security.MasterToSlaveCallable;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * Created by acearl on 6/14/2016.
  */
-public class PipelineTest {
+@WithJenkins
+class PipelineTest {
     private StreamTaskListener listener;
 
-    @Rule
-    public final JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
 
     private DumbSlave agent;
 
-    @Before
-    public void setup() throws Exception {
+    @BeforeEach
+    void setup(JenkinsRule j) throws Exception {
+        this.j = j;
         agent = j.createOnlineSlave(Label.get("agents"));
     }
 
     @Test
-    public void testEnvironmentVariables() throws Exception {
+    void testEnvironmentVariables() throws Exception {
         WorkflowJob job = j.jenkins.createProject(WorkflowJob.class, "foo");
         job.setDefinition(new CpsFlowDefinition(getPipeline("any", "${ENV, var=\"VERSION\"}"), true));
         Run<?, ?> run = j.assertBuildStatusSuccess(job.scheduleBuild2(0));
@@ -54,7 +56,7 @@ public class PipelineTest {
     }
 
     @Test
-    public void testEnvironmentVariablesNoAgent() throws Exception {
+    void testEnvironmentVariablesNoAgent() throws Exception {
         WorkflowJob job = j.jenkins.createProject(WorkflowJob.class, "foo");
         job.setDefinition(new CpsFlowDefinition(getPipeline("none", "${ENV, var=\"VERSION\"}"), true));
         Run<?, ?> run = j.assertBuildStatusSuccess(job.scheduleBuild2(0));
@@ -62,7 +64,7 @@ public class PipelineTest {
     }
 
     @Test
-    public void testWorkspaceNeededNoAgent() throws Exception {
+    void testWorkspaceNeededNoAgent() throws Exception {
         WorkflowJob job = j.jenkins.createProject(WorkflowJob.class, "foo");
         job.setDefinition(new CpsFlowDefinition(getPipeline("none", "${TEST_WS}"), true));
         Run<?, ?> run = j.assertBuildStatus(Result.FAILURE, job.scheduleBuild2(0));
@@ -70,7 +72,7 @@ public class PipelineTest {
     }
 
     @Test
-    public void testWorkspaceNeededWithAgent() throws Exception {
+    void testWorkspaceNeededWithAgent() throws Exception {
         WorkflowJob job = j.jenkins.createProject(WorkflowJob.class, "foo");
         job.setDefinition(new CpsFlowDefinition(getPipeline("any", "${TEST_WS}"), true));
         Run<?, ?> run = j.assertBuildStatusSuccess(job.scheduleBuild2(0));
@@ -78,7 +80,7 @@ public class PipelineTest {
     }
 
     @Test
-    public void testFileNeededWithAgent() throws Exception {
+    void testFileNeededWithAgent() throws Exception {
         WorkflowJob job = j.jenkins.createProject(WorkflowJob.class, "foo");
         FilePath workspace = agent.getWorkspaceFor(job);
         workspace.mkdirs();
@@ -91,7 +93,7 @@ public class PipelineTest {
     }
 
     @Test
-    public void testEscapedExpandAll() throws Exception {
+    void testEscapedExpandAll() throws Exception {
         WorkflowJob job = j.jenkins.createProject(WorkflowJob.class, "foo");
 
         job.setDefinition(new CpsFlowDefinition("node('agents') {\n\techo 'Hello, world'\n}", true));
@@ -101,35 +103,26 @@ public class PipelineTest {
         assertEquals(j.jenkins.getRootUrl() + "job/foo/1/", TokenMacro.expand(run, null, listener, "${BUILD_URL}"));
         assertEquals(j.jenkins.getRootUrl() + "job/foo/1/", TokenMacro.expand(run, null, listener, "$BUILD_URL"));
 
-        assertEquals(
-                "{abc=[def, ghi], jkl=[true]}",
-                TokenMacro.expand(run, null, listener, "${TEST,abc=\"def\",abc=\"ghi\",jkl=true}"));
+        assertEquals("{abc=[def, ghi], jkl=[true]}", TokenMacro.expand(run, null, listener, "${TEST,abc=\"def\",abc=\"ghi\",jkl=true}"));
     }
 
     @Test
-    public void testException() throws Exception {
+    void testException() throws Exception {
         WorkflowJob job = j.jenkins.createProject(WorkflowJob.class, "foo");
         job.setDefinition(new CpsFlowDefinition("node('agents') {\n\techo 'Hello, world'\n}", true));
         Run<?, ?> run = j.assertBuildStatusSuccess(job.scheduleBuild2(0));
 
         listener = StreamTaskListener.fromStdout();
 
-        try {
-            TokenMacro.expand(run, null, listener, "${TEST_NESTEDX}");
-            fail();
-        } catch (MacroEvaluationException e) {
-            // do nothing, just want to catch the exception when it occurs
-        }
+        assertThrows(MacroEvaluationException.class, () -> TokenMacro.expand(run, null, listener, "${TEST_NESTEDX}"));
 
         assertEquals(" ${TEST_NESTEDX}", TokenMacro.expand(run, null, listener, " ${TEST_NESTEDX}", false, null));
-        assertEquals(
-                "${TEST_NESTEDX,abc=\"def\",abc=\"ghi\",jkl=true}",
-                TokenMacro.expand(
-                        run, null, listener, "${TEST_NESTEDX,abc=\"def\",abc=\"ghi\",jkl=true}", false, null));
+        assertEquals("${TEST_NESTEDX,abc=\"def\",abc=\"ghi\",jkl=true}", TokenMacro.expand(
+                run, null, listener, "${TEST_NESTEDX,abc=\"def\",abc=\"ghi\",jkl=true}", false, null));
     }
 
     @Test
-    public void testUnconvertedMacro() throws Exception {
+    void testUnconvertedMacro() throws Exception {
         WorkflowJob job = j.jenkins.createProject(WorkflowJob.class, "foo");
         job.setDefinition(new CpsFlowDefinition("node('agents') {\n\techo 'Hello, world'\n}", true));
         Run<?, ?> run = j.assertBuildStatusSuccess(job.scheduleBuild2(0));
@@ -174,8 +167,7 @@ public class PipelineTest {
                 TaskListener listener,
                 String macroName,
                 Map<String, String> arguments,
-                ListMultimap<String, String> argumentMultimap)
-                throws MacroEvaluationException, IOException, InterruptedException {
+                ListMultimap<String, String> argumentMultimap) {
             return evaluate(context, null, listener, macroName, arguments, argumentMultimap);
         }
 
@@ -186,8 +178,7 @@ public class PipelineTest {
                 TaskListener listener,
                 String macroName,
                 Map<String, String> arguments,
-                ListMultimap<String, String> argumentMultimap)
-                throws MacroEvaluationException, IOException, InterruptedException {
+                ListMultimap<String, String> argumentMultimap) {
             return argumentMultimap.toString();
         }
     }
@@ -207,8 +198,7 @@ public class PipelineTest {
                 TaskListener listener,
                 String macroName,
                 Map<String, String> arguments,
-                ListMultimap<String, String> argumentMultimap)
-                throws MacroEvaluationException, IOException, InterruptedException {
+                ListMultimap<String, String> argumentMultimap) {
             return "${TEST,abc=\"def\",abc=\"ghi\",jkl=true}";
         }
 
@@ -243,8 +233,7 @@ public class PipelineTest {
                 TaskListener listener,
                 String macroName,
                 Map<String, String> arguments,
-                ListMultimap<String, String> argumentMultimap)
-                throws MacroEvaluationException, IOException, InterruptedException {
+                ListMultimap<String, String> argumentMultimap) {
             return argumentMultimap.toString();
         }
     }
@@ -276,11 +265,11 @@ public class PipelineTest {
 
         @Override
         public Callable<String, IOException> getCallable(Run<?, ?> run, String root, TaskListener listener) {
-            return new MasterToSlaveCallable<String, IOException>() {
-                @Override
-                public String call() throws IOException {
-                    return "Workspace: " + new File(root).getName();
-                }
+            return new MasterToSlaveCallable<>() {
+	            @Override
+	            public String call() {
+		            return "Workspace: " + new File(root).getName();
+	            }
             };
         }
     }

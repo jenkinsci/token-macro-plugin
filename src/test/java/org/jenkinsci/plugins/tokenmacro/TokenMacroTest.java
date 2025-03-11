@@ -1,33 +1,32 @@
 package org.jenkinsci.plugins.tokenmacro;
 
-import static junit.framework.Assert.fail;
-import static junit.framework.TestCase.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ListMultimap;
 import hudson.Launcher;
 import hudson.model.*;
 import hudson.util.StreamTaskListener;
-import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import org.junit.Rule;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.*;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class TokenMacroTest {
+@WithJenkins
+class TokenMacroTest {
     private StreamTaskListener listener;
 
-    @Rule
-    public final JenkinsRule j = new JenkinsRule();
-
     @Test
-    public void testBasics() throws Exception {
+    void testBasics(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
@@ -35,28 +34,22 @@ public class TokenMacroTest {
         assertEquals(j.jenkins.getRootUrl() + "job/foo/1/", TokenMacro.expand(b, listener, "${BUILD_URL}"));
         assertEquals(j.jenkins.getRootUrl() + "job/foo/1/", TokenMacro.expand(b, listener, "$BUILD_URL"));
 
-        assertEquals(
-                "{abc=[def, ghi], jkl=[true]}",
-                TokenMacro.expand(b, listener, "${TEST,abc=\"def\",abc=\"ghi\",jkl=true}"));
+        assertEquals("{abc=[def, ghi], jkl=[true]}", TokenMacro.expand(b, listener, "${TEST,abc=\"def\",abc=\"ghi\",jkl=true}"));
     }
 
     @Test
-    public void testLength() throws Exception {
+    void testLength(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
         listener = StreamTaskListener.fromStdout();
-        assertEquals(
-                String.valueOf((j.jenkins.getRootUrl() + "job/foo/1/").length()),
-                TokenMacro.expand(b, listener, "${#BUILD_URL}"));
+        assertEquals(String.valueOf((j.jenkins.getRootUrl() + "job/foo/1/").length()), TokenMacro.expand(b, listener, "${#BUILD_URL}"));
 
-        assertEquals(
-                String.valueOf("{abc=[def, ghi], jkl=[true]}".length()),
-                TokenMacro.expand(b, listener, "${#TEST,abc=\"def\",abc=\"ghi\",jkl=true}"));
+        assertEquals(String.valueOf("{abc=[def, ghi], jkl=[true]}".length()), TokenMacro.expand(b, listener, "${#TEST,abc=\"def\",abc=\"ghi\",jkl=true}"));
     }
 
     @Test
-    public void testNested() throws Exception {
+    void testNested(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
@@ -66,128 +59,97 @@ public class TokenMacroTest {
     }
 
     @Test
-    public void testVeryLongStringArg() throws Exception {
+    void testVeryLongStringArg(JenkinsRule j) throws Exception {
         StringBuilder veryLongStringParam = new StringBuilder();
-        for (int i = 0; i < 500; ++i) {
-            veryLongStringParam.append("abc123 %_= ~");
-        }
+	    veryLongStringParam.append("abc123 %_= ~".repeat(500));
 
         FreeStyleProject p = j.createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
         listener = StreamTaskListener.fromStdout();
 
-        assertEquals(
-                "{arg=[" + veryLongStringParam + "]}",
-                TokenMacro.expand(b, listener, "${TEST, arg=\"" + veryLongStringParam + "\"}"));
+        assertEquals("{arg=[" + veryLongStringParam + "]}", TokenMacro.expand(b, listener, "${TEST, arg=\"" + veryLongStringParam + "\"}"));
     }
 
     @Test
-    public void testMultilineStringArg() throws Exception {
+    void testMultilineStringArg(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
         listener = StreamTaskListener.fromStdout();
 
-        assertEquals(
-                "{arg=[a \n b  \r\n c]}\n",
-                TokenMacro.expand(b, listener, "${TEST, arg = \"a \\\n b  \\\r\\\n c\"}\n"));
-    }
-
-    @Test(expected = MacroEvaluationException.class)
-    public void testInvalidMultilineStringArg() throws Exception {
-        FreeStyleProject p = j.createFreeStyleProject("foo");
-        FreeStyleBuild b = p.scheduleBuild2(0).get();
-
-        listener = StreamTaskListener.fromStdout();
-
-        TokenMacro.expand(b, listener, "${TEST, arg = \"a \n b  \r\n c\"}\n");
+        assertEquals("{arg=[a \n b  \r\n c]}\n", TokenMacro.expand(b, listener, "${TEST, arg = \"a \\\n b  \\\r\\\n c\"}\n"));
     }
 
     @Test
-    public void testEscaped() throws Exception {
+    void testInvalidMultilineStringArg(JenkinsRule j) throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject("foo");
+        FreeStyleBuild b = p.scheduleBuild2(0).get();
+        listener = StreamTaskListener.fromStdout();
+        assertThrows(MacroEvaluationException.class, () ->
+            TokenMacro.expand(b, listener, "${TEST, arg = \"a \n b  \r\n c\"}\n"));
+    }
+
+    @Test
+    void testEscaped(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
         assertEquals("${TEST_NESTED}", TokenMacro.expand(b, TaskListener.NULL, "$${TEST_NESTED}"));
         assertEquals("$TEST_NESTED", TokenMacro.expand(b, TaskListener.NULL, "$$TEST_NESTED"));
-        assertEquals(
-                "$TEST_NESTED{abc=[def, ghi], jkl=[true]}",
-                TokenMacro.expand(b, TaskListener.NULL, "$$TEST_NESTED$TEST_NESTED"));
-        assertEquals(
-                "${TEST_NESTED}{abc=[def, ghi], jkl=[true]}",
-                TokenMacro.expand(b, TaskListener.NULL, "$${TEST_NESTED}$TEST_NESTED"));
-        assertEquals(
-                "{abc=[def, ghi], jkl=[true]}$TEST_NESTED",
-                TokenMacro.expand(b, TaskListener.NULL, "$TEST_NESTED$$TEST_NESTED"));
-        assertEquals(
-                "{abc=[def, ghi], jkl=[true]}${TEST_NESTED}",
-                TokenMacro.expand(b, TaskListener.NULL, "$TEST_NESTED$${TEST_NESTED}"));
+        assertEquals("$TEST_NESTED{abc=[def, ghi], jkl=[true]}", TokenMacro.expand(b, TaskListener.NULL, "$$TEST_NESTED$TEST_NESTED"));
+        assertEquals("${TEST_NESTED}{abc=[def, ghi], jkl=[true]}", TokenMacro.expand(b, TaskListener.NULL, "$${TEST_NESTED}$TEST_NESTED"));
+        assertEquals("{abc=[def, ghi], jkl=[true]}$TEST_NESTED", TokenMacro.expand(b, TaskListener.NULL, "$TEST_NESTED$$TEST_NESTED"));
+        assertEquals("{abc=[def, ghi], jkl=[true]}${TEST_NESTED}", TokenMacro.expand(b, TaskListener.NULL, "$TEST_NESTED$${TEST_NESTED}"));
     }
 
     @Test
     @Issue("JENKINS-29816")
-    public void testEscapedExpandAll() throws Exception {
+    void testEscapedExpandAll(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
         assertEquals("${TEST_NESTED}", TokenMacro.expandAll(b, TaskListener.NULL, "$${TEST_NESTED}"));
         assertEquals("$TEST_NESTED", TokenMacro.expandAll(b, TaskListener.NULL, "$$TEST_NESTED"));
-        assertEquals(
-                "$TEST_NESTED{abc=[def, ghi], jkl=[true]}",
-                TokenMacro.expandAll(b, TaskListener.NULL, "$$TEST_NESTED$TEST_NESTED"));
-        assertEquals(
-                "${TEST_NESTED}{abc=[def, ghi], jkl=[true]}",
-                TokenMacro.expandAll(b, TaskListener.NULL, "$${TEST_NESTED}$TEST_NESTED"));
-        assertEquals(
-                "{abc=[def, ghi], jkl=[true]}$TEST_NESTED",
-                TokenMacro.expandAll(b, TaskListener.NULL, "$TEST_NESTED$$TEST_NESTED"));
-        assertEquals(
-                "{abc=[def, ghi], jkl=[true]}${TEST_NESTED}",
-                TokenMacro.expandAll(b, TaskListener.NULL, "$TEST_NESTED$${TEST_NESTED}"));
+        assertEquals("$TEST_NESTED{abc=[def, ghi], jkl=[true]}", TokenMacro.expandAll(b, TaskListener.NULL, "$$TEST_NESTED$TEST_NESTED"));
+        assertEquals("${TEST_NESTED}{abc=[def, ghi], jkl=[true]}", TokenMacro.expandAll(b, TaskListener.NULL, "$${TEST_NESTED}$TEST_NESTED"));
+        assertEquals("{abc=[def, ghi], jkl=[true]}$TEST_NESTED", TokenMacro.expandAll(b, TaskListener.NULL, "$TEST_NESTED$$TEST_NESTED"));
+        assertEquals("{abc=[def, ghi], jkl=[true]}${TEST_NESTED}", TokenMacro.expandAll(b, TaskListener.NULL, "$TEST_NESTED$${TEST_NESTED}"));
     }
 
     @Test
-    public void testInvalidNoException() throws Exception {
+    void testInvalidNoException(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
-        assertEquals(
-                "[Error replacing 'ENV' - Undefined parameter Var in token ENV]",
-                TokenMacro.expand(b, TaskListener.NULL, "${ENV, Var=\"HOSTNAME\"}", false, Collections.EMPTY_LIST));
+        assertEquals("[Error replacing 'ENV' - Undefined parameter Var in token ENV]", TokenMacro.expand(b, TaskListener.NULL, "${ENV, Var=\"HOSTNAME\"}", false, Collections.EMPTY_LIST));
     }
 
     @Test
-    public void testNumeric() throws Exception {
+    void testNumeric(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
-        assertEquals(
-                "For only 10 easy payment of $69.99 , AWESOME-O 4000 can be yours!",
-                TokenMacro.expand(
-                        b, TaskListener.NULL, "For only 10 easy payment of $69.99 , AWESOME-O 4000 can be yours!"));
+        assertEquals("For only 10 easy payment of $69.99 , AWESOME-O 4000 can be yours!", TokenMacro.expand(
+                b, TaskListener.NULL, "For only 10 easy payment of $69.99 , AWESOME-O 4000 can be yours!"));
     }
 
     @Issue("JENKINS-18014")
     @Test
-    public void testEscapeCharEscaped() throws Exception {
+    void testEscapeCharEscaped(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
         listener = StreamTaskListener.fromStdout();
         assertEquals("\\{abc=[def, ghi], jkl=[true]}", TokenMacro.expand(b, listener, "\\${TEST_NESTED}"));
         assertEquals("\\{abc=[def, ghi], jkl=[true]}", TokenMacro.expand(b, listener, "\\$TEST_NESTED"));
-        assertEquals(
-                "{abc=[def, ghi], jkl=[true]}\\{abc=[def, ghi], jkl=[true]}",
-                TokenMacro.expand(b, listener, "$TEST_NESTED\\$TEST_NESTED"));
-        assertEquals(
-                "{abc=[def, ghi], jkl=[true]}\\{abc=[def, ghi], jkl=[true]}",
-                TokenMacro.expand(b, listener, "$TEST_NESTED\\${TEST_NESTED}"));
+        assertEquals("{abc=[def, ghi], jkl=[true]}\\{abc=[def, ghi], jkl=[true]}", TokenMacro.expand(b, listener, "$TEST_NESTED\\$TEST_NESTED"));
+        assertEquals("{abc=[def, ghi], jkl=[true]}\\{abc=[def, ghi], jkl=[true]}", TokenMacro.expand(b, listener, "$TEST_NESTED\\${TEST_NESTED}"));
     }
 
     @Test
-    public void testPrivate() throws Exception {
-        List<TokenMacro> privateMacros = new ArrayList<TokenMacro>();
+    void testPrivate(JenkinsRule j) throws Exception {
+        List<TokenMacro> privateMacros = new ArrayList<>();
         privateMacros.add(new PrivateTestMacro());
         privateMacros.add(new PrivateTestMacro2());
 
@@ -195,39 +157,29 @@ public class TokenMacroTest {
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
         listener = StreamTaskListener.fromStdout();
-        assertEquals(
-                "TEST_PRIVATE" + j.jenkins.getRootUrl() + "job/foo/1/TEST2_PRIVATE",
-                TokenMacro.expand(b, listener, "${TEST_PRIVATE}${BUILD_URL}${TEST2_PRIVATE}", true, privateMacros));
+        assertEquals("TEST_PRIVATE" + j.jenkins.getRootUrl() + "job/foo/1/TEST2_PRIVATE", TokenMacro.expand(b, listener, "${TEST_PRIVATE}${BUILD_URL}${TEST2_PRIVATE}", true, privateMacros));
     }
 
     @Test
-    public void testException() throws Exception {
+    void testException(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
         listener = StreamTaskListener.fromStdout();
 
-        try {
-            TokenMacro.expand(b, listener, "${TEST_NESTEDX}");
-            fail();
-        } catch (MacroEvaluationException e) {
-            // do nothing, just want to catch the exception when it occurs
-        }
+        assertThrows(MacroEvaluationException.class, () -> TokenMacro.expand(b, listener, "${TEST_NESTEDX}"));
 
         assertEquals(" ${TEST_NESTEDX}", TokenMacro.expand(b, listener, " ${TEST_NESTEDX}", false, null));
-        assertEquals(
-                "${TEST_NESTEDX,abc=\"def\",abc=\"ghi\",jkl=true}",
-                TokenMacro.expand(b, listener, "${TEST_NESTEDX,abc=\"def\",abc=\"ghi\",jkl=true}", false, null));
+        assertEquals("${TEST_NESTEDX,abc=\"def\",abc=\"ghi\",jkl=true}", TokenMacro.expand(b, listener, "${TEST_NESTEDX,abc=\"def\",abc=\"ghi\",jkl=true}", false, null));
     }
 
     @Test
     @Issue("JENKINS-38420")
-    public void testJENKINS_38420() throws Exception {
+    void testJENKINS_38420(JenkinsRule j) throws Exception {
         FreeStyleProject project = j.createFreeStyleProject("foo");
         project.getBuildersList().add(new TestBuilder() {
             @Override
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
-                    throws InterruptedException, IOException {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
                 listener.getLogger()
                         .println("<span class=\"timestamp\"><b>14:58:18</b> </span>version: 1.0.0-SNAPSHOT");
                 return true;
@@ -244,7 +196,7 @@ public class TokenMacroTest {
     }
 
     @Test
-    public void testAutoComplete() throws Exception {
+    void testAutoComplete(JenkinsRule j) {
         List<String> suggestions = TokenMacro.getAutoCompleteList("LKJLKJ");
         assertEquals(0, suggestions.size());
 
@@ -253,7 +205,7 @@ public class TokenMacroTest {
     }
 
     @Test
-    public void testThatATokenMacroListWithANullEntryDoesNotExplode() throws Exception {
+    void testThatATokenMacroListWithANullEntryDoesNotExplode(JenkinsRule j) throws Exception {
         List<TokenMacro> badList = new LinkedList<>();
         badList.add(null);
         badList.add(new PrivateTestMacro());
@@ -263,19 +215,15 @@ public class TokenMacroTest {
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
         listener = StreamTaskListener.fromStdout();
-        assertEquals(
-                "TEST_PRIVATE" + j.jenkins.getRootUrl() + "job/foo/1/TEST2_PRIVATE",
-                TokenMacro.expand(b, listener, "${TEST_PRIVATE}${BUILD_URL}${TEST2_PRIVATE}", true, badList));
+        assertEquals("TEST_PRIVATE" + j.jenkins.getRootUrl() + "job/foo/1/TEST2_PRIVATE", TokenMacro.expand(b, listener, "${TEST_PRIVATE}${BUILD_URL}${TEST2_PRIVATE}", true, badList));
     }
 
     @Test
     @Issue("JENKINS-67862")
-    public void testNoToken() throws Exception {
+    void testNoToken(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
-        assertEquals(
-                "^(?:.*/)?master$|^(?:.*/)?(feature|release)/.* ",
-                TokenMacro.expandAll(b, TaskListener.NULL, "^(?:.*/)?master$|^(?:.*/)?(feature|release)/.* "));
+        assertEquals("^(?:.*/)?master$|^(?:.*/)?(feature|release)/.* ", TokenMacro.expandAll(b, TaskListener.NULL, "^(?:.*/)?master$|^(?:.*/)?(feature|release)/.* "));
 
         p = j.createFreeStyleProject("foo2");
         b = p.scheduleBuild2(0).get();
@@ -284,16 +232,15 @@ public class TokenMacroTest {
 
     @Test
     @Issue("JENKINS-68219")
-    public void testAddedCharacter() throws Exception {
+    void testAddedCharacter(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
         listener = StreamTaskListener.fromStdout();
-        assertEquals(
-                "\"$hello/$dear\"", TokenMacro.expand(b, listener, "\"$hello/$dear\"", false, Collections.EMPTY_LIST));
+        assertEquals("\"$hello/$dear\"", TokenMacro.expand(b, listener, "\"$hello/$dear\"", false, Collections.EMPTY_LIST));
     }
 
-    public class PrivateTestMacro extends TokenMacro {
+    private static class PrivateTestMacro extends TokenMacro {
         private static final String MACRO_NAME = "TEST_PRIVATE";
 
         @Override
@@ -312,13 +259,12 @@ public class TokenMacroTest {
                 TaskListener listener,
                 String macroName,
                 Map<String, String> arguments,
-                ListMultimap<String, String> argumentMultimap)
-                throws MacroEvaluationException, IOException, InterruptedException {
+                ListMultimap<String, String> argumentMultimap) {
             return "TEST_PRIVATE";
         }
     }
 
-    public class PrivateTestMacro2 extends TokenMacro {
+    private static class PrivateTestMacro2 extends TokenMacro {
         private static final String MACRO_NAME = "TEST2_PRIVATE";
 
         @Override
@@ -337,8 +283,7 @@ public class TokenMacroTest {
                 TaskListener listener,
                 String macroName,
                 Map<String, String> arguments,
-                ListMultimap<String, String> argumentMultimap)
-                throws MacroEvaluationException, IOException, InterruptedException {
+                ListMultimap<String, String> argumentMultimap) {
             return "TEST2_PRIVATE";
         }
     }
@@ -363,8 +308,7 @@ public class TokenMacroTest {
                 TaskListener listener,
                 String macroName,
                 Map<String, String> arguments,
-                ListMultimap<String, String> argumentMultimap)
-                throws MacroEvaluationException, IOException, InterruptedException {
+                ListMultimap<String, String> argumentMultimap) {
             return argumentMultimap.toString();
         }
     }
@@ -384,8 +328,7 @@ public class TokenMacroTest {
                 TaskListener listener,
                 String macroName,
                 Map<String, String> arguments,
-                ListMultimap<String, String> argumentMultimap)
-                throws MacroEvaluationException, IOException, InterruptedException {
+                ListMultimap<String, String> argumentMultimap) {
             return "${TEST,abc=\"def\",abc=\"ghi\",jkl=true}";
         }
 
@@ -420,8 +363,7 @@ public class TokenMacroTest {
                 TaskListener listener,
                 String macroName,
                 Map<String, String> arguments,
-                ListMultimap<String, String> argumentMultimap)
-                throws MacroEvaluationException, IOException, InterruptedException {
+                ListMultimap<String, String> argumentMultimap) {
             return argumentMultimap.toString();
         }
     }

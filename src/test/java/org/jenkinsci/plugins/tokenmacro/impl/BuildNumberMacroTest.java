@@ -6,27 +6,25 @@
 
 package org.jenkinsci.plugins.tokenmacro.impl;
 
-import static junit.framework.TestCase.assertEquals;
-
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.util.StreamTaskListener;
 import org.jenkinsci.plugins.tokenmacro.TokenMacro;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  *
  * @author egutierrez
  */
-public class BuildNumberMacroTest {
-
-    @Rule
-    public final JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class BuildNumberMacroTest {
 
     @Test
-    public void testBuildNumberMacro() throws Exception {
+    void testBuildNumberMacro(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
