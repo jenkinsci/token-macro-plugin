@@ -1,6 +1,6 @@
 package org.jenkinsci.plugins.tokenmacro.impl;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 import hudson.console.ConsoleNote;
@@ -9,17 +9,17 @@ import hudson.model.TaskListener;
 import hudson.util.StreamTaskListener;
 import java.io.BufferedReader;
 import java.io.StringReader;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class BuildLogMultilineRegexMacroTest {
+class BuildLogMultilineRegexMacroTest {
 
     private BuildLogMultilineRegexMacro buildLogMultilineRegexMacro;
     private AbstractBuild build;
     private TaskListener listener;
 
-    @Before
-    public void beforeTest() {
+    @BeforeEach
+    void beforeTest() {
         buildLogMultilineRegexMacro = new BuildLogMultilineRegexMacro();
         buildLogMultilineRegexMacro.regex = ".+";
         build = mock(AbstractBuild.class);
@@ -27,7 +27,7 @@ public class BuildLogMultilineRegexMacroTest {
     }
 
     @Test
-    public void testGetContent_multilineDotallRegex() throws Exception {
+    void testGetContent_multilineDotallRegex() throws Exception {
         when(build.getLogReader())
                 .thenReturn(new StringReader("line #1\r\nline #2\r\nstart:\r\na\r\nb\r\nc\r\nend.\r\nd\r\ne\r\nf\r\n"));
         buildLogMultilineRegexMacro.regex = "(?s)start:.*end\\.";
@@ -37,7 +37,7 @@ public class BuildLogMultilineRegexMacroTest {
     }
 
     @Test
-    public void testGetContent_multilineDotallRegex2() throws Exception {
+    void testGetContent_multilineDotallRegex2() throws Exception {
         when(build.getLogReader())
                 .thenReturn(new StringReader("line #1\r\nline #2\r\nstart:\r\na\r\nb\r\nc\r\nend.\r\nd\r\ne\r\nf\r\n"));
         buildLogMultilineRegexMacro.regex = "rt:(?s:.*)en";
@@ -47,7 +47,7 @@ public class BuildLogMultilineRegexMacroTest {
     }
 
     @Test
-    public void testGetContent_multilineEOLRegex() throws Exception {
+    void testGetContent_multilineEOLRegex() throws Exception {
         when(build.getLogReader())
                 .thenReturn(new StringReader("line #1\r\nline #2\r\nstart:\r\na\r\nb\r\nc\r\nend.\r\nd\r\ne\r\nf\r\n"));
         buildLogMultilineRegexMacro.regex = "start:\\r?\\n(.*\\r?\\n)+end\\.";
@@ -57,23 +57,24 @@ public class BuildLogMultilineRegexMacroTest {
     }
 
     @Test
-    public void testGetContent_multilineCommentsAlternationsRegex() throws Exception {
+    void testGetContent_multilineCommentsAlternationsRegex() throws Exception {
         when(build.getLogReader())
                 .thenReturn(new StringReader("line #1\r\nline #2\r\nstart:\r\na\r\nb\r\nc\r\nend.\r\nd\r\ne\r\nf\r\n"));
-        buildLogMultilineRegexMacro.regex = "(?x)\n"
-                + "# first alternative\n"
-                + "line\\ \\#1(?s:.*)\\#2\n"
-                + "# second alternative\n"
-                + "|start:(?s:.*)end\\."
-                + "# third alternative"
-                + "|xyz(?s:.*)omega";
+        buildLogMultilineRegexMacro.regex = """
+                (?x)
+                # first alternative
+                line\\ \\#1(?s:.*)\\#2
+                # second alternative
+                |start:(?s:.*)end\\.\
+                # third alternative\
+                |xyz(?s:.*)omega""";
         final String result =
                 buildLogMultilineRegexMacro.evaluate(build, listener, BuildLogMultilineRegexMacro.MACRO_NAME);
         assertEquals("line #1\r\nline #2\nstart:\r\na\r\nb\r\nc\r\nend.\n[...truncated 3 lines...]\n", result);
     }
 
     @Test
-    public void testGetContent_emptyBuildLogShouldStayEmpty() throws Exception {
+    void testGetContent_emptyBuildLogShouldStayEmpty() throws Exception {
         when(build.getLogReader()).thenReturn(new StringReader(""));
         final BufferedReader reader = new BufferedReader(new StringReader(""));
         final String result =
@@ -82,7 +83,7 @@ public class BuildLogMultilineRegexMacroTest {
     }
 
     @Test
-    public void testGetContent_matchedLines() throws Exception {
+    void testGetContent_matchedLines() throws Exception {
         when(build.getLogReader())
                 .thenReturn(
                         new StringReader(
@@ -95,7 +96,7 @@ public class BuildLogMultilineRegexMacroTest {
     }
 
     @Test
-    public void testGetContent_truncatedAndMatchedLines() throws Exception {
+    void testGetContent_truncatedAndMatchedLines() throws Exception {
         when(build.getLogReader())
                 .thenReturn(
                         new StringReader(
@@ -111,7 +112,7 @@ public class BuildLogMultilineRegexMacroTest {
     }
 
     @Test
-    public void testGetContent_errorMatchedAndNothingReplaced() throws Exception {
+    void testGetContent_errorMatchedAndNothingReplaced() throws Exception {
         when(build.getLogReader()).thenReturn(new StringReader("error foo bar fubber"));
         buildLogMultilineRegexMacro.substText = "$0";
 
@@ -122,7 +123,7 @@ public class BuildLogMultilineRegexMacroTest {
     }
 
     @Test
-    public void testGetContent_errorMatchedAndNothingReplaced2() throws Exception {
+    void testGetContent_errorMatchedAndNothingReplaced2() throws Exception {
         when(build.getLogReader()).thenReturn(new StringReader("error foo bar fubber"));
         buildLogMultilineRegexMacro.substText = null;
 
@@ -133,7 +134,7 @@ public class BuildLogMultilineRegexMacroTest {
     }
 
     @Test
-    public void testGetContent_errorMatchedAndReplacedByString() throws Exception {
+    void testGetContent_errorMatchedAndReplacedByString() throws Exception {
         when(build.getLogReader()).thenReturn(new StringReader("error foo bar error fubber"));
         buildLogMultilineRegexMacro.regex = ".*(?i)\\b(error|exception|fatal|fail(ed|ure)|un(defined|resolved))\\b.*";
         buildLogMultilineRegexMacro.substText = "REPLACE";
@@ -144,7 +145,7 @@ public class BuildLogMultilineRegexMacroTest {
     }
 
     @Test
-    public void testGetContent_prefixMatchedTruncatedAndStripped() throws Exception {
+    void testGetContent_prefixMatchedTruncatedAndStripped() throws Exception {
         when(build.getLogReader()).thenReturn(new StringReader("prefix: Yes\nRandom Line\nprefix: No\n"));
         buildLogMultilineRegexMacro.regex = "(?:^|(?<=\n))prefix: ((?-s:.*))(?:$|(?=[\r\n]))";
         buildLogMultilineRegexMacro.showTruncatedLines = false;
@@ -157,7 +158,7 @@ public class BuildLogMultilineRegexMacroTest {
     }
 
     @Test
-    public void testGetContent_escapeHtml() throws Exception {
+    void testGetContent_escapeHtml() throws Exception {
         when(build.getLogReader()).thenReturn(new StringReader("error <>&\""));
         buildLogMultilineRegexMacro.showTruncatedLines = false;
         buildLogMultilineRegexMacro.escapeHtml = true;
@@ -169,7 +170,7 @@ public class BuildLogMultilineRegexMacroTest {
     }
 
     @Test
-    public void testGetContent_matchedSegmentHtmlStyleEmpty() throws Exception {
+    void testGetContent_matchedSegmentHtmlStyleEmpty() throws Exception {
         when(build.getLogReader()).thenReturn(new StringReader("error"));
         buildLogMultilineRegexMacro.showTruncatedLines = false;
         buildLogMultilineRegexMacro.matchedSegmentHtmlStyle = "";
@@ -181,7 +182,7 @@ public class BuildLogMultilineRegexMacroTest {
     }
 
     @Test
-    public void testGetContent_matchedSegmentHtmlStyle() throws Exception {
+    void testGetContent_matchedSegmentHtmlStyle() throws Exception {
         when(build.getLogReader()).thenReturn(new StringReader("error"));
         buildLogMultilineRegexMacro.showTruncatedLines = false;
         buildLogMultilineRegexMacro.matchedSegmentHtmlStyle = "color: red";
@@ -193,7 +194,7 @@ public class BuildLogMultilineRegexMacroTest {
     }
 
     @Test
-    public void testGetContent_shouldStripOutConsoleNotes() throws Exception {
+    void testGetContent_shouldStripOutConsoleNotes() throws Exception {
         // See HUDSON-7402
         buildLogMultilineRegexMacro.regex = ".+";
         buildLogMultilineRegexMacro.showTruncatedLines = false;

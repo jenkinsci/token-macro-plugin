@@ -6,27 +6,26 @@
 
 package org.jenkinsci.plugins.tokenmacro.impl;
 
-import static junit.framework.TestCase.assertEquals;
-
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.util.StreamTaskListener;
 import jenkins.model.JenkinsLocationConfiguration;
 import org.jenkinsci.plugins.tokenmacro.TokenMacro;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  *
  * @author acearl
  */
-public class AdminEmailMacroTest {
-    @Rule
-    public final JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class AdminEmailMacroTest {
 
     @Test
-    public void testAdminAddressMacro() throws Exception {
+    void testAdminAddressMacro(JenkinsRule j) throws Exception {
         JenkinsLocationConfiguration.get().setAdminAddress("mickey@disney.com");
 
         FreeStyleProject p = j.createFreeStyleProject("foo");

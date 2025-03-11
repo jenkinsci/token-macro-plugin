@@ -1,6 +1,6 @@
 package org.jenkinsci.plugins.tokenmacro.impl;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.FilePath;
 import hudson.Launcher;
@@ -15,21 +15,22 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
+
 import org.apache.commons.io.IOUtils;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-public class WorkspaceFileMacroTest {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class WorkspaceFileMacroTest {
 
     @Test
-    public void test1() throws Exception {
+    void test1(JenkinsRule j) throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         TaskListener listener = StreamTaskListener.fromStdout();
         project.getBuildersList().add(new TestBuilder() {
@@ -54,7 +55,7 @@ public class WorkspaceFileMacroTest {
     }
 
     @Test
-    public void testMaxLines() throws Exception {
+    void testMaxLines(JenkinsRule j) throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         TaskListener listener = StreamTaskListener.fromStdout();
         project.getBuildersList().add(new TestBuilder() {
@@ -84,7 +85,7 @@ public class WorkspaceFileMacroTest {
     }
 
     @Test
-    public void testUtfEncodings() throws Exception {
+    void testUtfEncodings(JenkinsRule j) throws Exception {
         String[] expected = {
             "première is first", "première is slightly different", "Кириллица is Cyrillic", "\uD801\uDC00 am Deseret"
         };
@@ -125,13 +126,13 @@ public class WorkspaceFileMacroTest {
     }
 
     @Test
-    public void testSimpleChinese() throws Exception {
+    void testSimpleChinese(JenkinsRule j) throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         TaskListener listener = StreamTaskListener.fromStdout();
 
         String expected;
         try (BufferedReader reader = new BufferedReader(
-                new InputStreamReader(getClass().getResourceAsStream("Chinese-Simplified.txt"), "utf16"))) {
+                new InputStreamReader(getClass().getResourceAsStream("Chinese-Simplified.txt"), StandardCharsets.UTF_16))) {
             expected = IOUtils.toString(reader);
         }
         project.getBuildersList().add(new TestBuilder() {
@@ -139,9 +140,9 @@ public class WorkspaceFileMacroTest {
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
                     throws InterruptedException, IOException {
                 FilePath file = build.getWorkspace().child("Chinese-Simplified.txt");
-                try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(file.write(), "utf16"))) {
+                try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(file.write(), StandardCharsets.UTF_16))) {
                     try (BufferedReader reader = new BufferedReader(
-                            new InputStreamReader(getClass().getResourceAsStream("Chinese-Simplified.txt"), "utf16"))) {
+                            new InputStreamReader(getClass().getResourceAsStream("Chinese-Simplified.txt"), StandardCharsets.UTF_16))) {
                         IOUtils.copy(reader, writer);
                     }
                 }

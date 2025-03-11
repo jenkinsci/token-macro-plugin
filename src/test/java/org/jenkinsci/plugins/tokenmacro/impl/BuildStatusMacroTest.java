@@ -1,7 +1,7 @@
 package org.jenkinsci.plugins.tokenmacro.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -12,22 +12,19 @@ import java.io.StringWriter;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.WithoutJenkins;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-@SuppressWarnings({"unchecked"})
-public class BuildStatusMacroTest {
-
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class BuildStatusMacroTest {
 
     @Test
     @Issue("JENKINS-953")
     @WithoutJenkins
-    public void testGetContent_whenBuildIsBuildingThenStatusShouldBeBuilding() throws Exception {
+    void testGetContent_whenBuildIsBuildingThenStatusShouldBeBuilding(JenkinsRule j) throws Exception {
         AbstractBuild build = mock(AbstractBuild.class);
         when(build.isBuilding()).thenReturn(true);
 
@@ -39,7 +36,7 @@ public class BuildStatusMacroTest {
 
     @Test
     @Issue("JENKINS-44322")
-    public void testGetContent_whenPipelineBuildIsBuildingThenStatusShouldBeSuccess() throws Exception {
+    void testGetContent_whenPipelineBuildIsBuildingThenStatusShouldBeSuccess(JenkinsRule j) throws Exception {
         WorkflowJob job = j.createProject(WorkflowJob.class);
         job.setDefinition(new CpsFlowDefinition("node { echo tm('$BUILD_STATUS') }", false));
         WorkflowRun run = job.scheduleBuild2(0).get();

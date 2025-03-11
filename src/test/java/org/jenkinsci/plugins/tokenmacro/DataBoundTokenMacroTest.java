@@ -6,29 +6,28 @@
 
 package org.jenkinsci.plugins.tokenmacro;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import hudson.model.AbstractBuild;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.TaskListener;
-import java.io.IOException;
-import org.junit.Rule;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  *
  * @author acearl
  */
-public class DataBoundTokenMacroTest {
-
-    @Rule
-    public final JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class DataBoundTokenMacroTest {
 
     @Test
-    public void testSimpleDataBoundMacro() throws Exception {
+    void testSimpleDataBoundMacro(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
@@ -36,7 +35,7 @@ public class DataBoundTokenMacroTest {
     }
 
     @Test
-    public void testMethodDataBoundMacro() throws Exception {
+    void testMethodDataBoundMacro(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
@@ -45,16 +44,16 @@ public class DataBoundTokenMacroTest {
         assertEquals("YES", TokenMacro.expand(b, TaskListener.NULL, "${ENUM_MACRO, value=\"YES\"}"));
     }
 
-    @Test(expected = MacroEvaluationException.class)
-    public void testMethodDataBoundMacroThrows() throws Exception {
+    @Test
+    void testMethodDataBoundMacroThrows(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
-
-        TokenMacro.expand(b, TaskListener.NULL, "${ENUM_MACRO, value=\"BAD\"}");
+        assertThrows(MacroEvaluationException.class, () ->
+            TokenMacro.expand(b, TaskListener.NULL, "${ENUM_MACRO, value=\"BAD\"}"));
     }
 
     @Test
-    public void testDataBoundMacroWithFieldAlias() throws Exception {
+    void testDataBoundMacroWithFieldAlias(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
@@ -63,7 +62,7 @@ public class DataBoundTokenMacroTest {
     }
 
     @Test
-    public void testDataBoundMacroWithMethodAlias() throws Exception {
+    void testDataBoundMacroWithMethodAlias(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
@@ -73,7 +72,7 @@ public class DataBoundTokenMacroTest {
     }
 
     @Test
-    public void testRecursionLimit() throws Exception {
+    void testRecursionLimit(JenkinsRule j) throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("foo");
         FreeStyleBuild b = p.scheduleBuild2(0).get();
 
@@ -87,8 +86,7 @@ public class DataBoundTokenMacroTest {
         public String arg = "default";
 
         @Override
-        public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName)
-                throws MacroEvaluationException, IOException, InterruptedException {
+        public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName) {
             return arg;
         }
 
@@ -115,8 +113,7 @@ public class DataBoundTokenMacroTest {
         }
 
         @Override
-        public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName)
-                throws MacroEvaluationException, IOException, InterruptedException {
+        public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName) {
             return this.value.toString();
         }
 
@@ -140,8 +137,7 @@ public class DataBoundTokenMacroTest {
         }
 
         @Override
-        public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName)
-                throws MacroEvaluationException, IOException, InterruptedException {
+        public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName) {
             return String.format("default = %s, arg2 = %d", arg, arg2);
         }
 
@@ -154,8 +150,7 @@ public class DataBoundTokenMacroTest {
     @TestExtension
     public static class RecursiveDataBoundMacro extends DataBoundTokenMacro {
         @Override
-        public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName)
-                throws MacroEvaluationException, IOException, InterruptedException {
+        public String evaluate(AbstractBuild<?, ?> context, TaskListener listener, String macroName) {
             int level = Integer.parseInt(macroName.substring(9));
             if (level > 10) {
                 return "DONE!";

@@ -2,7 +2,7 @@ package org.jenkinsci.plugins.tokenmacro.impl;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.matchesPattern;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -21,18 +21,17 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
-import junit.framework.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
-@SuppressWarnings({"unchecked"})
-public class ChangesSinceLastUnstableBuildMacroTest {
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+class ChangesSinceLastUnstableBuildMacroTest {
 
     private ChangesSinceLastUnstableBuildMacro content;
     private TaskListener listener;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         content = new ChangesSinceLastUnstableBuildMacro();
         listener = StreamTaskListener.fromStdout();
         Locale.setDefault(Locale.US);
@@ -40,7 +39,7 @@ public class ChangesSinceLastUnstableBuildMacroTest {
     }
 
     @Test
-    public void testGetContent_shouldGetNoContentSinceUnstableBuildIfNoPreviousBuild() throws Exception {
+    void testGetContent_shouldGetNoContentSinceUnstableBuildIfNoPreviousBuild() throws Exception {
         AbstractBuild build = mock(AbstractBuild.class);
 
         String contentStr = content.evaluate(build, listener, ChangesSinceLastUnstableBuildMacro.MACRO_NAME);
@@ -49,7 +48,7 @@ public class ChangesSinceLastUnstableBuildMacroTest {
     }
 
     @Test
-    public void testGetContent_shouldGetPreviousBuildFailures() throws Exception {
+    void testGetContent_shouldGetPreviousBuildFailures() throws Exception {
         AbstractBuild failureBuild = createBuild(Result.FAILURE, 41, "Changes for a failed build.");
 
         AbstractBuild currentBuild = createBuild4(Result.SUCCESS, 42, "Changes for a successful build.");
@@ -59,19 +58,21 @@ public class ChangesSinceLastUnstableBuildMacroTest {
         String contentStr = content.evaluate(currentBuild, listener, ChangesSinceLastUnstableBuildMacro.MACRO_NAME);
 
         assertEquals(
-                "Changes for Build #41\n"
-                        + "[Ash Lux] Changes for a failed build.\n"
-                        + "\n"
-                        + "\n"
-                        + "Changes for Build #42\n"
-                        + "[Ash Lux] Changes for a successful build.\n"
-                        + "\n"
-                        + "\n",
+		        """
+                        Changes for Build #41
+                        [Ash Lux] Changes for a failed build.
+				        
+				        
+                        Changes for Build #42
+                        [Ash Lux] Changes for a successful build.
+				        
+				        
+                        """,
                 contentStr);
     }
 
     @Test
-    public void testGetContent_whenReverseOrderIsTrueShouldReverseOrderOfChanges() throws Exception {
+    void testGetContent_whenReverseOrderIsTrueShouldReverseOrderOfChanges() throws Exception {
         content.reverse = true;
 
         AbstractBuild failureBuild = createBuild(Result.FAILURE, 41, "Changes for a failed build.");
@@ -82,13 +83,21 @@ public class ChangesSinceLastUnstableBuildMacroTest {
         String contentStr = content.evaluate(currentBuild, listener, ChangesSinceLastUnstableBuildMacro.MACRO_NAME);
 
         assertEquals(
-                "Changes for Build #42\n" + "[Ash Lux] Changes for a successful build.\n" + "\n" + "\n"
-                        + "Changes for Build #41\n" + "[Ash Lux] Changes for a failed build.\n" + "\n" + "\n",
+		        """
+                        Changes for Build #42
+                        [Ash Lux] Changes for a successful build.
+				        
+				        
+                        Changes for Build #41
+                        [Ash Lux] Changes for a failed build.
+				        
+				        
+                        """,
                 contentStr);
     }
 
     @Test
-    public void testGetContent_shouldGetPreviousBuildsThatArentUnstable_HUDSON3519() throws Exception {
+    void testGetContent_shouldGetPreviousBuildsThatArentUnstable_HUDSON3519() throws Exception {
         // Test for HUDSON-3519
 
         AbstractBuild successfulBuild = createBuild3(Result.SUCCESS, 2, "Changes for a successful build.");
@@ -113,27 +122,29 @@ public class ChangesSinceLastUnstableBuildMacroTest {
         String contentStr = content.evaluate(currentBuild, listener, ChangesSinceLastUnstableBuildMacro.MACRO_NAME);
 
         assertEquals(
-                "Changes for Build #4\n"
-                        + "[Ash Lux] Changes for an aborted build.\n"
-                        + "\n"
-                        + "\n"
-                        + "Changes for Build #5\n"
-                        + "[Ash Lux] Changes for a failed build.\n"
-                        + "\n"
-                        + "\n"
-                        + "Changes for Build #6\n"
-                        + "[Ash Lux] Changes for a not-built build.\n"
-                        + "\n"
-                        + "\n"
-                        + "Changes for Build #7\n"
-                        + "[Ash Lux] Changes for an unstable build.\n"
-                        + "\n"
-                        + "\n",
+		        """
+                        Changes for Build #4
+                        [Ash Lux] Changes for an aborted build.
+				        
+				        
+                        Changes for Build #5
+                        [Ash Lux] Changes for a failed build.
+				        
+				        
+                        Changes for Build #6
+                        [Ash Lux] Changes for a not-built build.
+				        
+				        
+                        Changes for Build #7
+                        [Ash Lux] Changes for an unstable build.
+				        
+				        
+                        """,
                 contentStr);
     }
 
     @Test
-    public void testShouldPrintDate() throws Exception {
+    void testShouldPrintDate() throws Exception {
         content.changesFormat = "%d";
 
         AbstractBuild failureBuild = createBuild(Result.FAILURE, 41, "Changes for a failed build.");
@@ -148,12 +159,16 @@ public class ChangesSinceLastUnstableBuildMacroTest {
         // See https://bugs.openjdk.org/browse/JDK-8225245
         assertThat(
                 contentStr,
-                matchesPattern("Changes for Build #41\n" + "Oct 21, 2013, 7:39:00\\hPM\n" + "Changes for Build #42\n"
-                        + "Oct 21, 2013, 7:39:00\\hPM\n"));
+                matchesPattern("""
+                        Changes for Build #41
+                        Oct 21, 2013, 7:39:00\\hPM
+                        Changes for Build #42
+                        Oct 21, 2013, 7:39:00\\hPM
+                        """));
     }
 
     @Test
-    public void testShouldPrintRevision() throws Exception {
+    void testShouldPrintRevision() throws Exception {
         content.changesFormat = "%r";
 
         AbstractBuild failureBuild = createBuild(Result.FAILURE, 41, "Changes for a failed build.");
@@ -164,12 +179,16 @@ public class ChangesSinceLastUnstableBuildMacroTest {
 
         String contentStr = content.evaluate(currentBuild, listener, ChangesSinceLastUnstableBuildMacro.MACRO_NAME);
 
-        Assert.assertEquals(
-                "Changes for Build #41\n" + "REVISION\n" + "Changes for Build #42\n" + "REVISION\n", contentStr);
+        assertEquals("""
+                Changes for Build #41
+                REVISION
+                Changes for Build #42
+                REVISION
+                """, contentStr);
     }
 
     @Test
-    public void testShouldPrintPath() throws Exception {
+    void testShouldPrintPath() throws Exception {
         content.changesFormat = "%p";
 
         AbstractBuild failureBuild = createBuild(Result.FAILURE, 41, "Changes for a failed build.");
@@ -180,14 +199,22 @@ public class ChangesSinceLastUnstableBuildMacroTest {
 
         String contentStr = content.evaluate(currentBuild, listener, ChangesSinceLastUnstableBuildMacro.MACRO_NAME);
 
-        Assert.assertEquals(
-                "Changes for Build #41\n" + "\tPATH1\n" + "\tPATH2\n" + "\tPATH3\n" + "\n" + "Changes for Build #42\n"
-                        + "\tPATH1\n" + "\tPATH2\n" + "\tPATH3\n" + "\n",
-                contentStr);
+        assertEquals("""
+                Changes for Build #41
+                \tPATH1
+                \tPATH2
+                \tPATH3
+		        
+                Changes for Build #42
+                \tPATH1
+                \tPATH2
+                \tPATH3
+		        
+                """, contentStr);
     }
 
     @Test
-    public void testWhenShowPathsIsTrueShouldPrintPath() throws Exception {
+    void testWhenShowPathsIsTrueShouldPrintPath() throws Exception {
         content.showPaths = true;
 
         AbstractBuild failureBuild = createBuild(Result.FAILURE, 41, "Changes for a failed build.");
@@ -198,16 +225,26 @@ public class ChangesSinceLastUnstableBuildMacroTest {
 
         String contentStr = content.evaluate(currentBuild, listener, ChangesSinceLastUnstableBuildMacro.MACRO_NAME);
 
-        Assert.assertEquals(
-                "Changes for Build #41\n" + "[Ash Lux] Changes for a failed build.\n" + "\tPATH1\n"
-                        + "\tPATH2\n" + "\tPATH3\n" + "\n" + "\n" + "Changes for Build #42\n"
-                        + "[Ash Lux] Changes for a successful build.\n" + "\tPATH1\n" + "\tPATH2\n" + "\tPATH3\n" + "\n"
-                        + "\n",
-                contentStr);
+        assertEquals("""
+                Changes for Build #41
+                [Ash Lux] Changes for a failed build.
+                \tPATH1
+                \tPATH2
+                \tPATH3
+		        
+		        
+                Changes for Build #42
+                [Ash Lux] Changes for a successful build.
+                \tPATH1
+                \tPATH2
+                \tPATH3
+		        
+		        
+                """, contentStr);
     }
 
     @Test
-    public void testRegexReplace() throws Exception {
+    void testRegexReplace() throws Exception {
         content.regex = "<defectId>(DEFECT-[0-9]+)</defectId><message>(.*)</message>";
         content.replace = "[$1] $2";
         content.changesFormat = "%m\\n";
@@ -225,19 +262,21 @@ public class ChangesSinceLastUnstableBuildMacroTest {
         String contentStr = content.evaluate(currentBuild, listener, ChangesSinceLastUnstableBuildMacro.MACRO_NAME);
 
         assertEquals(
-                "Changes for Build #41\n"
-                        + "[DEFECT-666] Changes for a failed build.\n"
-                        + "\n"
-                        + "\n"
-                        + "Changes for Build #42\n"
-                        + "[DEFECT-666] Changes for a successful build.\n"
-                        + "\n"
-                        + "\n",
+		        """
+                        Changes for Build #41
+                        [DEFECT-666] Changes for a failed build.
+				        
+				        
+                        Changes for Build #42
+                        [DEFECT-666] Changes for a successful build.
+				        
+				        
+                        """,
                 contentStr);
     }
 
     @Test
-    public void testShouldPrintDefaultMessageWhenNoChanges() throws Exception {
+    void testShouldPrintDefaultMessageWhenNoChanges() throws Exception {
         AbstractBuild failureBuild = createBuild(Result.FAILURE, 41, "[DEFECT-666] Changes for a failed build.");
 
         AbstractBuild currentBuild = createBuildWithNoChanges(Result.SUCCESS, 42);
@@ -246,19 +285,17 @@ public class ChangesSinceLastUnstableBuildMacroTest {
 
         String contentStr = content.evaluate(currentBuild, listener, ChangesSinceLastUnstableBuildMacro.MACRO_NAME);
 
-        Assert.assertEquals(
-                "Changes for Build #41\n"
-                        + "[Ash Lux] [DEFECT-666] Changes for a failed build.\n"
-                        + "\n"
-                        + "\n"
-                        + "Changes for Build #42\n"
-                        + ChangesSinceLastBuildMacro.DEFAULT_DEFAULT_VALUE
-                        + "\n",
-                contentStr);
+        assertEquals("Changes for Build #41\n"
+                + "[Ash Lux] [DEFECT-666] Changes for a failed build.\n"
+                + "\n"
+                + "\n"
+                + "Changes for Build #42\n"
+                + ChangesSinceLastBuildMacro.DEFAULT_DEFAULT_VALUE
+                + "\n", contentStr);
     }
 
     @Test
-    public void testShouldPrintMessageWhenNoChanges() throws Exception {
+    void testShouldPrintMessageWhenNoChanges() throws Exception {
         content.def = "another default message\n";
         AbstractBuild failureBuild = createBuild(Result.FAILURE, 41, "[DEFECT-666] Changes for a failed build.");
 
@@ -268,19 +305,19 @@ public class ChangesSinceLastUnstableBuildMacroTest {
 
         String contentStr = content.evaluate(currentBuild, listener, ChangesSinceLastUnstableBuildMacro.MACRO_NAME);
 
-        Assert.assertEquals(
-                "Changes for Build #41\n"
-                        + "[Ash Lux] [DEFECT-666] Changes for a failed build.\n"
-                        + "\n"
-                        + "\n"
-                        + "Changes for Build #42\n"
-                        + "another default message\n"
-                        + "\n",
-                contentStr);
+        assertEquals("""
+                Changes for Build #41
+                [Ash Lux] [DEFECT-666] Changes for a failed build.
+		        
+		        
+                Changes for Build #42
+                another default message
+		        
+                """, contentStr);
     }
 
     @Test
-    public void testShouldDefaultToNotEscapeHtml() throws Exception {
+    void testShouldDefaultToNotEscapeHtml() throws Exception {
         AbstractBuild failureBuild =
                 createBuild(Result.FAILURE, 41, "[DEFECT-666] Changes for a failed build. <b>bold</b>");
 
@@ -291,18 +328,20 @@ public class ChangesSinceLastUnstableBuildMacroTest {
         String contentStr = content.evaluate(currentBuild, listener, ChangesSinceLastUnstableBuildMacro.MACRO_NAME);
 
         assertEquals(
-                "Changes for Build #41\n"
-                        + "[Ash Lux] [DEFECT-666] Changes for a failed build. <b>bold</b>\n"
-                        + "\n"
-                        + "\n"
-                        + "Changes for Build #42\n"
-                        + "No changes\n"
-                        + "\n",
+		        """
+                        Changes for Build #41
+                        [Ash Lux] [DEFECT-666] Changes for a failed build. <b>bold</b>
+				        
+				        
+                        Changes for Build #42
+                        No changes
+				        
+                        """,
                 contentStr);
     }
 
     @Test
-    public void testShouldEscapeHtmlWhenArgumentEscapeHtmlSetToTrue() throws Exception {
+    void testShouldEscapeHtmlWhenArgumentEscapeHtmlSetToTrue() throws Exception {
         AbstractBuild failureBuild =
                 createBuild(Result.FAILURE, 41, "[DEFECT-666] Changes for a failed build. <b>bold</b>");
 
@@ -317,13 +356,15 @@ public class ChangesSinceLastUnstableBuildMacroTest {
                 currentBuild, null, listener, ChangesSinceLastUnstableBuildMacro.MACRO_NAME, arguments, listMultimap);
 
         assertEquals(
-                "Changes for Build #41\n"
-                        + "[Ash Lux] [DEFECT-666] Changes for a failed build. &lt;b&gt;bold&lt;/b&gt;\n"
-                        + "\n"
-                        + "\n"
-                        + "Changes for Build #42\n"
-                        + "No changes\n"
-                        + "\n",
+		        """
+                        Changes for Build #41
+                        [Ash Lux] [DEFECT-666] Changes for a failed build. &lt;b&gt;bold&lt;/b&gt;
+				        
+				        
+                        Changes for Build #42
+                        No changes
+				        
+                        """,
                 contentStr);
     }
 
@@ -336,7 +377,7 @@ public class ChangesSinceLastUnstableBuildMacroTest {
         return build;
     }
 
-    public ChangeLogSet createEmptyChangeLog() {
+    private ChangeLogSet createEmptyChangeLog() {
         ChangeLogSet changes = mock(ChangeLogSet.class);
         List<ChangeLogSet.Entry> entries = Collections.emptyList();
         when(changes.isEmptySet()).thenReturn(true);
@@ -354,10 +395,10 @@ public class ChangesSinceLastUnstableBuildMacroTest {
         return build;
     }
 
-    public ChangeLogSet createChangeLog(String message) {
+    private ChangeLogSet createChangeLog(String message) {
         ChangeLogSet changes = mock(ChangeLogSet.class);
 
-        List<ChangeLogSet.Entry> entries = new LinkedList<ChangeLogSet.Entry>();
+        List<ChangeLogSet.Entry> entries = new LinkedList<>();
         ChangeLogSet.Entry entry = new ChangeLogEntry(message, "Ash Lux");
         entries.add(entry);
         when(changes.iterator()).thenReturn(entries.iterator());
@@ -365,7 +406,7 @@ public class ChangesSinceLastUnstableBuildMacroTest {
         return changes;
     }
 
-    public class ChangeLogEntry extends ChangeLogSet.Entry {
+    private static class ChangeLogEntry extends ChangeLogSet.Entry {
 
         final String message;
         final String author;
@@ -389,12 +430,12 @@ public class ChangesSinceLastUnstableBuildMacroTest {
 
         @Override
         public Collection<String> getAffectedPaths() {
-            return new ArrayList<String>() {
-                {
-                    add("PATH1");
-                    add("PATH2");
-                    add("PATH3");
-                }
+            return new ArrayList<>() {
+	            {
+		            add("PATH1");
+		            add("PATH2");
+		            add("PATH3");
+	            }
             };
         }
 
@@ -431,9 +472,9 @@ public class ChangesSinceLastUnstableBuildMacroTest {
         return build;
     }
 
-    public ChangeLogSet createChangeLog2(String message) {
+    private ChangeLogSet createChangeLog2(String message) {
         ChangeLogSet changes = mock(ChangeLogSet.class);
-        List<ChangeLogSet.Entry> entries = new LinkedList<ChangeLogSet.Entry>();
+        List<ChangeLogSet.Entry> entries = new LinkedList<>();
         ChangeLogSet.Entry entry = new ChangeLogEntry(message, "Ash Lux");
         entries.add(entry);
         return changes;

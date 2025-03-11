@@ -6,31 +6,29 @@
 
 package org.jenkinsci.plugins.tokenmacro.impl;
 
-import static junit.framework.TestCase.assertEquals;
-
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.util.StreamTaskListener;
 import org.jenkinsci.plugins.tokenmacro.TokenMacro;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  *
  * @author egutierrez
  */
-public class ProjectNameMacroTest {
+@WithJenkins
+class ProjectNameMacroTest {
 
     private static final String FOLDER_DISPLAY_NAME = "folderdisplay";
     private static final String JOB_DISPLAY_NAME = "jobdisplay";
 
-    @Rule
-    public final JenkinsRule j = new JenkinsRule();
-
     @Test
-    public void testProjectNameMacro() throws Exception {
+    void testProjectNameMacro(JenkinsRule j) throws Exception {
         MockFolder folder = j.createFolder("foofolder");
         folder.setDisplayName(FOLDER_DISPLAY_NAME);
 
