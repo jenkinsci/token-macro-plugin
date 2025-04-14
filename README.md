@@ -15,7 +15,7 @@ becomes a build string. In instant messenger plugin, one might configure
 the template that controls what messages the user will receive.
 
 All these plugins share the common concept of token expansions, where 
-something like ${SUBVERSION_REVISION} expands to some textual values, 
+something like `${SUBVERSION_REVISION}` expands to some textual values, 
 and since this notion is useful beyond any single use case, it makes 
 sense to define it elsewhere. And this is exactly what this plugin does 
 — to define the mechanism for plugins to define tokens (and their 
@@ -31,10 +31,10 @@ with multiple values allowed for a single parameter name:
 
 | Example | Description |
 |---------|-------------|
-| ${FOO}  | no parameter |
-| $FOO    | alternative syntax for token with no parameter |
-| ${FOO,param1=value1,param2=value2} | 2 parameters |
-| ${FOO,param=v1,param=v2,param=v3}  | 1 parameter with 3 values |
+| `${FOO}`  | no parameter |
+| `$FOO`    | alternative syntax for token with no parameter |
+| `${FOO,param1=value1,param2=value2}` | 2 parameters |
+| `${FOO,param=v1,param=v2,param=v3}`  | 1 parameter with 3 values |
 
 
 Those plugins that wish to define custom tokens can do so by providing 
@@ -118,3 +118,7 @@ ${MACRO_NAME:<START>[:LENGTH]} // returns the substring starting at START, and o
 ${MACRO_NAME#<NEEDLE>} // returns the value with <NEEDLE> removed, IF it is at the START of the result value.
 ${MACRO_NAME%<NEEDLE>} // returns the value with <NEEDLE> removed, IF it is at the END of the result value.
 ```
+
+## Escaping
+
+To escape a `$` use `$$`.
