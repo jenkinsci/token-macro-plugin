@@ -17,7 +17,7 @@ import java.util.Queue;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 
@@ -106,7 +106,7 @@ public class BuildLogRegexMacro extends DataBoundTokenMacro {
             line = line.substring(0, maxLineLength) + "...";
         }
         if (escapeHtml) {
-            line = StringEscapeUtils.escapeHtml(line);
+            line = StringEscapeUtils.escapeHtml4(line);
         }
         matchResults.add(line + '\n');
     }
@@ -117,7 +117,7 @@ public class BuildLogRegexMacro extends DataBoundTokenMacro {
             line = line.substring(0, maxLineLength) + "...";
         }
         if (escapeHtml) {
-            line = StringEscapeUtils.escapeHtml(line);
+            line = StringEscapeUtils.escapeHtml4(line);
         }
         StringBuffer buffer = new StringBuffer();
         if (style != null) {
