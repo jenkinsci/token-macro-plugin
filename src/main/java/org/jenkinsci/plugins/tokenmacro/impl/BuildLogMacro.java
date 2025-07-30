@@ -8,7 +8,7 @@ import hudson.model.TaskListener;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 
@@ -69,7 +69,7 @@ public class BuildLogMacro extends DataBoundTokenMacro {
                     line = line.substring(0, maxLineLength) + "...";
                 }
                 if (escapeHtml) {
-                    line = StringEscapeUtils.escapeHtml(line);
+                    line = StringEscapeUtils.escapeHtml4(line);
                 }
                 buffer.append(line);
                 buffer.append('\n');

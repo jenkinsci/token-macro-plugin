@@ -43,8 +43,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.beanutils.ConvertUtils;
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Convenient base class for implementing {@link TokenMacro} that does parameter databinding to fields.
@@ -212,7 +212,7 @@ public abstract class DataBoundTokenMacro extends TokenMacro {
         DataBoundTokenMacro copy = prepare(macroName, arguments, argumentMultimap);
         String res = copy.evaluate(build, listener, macroName);
         if (copy.escapeHtml && !copy.handlesHtmlEscapeInternally()) {
-            res = StringEscapeUtils.escapeHtml(res);
+            res = StringEscapeUtils.escapeHtml4(res);
         }
         return res;
     }
@@ -229,7 +229,7 @@ public abstract class DataBoundTokenMacro extends TokenMacro {
         DataBoundTokenMacro copy = prepare(macroName, arguments, argumentMultimap);
         String res = copy.evaluate(run, workspace, listener, macroName);
         if (copy.escapeHtml && !copy.handlesHtmlEscapeInternally()) {
-            res = StringEscapeUtils.escapeHtml(res);
+            res = StringEscapeUtils.escapeHtml4(res);
         }
         return res;
     }

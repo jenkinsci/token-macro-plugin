@@ -12,7 +12,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.jenkinsci.plugins.tokenmacro.DataBoundTokenMacro;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 
@@ -75,7 +75,7 @@ public class BuildLogMultilineRegexMacro extends DataBoundTokenMacro {
 
     private void appendMatchedSegment(StringBuilder buffer, String segment, boolean escapeHtml, String style) {
         if (escapeHtml) {
-            segment = StringEscapeUtils.escapeHtml(segment);
+            segment = StringEscapeUtils.escapeHtml4(segment);
         }
         if (style != null) {
             buffer.append("<b");

@@ -12,7 +12,7 @@ import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.util.*;
 import java.util.stream.Collectors;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jenkinsci.plugins.tokenmacro.transform.BeginningOrEndMatchTransorm;
 import org.jenkinsci.plugins.tokenmacro.transform.ContentLengthTransform;
 import org.jenkinsci.plugins.tokenmacro.transform.SubstringTransform;
