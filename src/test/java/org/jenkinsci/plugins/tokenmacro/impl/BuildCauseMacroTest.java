@@ -53,14 +53,13 @@ class BuildCauseMacroTest {
     @Test
     void shouldReturnMultipleCausesSeperatedByCommas() throws Exception {
         CauseAction causeAction = mock(CauseAction.class);
-        when(causeAction.getCauses()).thenReturn(new LinkedList<>() {
+        setupCauseActionGetCausesAndGetActionStubs(causeAction, new LinkedList<>() {
 	        {
 		        add(new CauseStub("Cause1"));
 		        add(new CauseStub("Cause2"));
 		        add(new CauseStub("Cause3"));
 	        }
         });
-        when(build.getAction(CauseAction.class)).thenReturn(causeAction);
 
         assertEquals("Cause1, Cause2, Cause3", buildCauseMacro.evaluate(build, listener, BuildCauseMacro.MACRO_NAME));
     }
@@ -74,13 +73,12 @@ class BuildCauseMacroTest {
         when(upstreamCause.getUpstreamProject()).thenReturn("Upstream");
         when(upstreamCause.getUpstreamUrl()).thenReturn("http://localhost/jenkins/jobs/Upstream/3");
 
-        when(causeAction.getCauses()).thenReturn(new LinkedList<>() {
+        setupCauseActionGetCausesAndGetActionStubs(causeAction, new LinkedList<>() {
 	        {
 		        add(upstreamCause);
 	        }
         });
 
-        when(build.getAction(CauseAction.class)).thenReturn(causeAction);
         buildCauseMacro.data = "BUILD_NUMBER";
         assertEquals("3", buildCauseMacro.evaluate(build, listener, BuildCauseMacro.MACRO_NAME));
         buildCauseMacro.data = "PROJECT_NAME";
@@ -102,5 +100,10 @@ class BuildCauseMacroTest {
         public String getShortDescription() {
             return name;
         }
+    }
+
+    private void setupCauseActionGetCausesAndGetActionStubs(CauseAction causeAction, LinkedList<Cause> getCausesReturnValue) {
+        when(causeAction.getCauses()).thenReturn(getCausesReturnValue);
+        when(build.getAction(CauseAction.class)).thenReturn(causeAction);
     }
 }
