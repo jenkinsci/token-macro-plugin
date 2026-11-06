@@ -52,8 +52,7 @@ class ChangesSinceLastUnstableBuildMacroTest {
         AbstractBuild failureBuild = createBuild(Result.FAILURE, 41, "Changes for a failed build.");
 
         AbstractBuild currentBuild = createBuild4(Result.SUCCESS, 42, "Changes for a successful build.");
-        when(currentBuild.getPreviousBuild()).thenReturn(failureBuild);
-        when(failureBuild.getNextBuild()).thenReturn(currentBuild);
+        setupAbstractBuildGetPreviousBuildAndGetNextBuildStubs(currentBuild, failureBuild);
 
         String contentStr = content.evaluate(currentBuild, listener, ChangesSinceLastUnstableBuildMacro.MACRO_NAME);
 
@@ -108,16 +107,13 @@ class ChangesSinceLastUnstableBuildMacroTest {
         when(abortedBuild.getPreviousBuild()).thenReturn(unstableBuild);
 
         AbstractBuild failureBuild = createBuild(Result.FAILURE, 5, "Changes for a failed build.");
-        when(failureBuild.getPreviousBuild()).thenReturn(abortedBuild);
-        when(abortedBuild.getNextBuild()).thenReturn(failureBuild);
+        setupAbstractBuildGetPreviousBuildAndGetNextBuildStubs(failureBuild, abortedBuild);
 
         AbstractBuild notBuiltBuild = createBuild(Result.NOT_BUILT, 6, "Changes for a not-built build.");
-        when(notBuiltBuild.getPreviousBuild()).thenReturn(failureBuild);
-        when(failureBuild.getNextBuild()).thenReturn(notBuiltBuild);
+        setupAbstractBuildGetPreviousBuildAndGetNextBuildStubs(notBuiltBuild, failureBuild);
 
         AbstractBuild currentBuild = createBuild4(Result.UNSTABLE, 7, "Changes for an unstable build.");
-        when(currentBuild.getPreviousBuild()).thenReturn(notBuiltBuild);
-        when(notBuiltBuild.getNextBuild()).thenReturn(currentBuild);
+        setupAbstractBuildGetPreviousBuildAndGetNextBuildStubs(currentBuild, notBuiltBuild);
 
         String contentStr = content.evaluate(currentBuild, listener, ChangesSinceLastUnstableBuildMacro.MACRO_NAME);
 
@@ -150,8 +146,7 @@ class ChangesSinceLastUnstableBuildMacroTest {
         AbstractBuild failureBuild = createBuild(Result.FAILURE, 41, "Changes for a failed build.");
 
         AbstractBuild currentBuild = createBuild4(Result.SUCCESS, 42, "Changes for a successful build.");
-        when(currentBuild.getPreviousBuild()).thenReturn(failureBuild);
-        when(failureBuild.getNextBuild()).thenReturn(currentBuild);
+        setupAbstractBuildGetPreviousBuildAndGetNextBuildStubs(currentBuild, failureBuild);
 
         String contentStr = content.evaluate(currentBuild, listener, ChangesSinceLastUnstableBuildMacro.MACRO_NAME);
 
@@ -174,8 +169,7 @@ class ChangesSinceLastUnstableBuildMacroTest {
         AbstractBuild failureBuild = createBuild(Result.FAILURE, 41, "Changes for a failed build.");
 
         AbstractBuild currentBuild = createBuild4(Result.SUCCESS, 42, "Changes for a successful build.");
-        when(currentBuild.getPreviousBuild()).thenReturn(failureBuild);
-        when(failureBuild.getNextBuild()).thenReturn(currentBuild);
+        setupAbstractBuildGetPreviousBuildAndGetNextBuildStubs(currentBuild, failureBuild);
 
         String contentStr = content.evaluate(currentBuild, listener, ChangesSinceLastUnstableBuildMacro.MACRO_NAME);
 
@@ -194,8 +188,7 @@ class ChangesSinceLastUnstableBuildMacroTest {
         AbstractBuild failureBuild = createBuild(Result.FAILURE, 41, "Changes for a failed build.");
 
         AbstractBuild currentBuild = createBuild4(Result.SUCCESS, 42, "Changes for a successful build.");
-        when(currentBuild.getPreviousBuild()).thenReturn(failureBuild);
-        when(failureBuild.getNextBuild()).thenReturn(currentBuild);
+        setupAbstractBuildGetPreviousBuildAndGetNextBuildStubs(currentBuild, failureBuild);
 
         String contentStr = content.evaluate(currentBuild, listener, ChangesSinceLastUnstableBuildMacro.MACRO_NAME);
 
@@ -220,8 +213,7 @@ class ChangesSinceLastUnstableBuildMacroTest {
         AbstractBuild failureBuild = createBuild(Result.FAILURE, 41, "Changes for a failed build.");
 
         AbstractBuild currentBuild = createBuild4(Result.SUCCESS, 42, "Changes for a successful build.");
-        when(currentBuild.getPreviousBuild()).thenReturn(failureBuild);
-        when(failureBuild.getNextBuild()).thenReturn(currentBuild);
+        setupAbstractBuildGetPreviousBuildAndGetNextBuildStubs(currentBuild, failureBuild);
 
         String contentStr = content.evaluate(currentBuild, listener, ChangesSinceLastUnstableBuildMacro.MACRO_NAME);
 
@@ -256,8 +248,7 @@ class ChangesSinceLastUnstableBuildMacroTest {
                 Result.SUCCESS,
                 42,
                 "<defectId>DEFECT-666</defectId><message>Changes for a successful build.</message>");
-        when(currentBuild.getPreviousBuild()).thenReturn(failureBuild);
-        when(failureBuild.getNextBuild()).thenReturn(currentBuild);
+        setupAbstractBuildGetPreviousBuildAndGetNextBuildStubs(currentBuild, failureBuild);
 
         String contentStr = content.evaluate(currentBuild, listener, ChangesSinceLastUnstableBuildMacro.MACRO_NAME);
 
@@ -280,8 +271,7 @@ class ChangesSinceLastUnstableBuildMacroTest {
         AbstractBuild failureBuild = createBuild(Result.FAILURE, 41, "[DEFECT-666] Changes for a failed build.");
 
         AbstractBuild currentBuild = createBuildWithNoChanges(Result.SUCCESS, 42);
-        when(currentBuild.getPreviousBuild()).thenReturn(failureBuild);
-        when(failureBuild.getNextBuild()).thenReturn(currentBuild);
+        setupAbstractBuildGetPreviousBuildAndGetNextBuildStubs(currentBuild, failureBuild);
 
         String contentStr = content.evaluate(currentBuild, listener, ChangesSinceLastUnstableBuildMacro.MACRO_NAME);
 
@@ -300,8 +290,7 @@ class ChangesSinceLastUnstableBuildMacroTest {
         AbstractBuild failureBuild = createBuild(Result.FAILURE, 41, "[DEFECT-666] Changes for a failed build.");
 
         AbstractBuild currentBuild = createBuildWithNoChanges(Result.SUCCESS, 42);
-        when(currentBuild.getPreviousBuild()).thenReturn(failureBuild);
-        when(failureBuild.getNextBuild()).thenReturn(currentBuild);
+        setupAbstractBuildGetPreviousBuildAndGetNextBuildStubs(currentBuild, failureBuild);
 
         String contentStr = content.evaluate(currentBuild, listener, ChangesSinceLastUnstableBuildMacro.MACRO_NAME);
 
@@ -322,8 +311,7 @@ class ChangesSinceLastUnstableBuildMacroTest {
                 createBuild(Result.FAILURE, 41, "[DEFECT-666] Changes for a failed build. <b>bold</b>");
 
         AbstractBuild currentBuild = createBuildWithNoChanges(Result.SUCCESS, 42);
-        when(currentBuild.getPreviousBuild()).thenReturn(failureBuild);
-        when(failureBuild.getNextBuild()).thenReturn(currentBuild);
+        setupAbstractBuildGetPreviousBuildAndGetNextBuildStubs(currentBuild, failureBuild);
 
         String contentStr = content.evaluate(currentBuild, listener, ChangesSinceLastUnstableBuildMacro.MACRO_NAME);
 
@@ -346,8 +334,7 @@ class ChangesSinceLastUnstableBuildMacroTest {
                 createBuild(Result.FAILURE, 41, "[DEFECT-666] Changes for a failed build. <b>bold</b>");
 
         AbstractBuild currentBuild = createBuildWithNoChanges(Result.SUCCESS, 42);
-        when(currentBuild.getPreviousBuild()).thenReturn(failureBuild);
-        when(failureBuild.getNextBuild()).thenReturn(currentBuild);
+        setupAbstractBuildGetPreviousBuildAndGetNextBuildStubs(currentBuild, failureBuild);
 
         final Map<String, String> arguments = Collections.singletonMap("escapeHtml", "true");
         final ArrayListMultimap<String, String> listMultimap = ArrayListMultimap.create();
@@ -478,5 +465,11 @@ class ChangesSinceLastUnstableBuildMacroTest {
         ChangeLogSet.Entry entry = new ChangeLogEntry(message, "Ash Lux");
         entries.add(entry);
         return changes;
+    }
+
+    private void setupAbstractBuildGetPreviousBuildAndGetNextBuildStubs(
+            AbstractBuild currentBuild, AbstractBuild failureBuild) {
+        when(currentBuild.getPreviousBuild()).thenReturn(failureBuild);
+        when(failureBuild.getNextBuild()).thenReturn(currentBuild);
     }
 }
