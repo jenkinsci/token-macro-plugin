@@ -25,7 +25,7 @@ class BuildLogExcerptMacroTest {
     void testGetContent_emptyBuildLogShouldStayEmpty() throws Exception {
 
         AbstractBuild build = mock(AbstractBuild.class);
-        when(build.getLogReader()).thenReturn(new StringReader(""));
+        setupRunGetLogReaderStubs(build, "");
 
         buildLogExcerptMacro.start = "START";
         buildLogExcerptMacro.end = "END";
@@ -40,7 +40,7 @@ class BuildLogExcerptMacroTest {
 
         AbstractBuild build = mock(AbstractBuild.class);
 
-        when(build.getLogReader()).thenReturn(new StringReader("1\n2\n3\n4\n5\nSTART\n7\n8\n9\nEND\n10\n11\n12\n"));
+        setupRunGetLogReaderStubs(build, "1\n2\n3\n4\n5\nSTART\n7\n8\n9\nEND\n10\n11\n12\n");
 
         buildLogExcerptMacro.start = "START";
         buildLogExcerptMacro.end = "END";
@@ -53,8 +53,7 @@ class BuildLogExcerptMacroTest {
     @Test
     void testGetContent_regexpStartEndTags() throws Exception {
         AbstractBuild build = mock(AbstractBuild.class);
-        when(build.getLogReader())
-                .thenReturn(new StringReader("1\n2\n3\n4\n5\nTEST STARTED\n7\n8\n9\nTEST STOPED\n10\n11\n12\n"));
+        setupRunGetLogReaderStubs(build, "1\n2\n3\n4\n5\nTEST STARTED\n7\n8\n9\nTEST STOPED\n10\n11\n12\n");
 
         buildLogExcerptMacro.start = ".*START.*";
         buildLogExcerptMacro.end = ".*STOP.*";
@@ -67,8 +66,7 @@ class BuildLogExcerptMacroTest {
     @Test
     void testGetContent_regexpStartEndTagsEndBeforeStart() throws Exception {
         AbstractBuild build = mock(AbstractBuild.class);
-        when(build.getLogReader())
-                .thenReturn(new StringReader("1\n2\nSTOP3\n4\n5\nTEST STARTED\n7\n8\n9\nTEST STOPED\n10\n11\n12\n"));
+        setupRunGetLogReaderStubs(build, "1\n2\nSTOP3\n4\n5\nTEST STARTED\n7\n8\n9\nTEST STOPED\n10\n11\n12\n");
 
         buildLogExcerptMacro.start = ".*START.*";
         buildLogExcerptMacro.end = ".*STOP.*";
@@ -76,5 +74,9 @@ class BuildLogExcerptMacroTest {
         final String result = buildLogExcerptMacro.evaluate(build, listener, BuildLogExcerptMacro.MACRO_NAME);
 
         assertEquals("7\n8\n9\n", result);
+    }
+
+    private void setupRunGetLogReaderStubs(AbstractBuild build, String getLogReaderReturnValue) throws Exception {
+        when(build.getLogReader()).thenReturn(new StringReader(getLogReaderReturnValue));
     }
 }
