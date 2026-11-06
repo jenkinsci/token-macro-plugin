@@ -38,7 +38,7 @@ class BuildLogMacroTest {
 
     @Test
     void testGetContent_shouldConcatLogWithoutLineLimit() throws Exception {
-        when(build.getLog(anyInt())).thenReturn(testLog);
+        setupRunGetLogStubs(testLog);
 
         String content = buildLogMacro.evaluate(build, listener, BuildLogMacro.MACRO_NAME);
 
@@ -62,7 +62,7 @@ class BuildLogMacroTest {
 
     @Test
     void testGetContent_shouldDefaultToNotEscapeHtml() throws Exception {
-        when(build.getLog(anyInt())).thenReturn(new LinkedList<String>() {
+        setupRunGetLogStubs(new LinkedList<String>() {
             {
                 add("<b>bold</b>");
             }
@@ -75,7 +75,7 @@ class BuildLogMacroTest {
 
     @Test
     void testGetContent_shouldEscapeHtmlWhenArgumentEscapeHtmlSetToTrue() throws Exception {
-        when(build.getLog(anyInt())).thenReturn(new LinkedList<String>() {
+        setupRunGetLogStubs(new LinkedList<String>() {
             {
                 add("<b>bold</b>");
             }
@@ -111,7 +111,7 @@ class BuildLogMacroTest {
     @Test
     void shouldTruncateLog_on_nonzero_truncTailLines() throws Exception {
         buildLogMacro.truncTailLines = 1;
-        when(build.getLog(anyInt())).thenReturn(testLog);
+        setupRunGetLogStubs(testLog);
 
         String content = buildLogMacro.evaluate(build, listener, BuildLogMacro.MACRO_NAME);
 
@@ -121,7 +121,7 @@ class BuildLogMacroTest {
     @Test
     void shouldTruncateFullLog_on_large_truncTailLines() throws Exception {
         buildLogMacro.truncTailLines = 10;
-        when(build.getLog(anyInt())).thenReturn(testLog);
+        setupRunGetLogStubs(testLog);
 
         String content = buildLogMacro.evaluate(build, listener, BuildLogMacro.MACRO_NAME);
 
@@ -131,7 +131,7 @@ class BuildLogMacroTest {
     @Test
     void testGetContent_truncated_with_maxLineLength() throws Exception {
         buildLogMacro.maxLineLength = 4;
-        when(build.getLog(anyInt())).thenReturn(testLog);
+        setupRunGetLogStubs(testLog);
 
         String content = buildLogMacro.evaluate(build, listener, BuildLogMacro.MACRO_NAME);
 
@@ -141,10 +141,14 @@ class BuildLogMacroTest {
     @Test
     void testGetContent_untruncated_with_maxLineLength() throws Exception {
         buildLogMacro.maxLineLength = 6;
-        when(build.getLog(anyInt())).thenReturn(testLog);
+        setupRunGetLogStubs(testLog);
 
         String content = buildLogMacro.evaluate(build, listener, BuildLogMacro.MACRO_NAME);
 
         assertEquals("line 1\nline 2\nline 3\n", content);
+    }
+
+    private void setupRunGetLogStubs(List<String> getLogReturnValue) throws Exception {
+        when(build.getLog(anyInt())).thenReturn(getLogReturnValue);
     }
 }
