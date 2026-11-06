@@ -9,6 +9,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.TaskListener;
 import hudson.util.StreamTaskListener;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -45,7 +46,7 @@ class BuildLogRegexMacroTest {
 
     @Test
     void testGetContent_emptyBuildLogShouldStayEmpty() throws Exception {
-        when(build.getLogReader()).thenReturn(new StringReader(""));
+        setupRunGetLogReaderStubs(new StringReader(""));
 
         final String result = buildLogRegexMacro.evaluate(build, listener, BuildLogRegexMacro.MACRO_NAME);
 
@@ -170,7 +171,7 @@ class BuildLogRegexMacroTest {
 
     @Test
     void testGetContent_matchedLines_as_text_showing_truncated_lines() throws Exception {
-        when(build.getLogReader()).thenReturn(new StringReader("a\n1\nb\n2\nc\n3\n"));
+        setupRunGetLogReaderStubs(new StringReader("a\n1\nb\n2\nc\n3\n"));
         buildLogRegexMacro.regex = "\\d";
         buildLogRegexMacro.showTruncatedLines = true;
 
@@ -216,7 +217,7 @@ class BuildLogRegexMacroTest {
 
     @Test
     void testGetContent_matchedLines_as_html_showing_truncated_lines() throws Exception {
-        when(build.getLogReader()).thenReturn(new StringReader("a\n1\nb\n2\nc\n3\n"));
+        setupRunGetLogReaderStubs(new StringReader("a\n1\nb\n2\nc\n3\n"));
         buildLogRegexMacro.regex = "\\d";
         buildLogRegexMacro.showTruncatedLines = true;
         buildLogRegexMacro.matchedLineHtmlStyle = "";
@@ -347,7 +348,7 @@ class BuildLogRegexMacroTest {
 
     @Test
     void testGetContent_errorMatchedAndNothingReplaced() throws Exception {
-        when(build.getLogReader()).thenReturn(new StringReader("error foo bar fubber"));
+        setupRunGetLogReaderStubs(new StringReader("error foo bar fubber"));
         buildLogRegexMacro.substText = "$0";
 
         final String result = buildLogRegexMacro.evaluate(build, listener, BuildLogRegexMacro.MACRO_NAME);
@@ -357,7 +358,7 @@ class BuildLogRegexMacroTest {
 
     @Test
     void testGetContent_errorMatchedAndNothingReplaced2() throws Exception {
-        when(build.getLogReader()).thenReturn(new StringReader("error foo bar fubber"));
+        setupRunGetLogReaderStubs(new StringReader("error foo bar fubber"));
         buildLogRegexMacro.substText = null;
 
         final String result = buildLogRegexMacro.evaluate(build, listener, BuildLogRegexMacro.MACRO_NAME);
@@ -367,7 +368,7 @@ class BuildLogRegexMacroTest {
 
     @Test
     void testGetContent_errorMatchedAndReplacedByString() throws Exception {
-        when(build.getLogReader()).thenReturn(new StringReader("error foo bar error fubber"));
+        setupRunGetLogReaderStubs(new StringReader("error foo bar error fubber"));
         buildLogRegexMacro.substText = "REPLACE";
 
         final String result = buildLogRegexMacro.evaluate(build, listener, BuildLogRegexMacro.MACRO_NAME);
@@ -377,7 +378,7 @@ class BuildLogRegexMacroTest {
 
     @Test
     void testGetContent_prefixMatchedTruncatedAndStripped() throws Exception {
-        when(build.getLogReader()).thenReturn(new StringReader("prefix: Yes\nRandom Line\nprefix: No\n"));
+        setupRunGetLogReaderStubs(new StringReader("prefix: Yes\nRandom Line\nprefix: No\n"));
         buildLogRegexMacro.regex = "^prefix: (.*)$";
         buildLogRegexMacro.showTruncatedLines = false;
         buildLogRegexMacro.substText = "$1";
@@ -389,7 +390,7 @@ class BuildLogRegexMacroTest {
 
     @Test
     void testGetContent_escapeHtml() throws Exception {
-        when(build.getLogReader()).thenReturn(new StringReader("error <>&\""));
+        setupRunGetLogReaderStubs(new StringReader("error <>&\""));
         buildLogRegexMacro.showTruncatedLines = false;
         buildLogRegexMacro.escapeHtml = true;
 
@@ -400,7 +401,7 @@ class BuildLogRegexMacroTest {
 
     @Test
     void testGetContent_matchedLineHtmlStyleEmpty() throws Exception {
-        when(build.getLogReader()).thenReturn(new StringReader("error"));
+        setupRunGetLogReaderStubs(new StringReader("error"));
         buildLogRegexMacro.showTruncatedLines = false;
         buildLogRegexMacro.matchedLineHtmlStyle = "";
 
@@ -411,7 +412,7 @@ class BuildLogRegexMacroTest {
 
     @Test
     void testGetContent_matchedLineHtmlStyle() throws Exception {
-        when(build.getLogReader()).thenReturn(new StringReader("error"));
+        setupRunGetLogReaderStubs(new StringReader("error"));
         buildLogRegexMacro.showTruncatedLines = false;
         buildLogRegexMacro.matchedLineHtmlStyle = "color: red";
 
@@ -422,7 +423,7 @@ class BuildLogRegexMacroTest {
 
     @Test
     void testGetContent_matchedLineHtmlStyleWithHtmlEscape() throws Exception {
-        when(build.getLogReader()).thenReturn(new StringReader("<error>"));
+        setupRunGetLogReaderStubs(new StringReader("<error>"));
         final Map<String, String> arguments = new HashMap<>();
         arguments.put("escapeHtml", "true");
         arguments.put("showTruncatedLines", "false");
@@ -442,10 +443,9 @@ class BuildLogRegexMacroTest {
         // See HUDSON-7402
         buildLogRegexMacro.regex = ".*";
         buildLogRegexMacro.showTruncatedLines = false;
-        when(build.getLogReader())
-                .thenReturn(new StringReader(ConsoleNote.PREAMBLE_STR
-                        + "AAAAdB+LCAAAAAAAAABb85aBtbiIQSOjNKU4P0+vIKc0PTOvWK8kMze1uCQxtyC1SC8ExvbLL0llgABGJgZGLwaB3MycnMzi4My85FTXgvzkjIoiBimoScn5ecX5Oal6zhAaVS9DRQGQ1uaZsmc5AAaMIAyBAAAA"
-                        + ConsoleNote.POSTAMBLE_STR + "No emails were triggered."));
+        setupRunGetLogReaderStubs(new StringReader(ConsoleNote.PREAMBLE_STR
+                + "AAAAdB+LCAAAAAAAAABb85aBtbiIQSOjNKU4P0+vIKc0PTOvWK8kMze1uCQxtyC1SC8ExvbLL0llgABGJgZGLwaB3MycnMzi4My85FTXgvzkjIoiBimoScn5ecX5Oal6zhAaVS9DRQGQ1uaZsmc5AAaMIAyBAAAA"
+                + ConsoleNote.POSTAMBLE_STR + "No emails were triggered."));
 
         final String result = buildLogRegexMacro.evaluate(build, listener, BuildLogRegexMacro.MACRO_NAME);
 
@@ -460,8 +460,8 @@ class BuildLogRegexMacroTest {
         buildLogRegexMacro.maxMatches = 1;
         buildLogRegexMacro.showTruncatedLines = false;
         buildLogRegexMacro.substText = "$1";
-        when(build.getLogReader())
-                .thenReturn(new StringReader("*** Application: Firefox 15.0a2\n*** Platform: Mac OS X 10.7.4 64bit"));
+        setupRunGetLogReaderStubs(
+                new StringReader("*** Application: Firefox 15.0a2\n*** Platform: Mac OS X 10.7.4 64bit"));
         final String result = buildLogRegexMacro.evaluate(build, listener, BuildLogRegexMacro.MACRO_NAME);
 
         assertEquals("Firefox 15.0a2", result);
@@ -475,8 +475,8 @@ class BuildLogRegexMacroTest {
         buildLogRegexMacro.maxMatches = 1;
         buildLogRegexMacro.showTruncatedLines = false;
         buildLogRegexMacro.substText = "$1";
-        when(build.getLogReader())
-                .thenReturn(new StringReader("*** Application: Firefox 15.0a2\n*** Platform: Mac OS X 10.7.4 64bit"));
+        setupRunGetLogReaderStubs(
+                new StringReader("*** Application: Firefox 15.0a2\n*** Platform: Mac OS X 10.7.4 64bit"));
         final String result = buildLogRegexMacro.evaluate(build, listener, BuildLogRegexMacro.MACRO_NAME);
 
         assertEquals("JENKINS", result);
@@ -492,8 +492,7 @@ class BuildLogRegexMacroTest {
         buildLogRegexMacro.maxMatches = 5;
         buildLogRegexMacro.showTruncatedLines = false;
 
-        when(build.getLogReader())
-                .thenReturn(new InputStreamReader(getClass().getResourceAsStream("JENKINS-49746-input.txt")));
+        setupRunGetLogReaderStubs(new InputStreamReader(getClass().getResourceAsStream("JENKINS-49746-input.txt")));
 
         final String result = buildLogRegexMacro.evaluate(build, listener, BuildLogRegexMacro.MACRO_NAME);
 
@@ -501,5 +500,9 @@ class BuildLogRegexMacroTest {
         assertEquals(
                 expected.replaceAll("\r\n", "\n").trim(),
                 result.replaceAll("\r\n", "\n").trim());
+    }
+
+    private void setupRunGetLogReaderStubs(Reader getLogReaderReturnValue) throws Exception {
+        when(build.getLogReader()).thenReturn(getLogReaderReturnValue);
     }
 }
